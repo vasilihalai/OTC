@@ -21,10 +21,9 @@
   color: var(--text-secondary);
 }
 
-.profile__footer {
-  margin: 8px 0 0;
-  text-align: center;
-  font-size: 12px;
-  color: var(--text-tertiary);
-  opacity: 0.6;
+.profile__id-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-primary);
 }

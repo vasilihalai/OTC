@@ -6,6 +6,7 @@ import { TextField } from '@/components/TextField/TextField.tsx';
 import { SegmentedControl } from '@/components/SegmentedControl/SegmentedControl.tsx';
 import { KeyValueRow } from '@/components/KeyValueRow/KeyValueRow.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { SavedOptionSelect, NEW_OPTION_VALUE } from '@/components/SavedOptionSelect/SavedOptionSelect.tsx';
 import { getAssets, getFiatWithdrawalRules, getSavedRequisites, submitFiatWithdrawal } from '@/api/index.ts';
 import type { Asset, FiatTransferType, FiatWithdrawalRules, SavedRequisite } from '@/api/index.ts';
@@ -41,6 +42,7 @@ export function WithdrawFiat() {
   const [amountError, setAmountError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const idempotencyKey = useRef(crypto.randomUUID());
 
@@ -48,6 +50,7 @@ export function WithdrawFiat() {
     void Promise.all([getFiatWithdrawalRules(ticker), getAssets('fiat')]).then(([rulesData, assets]) => {
       setRules(rulesData);
       setAsset(assets.find((a) => a.ticker === ticker));
+      setInitialLoading(false);
     });
   }, [ticker]);
 
@@ -134,6 +137,20 @@ export function WithdrawFiat() {
     );
   }
 
+  if (initialLoading) {
+    return (
+      <div className="withdraw-fiat">
+        <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
+        <Skeleton height={44} radius={999}/>
+        <Skeleton height={44} radius={999}/>
+        <Skeleton height={48} radius={12}/>
+        <Panel surface="card">
+          <Skeleton height={80} radius={8}/>
+        </Panel>
+      </div>
+    );
+  }
+
   return (
     <div className="withdraw-fiat">
       <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
@@ -206,18 +223,18 @@ export function WithdrawFiat() {
         )
       )}
 
-      <div className="withdraw-fiat__amount-row">
-        <TextField
-          label={`${ru.withdraw.amountLabel} · ${ru.withdraw.availableLabel}: ${formatAmount(available, ticker)} ${ticker}`}
-          inputMode="decimal"
-          value={amount}
-          error={amountError}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <Button type="button" variant="link" className="withdraw-fiat__max" onClick={handleMax}>
-          {ru.withdraw.maxAction}
-        </Button>
-      </div>
+      <TextField
+        label={`${ru.withdraw.amountLabel} · ${ru.withdraw.availableLabel}: ${formatAmount(available, ticker)} ${ticker}`}
+        inputMode="decimal"
+        value={amount}
+        error={amountError}
+        onChange={(e) => setAmount(e.target.value)}
+        suffix={(
+          <Button type="button" variant="link" onClick={handleMax}>
+            {ru.withdraw.maxAction}
+          </Button>
+        )}
+      />
 
       {rules && (
         <Panel surface="card">

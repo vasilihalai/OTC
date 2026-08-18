@@ -29,11 +29,11 @@ export const MOCK_USERS: Record<ClientType, User> = {
   },
 };
 
-export const MOCK_STATS: Stats = { activeDeals: 2, volume30d: '100.24M', volumeAsset: 'KGS' };
+export const MOCK_STATS: Stats = { activeDeals: 3, volume30d: '100.24M', volumeAsset: 'KGS' };
 
 export const MOCK_DEALS: Deal[] = [
   {
-    id: 'OTC-1052',
+    id: 'OTC-1055',
     status: 'RUNNING',
     date: '19.08.2026 09:12',
     direction: 'EXCHANGE',
@@ -41,15 +41,23 @@ export const MOCK_DEALS: Deal[] = [
     to: '1 300 000 RUB',
   },
   {
-    id: 'OTC-1051',
+    id: 'OTC-1054',
     status: 'DONE',
+    date: '18.08.2026 18:03',
+    direction: 'SELL',
+    from: '0.080000 BTC',
+    to: '480 000 KGS',
+  },
+  {
+    id: 'OTC-1053',
+    status: 'RUNNING',
     date: '17.08.2026 16:40',
     direction: 'BUY',
     from: '500 000 KGS',
     to: '4 250.00 USDT',
   },
   {
-    id: 'OTC-1049',
+    id: 'OTC-1051',
     status: 'DONE',
     date: '15.08.2026 11:05',
     direction: 'SELL',
@@ -57,7 +65,7 @@ export const MOCK_DEALS: Deal[] = [
     to: '900 000 KGS',
   },
   {
-    id: 'OTC-1048',
+    id: 'OTC-1049',
     status: 'DONE',
     date: '14.08.2026 08:51',
     direction: 'BUY',
@@ -65,7 +73,7 @@ export const MOCK_DEALS: Deal[] = [
     to: '22 900.00 USDC',
   },
   {
-    id: 'OTC-1047',
+    id: 'OTC-1048',
     status: 'DONE',
     date: '12.08.2026 12:23',
     direction: 'BUY',
@@ -73,7 +81,7 @@ export const MOCK_DEALS: Deal[] = [
     to: '8 500.51 USDT',
   },
   {
-    id: 'OTC-1046',
+    id: 'OTC-1047',
     status: 'RUNNING',
     date: '12.08.2026 12:23',
     direction: 'SELL',
@@ -87,6 +95,46 @@ export const MOCK_DEALS: Deal[] = [
     direction: 'EXCHANGE',
     from: '10 000 USD',
     to: '890 000 000 KGS',
+  },
+  {
+    id: 'OTC-1040',
+    status: 'DONE',
+    date: '02.08.2026 10:15',
+    direction: 'BUY',
+    from: '3 000 000 KGS',
+    to: '25 500.00 USDT',
+  },
+  {
+    id: 'OTC-1036',
+    status: 'DONE',
+    date: '25.07.2026 13:47',
+    direction: 'SELL',
+    from: '18 000 USDC',
+    to: '6 300 000 KGS',
+  },
+  {
+    id: 'OTC-1029',
+    status: 'DONE',
+    date: '14.07.2026 09:30',
+    direction: 'EXCHANGE',
+    from: '5 000 USD',
+    to: '445 000 000 KGS',
+  },
+  {
+    id: 'OTC-1018',
+    status: 'DONE',
+    date: '20.06.2026 17:22',
+    direction: 'BUY',
+    from: '800 000 RUB',
+    to: '9 150.00 USDT',
+  },
+  {
+    id: 'OTC-1005',
+    status: 'DONE',
+    date: '15.05.2026 12:00',
+    direction: 'SELL',
+    from: '0.300000 BTC',
+    to: '1 800 000 KGS',
   },
 ];
 

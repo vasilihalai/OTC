@@ -14,6 +14,15 @@ import { ru } from '@/i18n/ru.ts';
 
 import './Profile.css';
 
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect x="5" y="5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M9 5V2.5a1 1 0 0 0-1-1H2.5a1 1 0 0 0-1 1V8a1 1 0 0 0 1 1H5" stroke="currentColor" strokeWidth="1.4"/>
+    </svg>
+  );
+}
+
 const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
   KYB_PASSED: ru.profile.verificationPassedKyb,
   KYC_PASSED: ru.profile.verificationPassedKyc,
@@ -89,7 +98,12 @@ export function Profile() {
           <KeyValueRow
             label={ru.profile.userIdRow}
             loading={loading}
-            value={user && formatInGroupsOf4(user.userId)}
+            value={user && (
+              <span className="profile__id-value">
+                {formatInGroupsOf4(user.userId)}
+                <CopyIcon/>
+              </span>
+            )}
             onClick={user ? () => void handleCopyUserId() : undefined}
           />
         </Panel>
@@ -103,10 +117,6 @@ export function Profile() {
           {ru.profile.signOutAction}
         </Button>
       </div>
-
-      <p className="profile__footer">
-        {ru.profile.lastUpdateLabel} {__LAST_COMMIT_DATE__} · {__LAST_COMMIT_HASH__}
-      </p>
     </div>
   );
 }

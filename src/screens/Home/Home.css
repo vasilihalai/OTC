@@ -45,6 +45,12 @@
   margin-top: 8px;
 }
 
+.home__deals-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .home__hidden-caption {
   margin: 8px 0 0;
   font-size: 12px;

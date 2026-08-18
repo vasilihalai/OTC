@@ -25,16 +25,6 @@
   color: var(--text-secondary);
 }
 
-.withdraw-crypto__amount-row {
-  position: relative;
-}
-
-.withdraw-crypto__max {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 .withdraw-crypto__warning {
   font-size: 12px;
   line-height: 16px;

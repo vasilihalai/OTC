@@ -25,15 +25,6 @@
   color: var(--text-secondary);
 }
 
-.withdraw-fiat__amount-row {
-  position: relative;
-}
-
-.withdraw-fiat__max {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
 
 .withdraw-fiat__checkbox {
   display: flex;

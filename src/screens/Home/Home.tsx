@@ -7,6 +7,7 @@ import { CompanyChip } from '@/components/CompanyChip/CompanyChip.tsx';
 import { DealRow } from '@/components/DealRow/DealRow.tsx';
 import { SegmentedControl } from '@/components/SegmentedControl/SegmentedControl.tsx';
 import { AssetRow } from '@/components/AssetRow/AssetRow.tsx';
+import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { getAssets, getDeals, getStats, getUser } from '@/api/index.ts';
 import type { Asset, Deal, Stats, User } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
@@ -61,16 +62,30 @@ export function Home() {
         <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
         <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>
         <p className="home__desk-hours">{ru.home.deskHours}</p>
-        {user && <CompanyChip>{user.clientName}</CompanyChip>}
-        {stats && (
-          <div className="home__stats">
-            <StatCard value={String(stats.activeDeals)} label={ru.home.statActiveDeals}/>
-            <StatCard value={stats.volume30d} unit={stats.volumeAsset} label={ru.home.statVolume30d}/>
-          </div>
-        )}
+        {user ? <CompanyChip>{user.clientName}</CompanyChip> : <Skeleton width={140} height={22} radius={8}/>}
+        <div className="home__stats">
+          {stats ? (
+            <>
+              <StatCard value={String(stats.activeDeals)} label={ru.home.statActiveDeals}/>
+              <StatCard value={stats.volume30d} unit={stats.volumeAsset} label={ru.home.statVolume30d}/>
+            </>
+          ) : (
+            <>
+              <Skeleton height={78} radius={14}/>
+              <Skeleton height={78} radius={14}/>
+            </>
+          )}
+        </div>
       </Panel>
 
       <Panel heading={ru.home.recentDealsTitle}>
+        {!deals && (
+          <div className="home__deals-skeleton">
+            <Skeleton height={72} radius={12}/>
+            <Skeleton height={72} radius={12}/>
+            <Skeleton height={72} radius={12}/>
+          </div>
+        )}
         {deals && deals.length === 0 && <p className="home__empty">{ru.home.noDeals}</p>}
         {deals?.slice(0, 3).map((deal) => (
           <DealRow key={deal.id} deal={deal} onClick={() => navigate(`/deals/${deal.id}`)}/>
@@ -87,10 +102,16 @@ export function Home() {
           onChange={setSelectedGroup}
         />
         <div className="home__assets">
+          {assetsLoading && (
+            <div className="home__deals-skeleton">
+              <Skeleton height={60} radius={12}/>
+              <Skeleton height={60} radius={12}/>
+            </div>
+          )}
           {!assetsLoading && positiveAssets.length === 0 && (
             <p className="home__empty">{ru.home.noPositiveBalance}</p>
           )}
-          {positiveAssets.map((asset) => (
+          {!assetsLoading && positiveAssets.map((asset) => (
             <AssetRow
               key={asset.ticker}
               ticker={asset.ticker}
