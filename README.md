@@ -168,25 +168,6 @@ to your username and repository name. Here is the page link example using the
 data mentioned above:
 https://telegram-mini-apps.github.io/is-awesome
 
-### GitHub Workflow
-
-To simplify the deployment process, this template includes a
-pre-configured [GitHub workflow](.github/workflows/github-pages-deploy.yml) that
-automatically deploys the project when changes are pushed to the `master`
-branch.
-
-To enable this workflow, create a new environment (or edit the existing one) in
-the GitHub repository settings and name it `github-pages`. Then, add the
-`master` branch to the list of deployment branches.
-
-You can find the environment settings using this
-URL: `https://github.com/{username}/{repository}/settings/environments`.
-
-![img.png](.github/deployment-branches.png)
-
-In case, you don't want to do it automatically, or you don't use GitHub as the
-project codebase, remove the `.github` directory.
-
 ### GitHub Web Interface
 
 Alternatively, developers can configure automatic deployment using the GitHub
