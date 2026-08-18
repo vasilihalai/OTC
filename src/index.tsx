@@ -16,25 +16,29 @@ import './mockEnv.ts';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
-try {
-  const launchParams = retrieveLaunchParams();
-  const { tgWebAppPlatform: platform } = launchParams;
-  const debug = (launchParams.tgWebAppStartParam || '').includes('debug')
-    || import.meta.env.DEV;
+// No top-level await: some Telegram clients' embedded webview engines (notably
+// older Telegram Desktop builds) fail to parse a module using it at all, which
+// silently renders a blank screen instead of the app.
+void (async () => {
+  try {
+    const launchParams = retrieveLaunchParams();
+    const { tgWebAppPlatform: platform } = launchParams;
+    const debug = (launchParams.tgWebAppStartParam || '').includes('debug')
+      || import.meta.env.DEV;
 
-  // Configure all application dependencies.
-  await init({
-    debug,
-    eruda: debug && ['ios', 'android'].includes(platform),
-    mockForMacOS: platform === 'macos',
-  })
-    .then(() => {
-      root.render(
-        <StrictMode>
-          <Root/>
-        </StrictMode>,
-      );
+    // Configure all application dependencies.
+    await init({
+      debug,
+      eruda: debug && ['ios', 'android'].includes(platform),
+      mockForMacOS: platform === 'macos',
     });
-} catch {
-  root.render(<EnvUnsupported/>);
-}
+
+    root.render(
+      <StrictMode>
+        <Root/>
+      </StrictMode>,
+    );
+  } catch {
+    root.render(<EnvUnsupported/>);
+  }
+})();

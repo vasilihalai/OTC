@@ -44,7 +44,9 @@ export default defineConfig({
     process.env.HTTPS && mkcert(),
   ],
   build: {
-    target: 'esnext',
+    // Telegram Desktop's embedded webview lags behind mobile system webviews;
+    // 'esnext' let syntax it can't parse (e.g. top-level await) through silently.
+    target: 'es2020',
     minify: 'terser'
   },
   publicDir: './public',
