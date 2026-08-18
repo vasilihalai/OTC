@@ -8,6 +8,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: modal-scrim-in 0.18s ease-out;
 }
 
 .modal__card {
@@ -19,6 +20,17 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  animation: modal-card-in 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+@keyframes modal-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-card-in {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal__header {

@@ -3,6 +3,7 @@ import {
   themeParams,
   initData,
   viewport,
+  swipeBehavior,
   init as initSDK,
   mockTelegramEnv,
   type ThemeParamsState,
@@ -74,6 +75,28 @@ export async function init(options: {
     await viewport.mount().then(() => {
       viewport.bindCssVars();
       viewport.expand.ifAvailable();
+
+      // Bot API 8.0+ only; .ifAvailable() no-ops cleanly on older clients
+      // (Desktop/Web) instead of throwing, so this never needs a manual
+      // version check. Only ever called here, once, on initial mount.
+      const fullscreenRequest = viewport.requestFullscreen.ifAvailable();
+      if (fullscreenRequest.ok) {
+        fullscreenRequest.data.catch((err: unknown) => {
+          // e.g. UNSUPPORTED on Desktop/Web, ALREADY_FULLSCREEN — normal mode stays active.
+          console.warn('Fullscreen request failed, staying in normal mode:', err);
+        });
+      }
+
+      swipeBehavior.mount.ifAvailable();
+      swipeBehavior.disableVertical.ifAvailable();
     });
   }
+
+  // Keeps a CSS hook (body.is-fullscreen) in sync with the SDK's reactive
+  // fullscreen state, for layout rules that can't be expressed with the
+  // safe-area CSS vars alone.
+  viewport.isFullscreen.sub((isFullscreen) => {
+    document.body.classList.toggle('is-fullscreen', isFullscreen);
+  });
+  document.body.classList.toggle('is-fullscreen', viewport.isFullscreen());
 }

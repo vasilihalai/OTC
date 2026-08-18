@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 16px;
   padding: 24px 16px 32px;
-  min-height: 100vh;
+  min-height: 100dvh;
   box-sizing: border-box;
 }
 

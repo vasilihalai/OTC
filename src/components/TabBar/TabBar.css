@@ -3,8 +3,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: calc(68px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* max() of the device's own safe area and Telegram's reported inset — the
+     two overlap rather than stack, so summing them would over-pad. */
+  height: calc(68px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px));
   display: flex;
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
@@ -23,6 +25,11 @@
   border: none;
   cursor: pointer;
   color: var(--text-tertiary);
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.tab-bar__tab:active {
+  transform: scale(0.94);
 }
 
 .tab-bar__tab--active {

@@ -19,6 +19,7 @@
   color: var(--text-primary);
   /* 16px, not the 15px body size, so iOS Safari/WKWebView doesn't auto-zoom on focus. */
   font-size: 16px;
+  transition: border-color 0.15s ease;
 }
 
 .text-field__input::placeholder {
@@ -46,6 +47,7 @@
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--bg-card);
+  transition: border-color 0.15s ease;
 }
 
 .text-field--invalid .text-field__box {

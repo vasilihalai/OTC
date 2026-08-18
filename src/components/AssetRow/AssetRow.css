@@ -44,4 +44,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.asset-row__withdraw:active {
+  background: #2A2C31;
+  transform: scale(0.92);
 }

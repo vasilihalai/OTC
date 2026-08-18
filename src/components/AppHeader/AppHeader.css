@@ -1,6 +1,16 @@
 .app-header {
   display: flex;
   padding: 10px 16px;
+  padding-top: calc(
+    10px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
+  );
+}
+
+/* Extra clearance so our own pill never sits under Telegram's floating
+   Close (left) / "..." menu (right) buttons in fullscreen. */
+body.is-fullscreen .app-header {
+  padding-left: 80px;
+  padding-right: 56px;
 }
 
 .app-header__nav-button {

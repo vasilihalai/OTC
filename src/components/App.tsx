@@ -26,11 +26,15 @@ function Shell() {
   return (
     <>
       <AppHeader variant={headerVariant} onBack={goBack}/>
-      <Routes>
-        <Route path="/" element={<Entry/>}/>
-        {routes.map((route) => <Route key={route.path} {...route} />)}
-        <Route path="*" element={<Navigate to="/"/>}/>
-      </Routes>
+      <main className="app-content">
+        <div key={location.pathname} className="app-content__page">
+          <Routes>
+            <Route path="/" element={<Entry/>}/>
+            {routes.map((route) => <Route key={route.path} {...route} />)}
+            <Route path="*" element={<Navigate to="/"/>}/>
+          </Routes>
+        </div>
+      </main>
       {showTabBar && <TabBar/>}
       <Toast/>
     </>

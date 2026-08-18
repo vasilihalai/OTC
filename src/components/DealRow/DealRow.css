@@ -1,7 +1,14 @@
 .deal-row {
-  padding: 14px 0;
+  padding: 14px 4px;
+  margin: 0 -4px;
+  border-radius: 10px;
   border-bottom: 1px solid var(--border);
   cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.deal-row:active {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .deal-row:last-child {
