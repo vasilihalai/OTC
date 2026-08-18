@@ -1,0 +1,36 @@
+export const ru = {
+  login: {
+    title: 'OTC-обмен крупных сумм',
+    subtitle: 'для юридических лиц',
+    sectionTitle: 'Вход в аккаунт биржи',
+    emailLabel: 'Email аккаунта xRuby',
+    codeLabel: 'Код из письма',
+    requestCodeAction: 'Получить код',
+    submitAction: 'Войти',
+    verificationNote:
+      'Доступ только для клиентов с верификацией уровня 2. Нет верификации — пройдите её в веб-кабинете биржи.',
+    errorEmailInvalid: 'Введите корректный email',
+    errorCodeInvalid: 'Неверный код',
+    errorRateLimit: 'Слишком много попыток, попробуйте позже',
+  },
+  profile: {
+    companyRow: 'Компания',
+    verificationRow: 'Верификация',
+    emailRow: 'Email',
+    userIdRow: 'ID пользователя',
+    verificationPassedKyb: 'KYB пройдена ✓',
+    verificationPassedKyc: 'KYC пройдена ✓',
+    verificationNone: 'Не пройдена',
+    typeUl: 'ЮЛ',
+    typeFl: 'ФЛ',
+    openCabinetAction: 'Открыть веб-кабинет xRuby',
+    signOutAction: 'Выйти из аккаунта',
+    copiedToast: 'Скопировано',
+    demoLink: 'Демо-страницы',
+    errorTitle: 'Не удалось загрузить профиль',
+    retryAction: 'Повторить',
+  },
+  common: {
+    loading: 'Загрузка…',
+  },
+} as const;

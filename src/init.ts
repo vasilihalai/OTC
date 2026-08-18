@@ -12,6 +12,8 @@ import {
   backButton,
 } from '@tma.js/sdk-react';
 
+import { applyDarkTheme } from '@/telegram/adapter.ts';
+
 /**
  * Initializes the application and configures its dependencies.
  */
@@ -65,11 +67,13 @@ export async function init(options: {
     themeParams.mount();
     miniApp.mount();
     themeParams.bindCssVars();
+    applyDarkTheme();
   }
 
   if (viewport.mount.isAvailable()) {
-    viewport.mount().then(() => {
+    await viewport.mount().then(() => {
       viewport.bindCssVars();
+      viewport.expand.ifAvailable();
     });
   }
 }

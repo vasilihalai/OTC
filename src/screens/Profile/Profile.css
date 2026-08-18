@@ -1,0 +1,22 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 16px 32px;
+}
+
+.profile__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--xr-text-secondary);
+}

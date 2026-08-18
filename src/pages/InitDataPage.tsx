@@ -1,4 +1,4 @@
-import { type FC, useMemo } from 'react';
+import { type FC, type ReactNode, useMemo } from 'react';
 import {
   initData,
   type User,
@@ -10,7 +10,7 @@ import { DisplayData, type DisplayDataRow } from '@/components/DisplayData/Displ
 import { Page } from '@/components/Page.tsx';
 
 function getUserRows(user: User): DisplayDataRow[] {
-  return Object.entries(user).map(([title, value]) => ({ title, value }));
+  return (Object.entries(user) as [string, ReactNode][]).map(([title, value]) => ({ title, value }));
 }
 
 export const InitDataPage: FC = () => {
@@ -23,7 +23,7 @@ export const InitDataPage: FC = () => {
     }
     return [
       { title: 'raw', value: initDataRaw },
-      ...Object.entries(initDataState).reduce<DisplayDataRow[]>((acc, [title, value]) => {
+      ...(Object.entries(initDataState) as [string, ReactNode][]).reduce<DisplayDataRow[]>((acc, [title, value]) => {
         if (value instanceof Date) {
           acc.push({ title, value: value.toISOString() });
         } else if (!value || typeof value !== 'object') {
@@ -49,7 +49,7 @@ export const InitDataPage: FC = () => {
   const chatRows = useMemo<DisplayDataRow[] | undefined>(() => {
     return !initDataState?.chat
       ? undefined
-      : Object.entries(initDataState.chat).map(([title, value]) => ({ title, value }));
+      : (Object.entries(initDataState.chat) as [string, ReactNode][]).map(([title, value]) => ({ title, value }));
   }, [initDataState]);
 
   if (!initDataRows) {
