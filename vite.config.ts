@@ -1,11 +1,29 @@
+import { execSync } from 'node:child_process';
+
 import react from '@vitejs/plugin-react-swc';
 import { defineConfig } from 'vite';
 import mkcert from 'vite-plugin-mkcert';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+function readLastCommit(): { date: string; hash: string } {
+  try {
+    const date = execSync('git log -1 --format=%cd --date=short', { encoding: 'utf-8' }).trim();
+    const hash = execSync('git rev-parse --short HEAD', { encoding: 'utf-8' }).trim();
+    return { date, hash };
+  } catch {
+    return { date: 'unknown', hash: 'unknown' };
+  }
+}
+
+const lastCommit = readLastCommit();
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/OTC/',
+  define: {
+    __LAST_COMMIT_DATE__: JSON.stringify(lastCommit.date),
+    __LAST_COMMIT_HASH__: JSON.stringify(lastCommit.hash),
+  },
   css: {
     preprocessorOptions: {
       scss: {

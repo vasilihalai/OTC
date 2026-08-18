@@ -29,6 +29,7 @@ export const ru = {
     demoLink: 'Демо-страницы',
     errorTitle: 'Не удалось загрузить профиль',
     retryAction: 'Повторить',
+    lastUpdateLabel: 'Обновлено',
   },
   common: {
     loading: 'Загрузка…',

@@ -1,6 +1,6 @@
 import type { RequestCodeError, Session, VerifyCodeError } from '@/api/types.ts';
 import { isValidEmail } from '@/lib/validate.ts';
-import { MAX_CONSECUTIVE_CODE_ATTEMPTS, MOCK_EMAIL, mockDelay } from '@/api/mock/fixtures.ts';
+import { MAX_CONSECUTIVE_CODE_ATTEMPTS, mockDelay } from '@/api/mock/fixtures.ts';
 
 export class MockAuthError extends Error {
   constructor(public readonly code: RequestCodeError | VerifyCodeError) {
@@ -26,8 +26,8 @@ export async function verifyCode(email: string, code: string): Promise<Session> 
     throw new MockAuthError('RATE_LIMIT');
   }
 
-  // Any non-empty code is accepted for the mock account; only the email is checked.
-  if (email !== MOCK_EMAIL || !code.trim()) {
+  // Any email + any non-empty code is accepted by this mock.
+  if (!code.trim()) {
     failedAttempts += 1;
     throw new MockAuthError('CODE_INVALID');
   }

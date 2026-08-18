@@ -110,6 +110,10 @@ export function Profile() {
         <Button variant="ghost" onClick={() => navigate('/demo')}>
           {ru.profile.demoLink}
         </Button>
+
+        <p className="profile__footer">
+          {ru.profile.lastUpdateLabel} {__LAST_COMMIT_DATE__} · {__LAST_COMMIT_HASH__}
+        </p>
       </div>
     </Page>
   );
