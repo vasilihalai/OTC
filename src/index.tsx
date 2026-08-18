@@ -9,6 +9,7 @@ import { Root } from '@/components/Root.tsx';
 import { EnvUnsupported } from '@/components/EnvUnsupported.tsx';
 import { init } from '@/init.ts';
 import { ensureTelegramEnvironment } from '@/telegram/environment.ts';
+import { verifyTelegramInitData } from '@/api/index.ts';
 
 import './index.css';
 
@@ -34,6 +35,16 @@ void (async () => {
       eruda: debug && ['ios', 'android'].includes(platform),
       mockForMacOS: platform === 'macos',
     });
+
+    // A no-op unless VITE_USE_REAL_API is on. Validation failure means no
+    // session is issued (mini-app-v1.md §4.1) — not a reason to block the
+    // whole app, so it's swallowed here rather than falling into the
+    // EnvUnsupported catch below.
+    try {
+      await verifyTelegramInitData();
+    } catch (err) {
+      console.warn('initData validation failed:', err);
+    }
 
     root.render(
       <StrictMode>

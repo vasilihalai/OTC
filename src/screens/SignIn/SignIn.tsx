@@ -10,6 +10,7 @@ import type { ClientType } from '@/api/index.ts';
 import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { notifyError } from '@/telegram/adapter.ts';
+import { AppleIcon, GoogleIcon } from '@/components/SocialIcons/SocialIcons.tsx';
 import { ru } from '@/i18n/ru.ts';
 
 import './SignIn.css';
@@ -49,7 +50,7 @@ export function SignIn({ variant }: SignInProps) {
     setEmailError(undefined);
     setLoading(true);
     try {
-      await sendVerificationCode(email);
+      await sendVerificationCode(email, password);
       openModal();
     } catch (err) {
       if (err instanceof MockSignInError) {
@@ -118,6 +119,7 @@ export function SignIn({ variant }: SignInProps) {
           <Button
             type="button"
             variant="social"
+            icon={<GoogleIcon/>}
             loading={socialLoading === 'google'}
             disabled={!!socialLoading}
             onClick={() => void handleSocial('google')}
@@ -127,6 +129,7 @@ export function SignIn({ variant }: SignInProps) {
           <Button
             type="button"
             variant="social"
+            icon={<AppleIcon/>}
             loading={socialLoading === 'apple'}
             disabled={!!socialLoading}
             onClick={() => void handleSocial('apple')}
@@ -135,7 +138,7 @@ export function SignIn({ variant }: SignInProps) {
           </Button>
         </div>
 
-        {variant === 'personal' && (
+        {variant === 'personal' ? (
           <Button
             type="button"
             variant="footer-link"
@@ -144,6 +147,16 @@ export function SignIn({ variant }: SignInProps) {
             onClick={() => navigate('/login/business')}
           >
             {ru.signIn.businessAccountLink}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="footer-link"
+            className="sign-in__business-link"
+            icon="👤"
+            onClick={() => navigate('/login')}
+          >
+            {ru.signIn.personalAccountLink}
           </Button>
         )}
       </form>

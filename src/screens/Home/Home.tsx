@@ -96,7 +96,7 @@ export function Home() {
               ticker={asset.ticker}
               name={asset.name}
               amount={formatAmount(asset.balance, asset.ticker)}
-              onWithdraw={() => navigate(`/withdraw/${asset.ticker}`)}
+              onWithdraw={() => navigate(`/withdraw/${asset.group}`, { state: { ticker: asset.ticker } })}
             />
           ))}
         </div>

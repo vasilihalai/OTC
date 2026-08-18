@@ -16,6 +16,11 @@ export async function getDeals(): Promise<Deal[]> {
   return MOCK_DEALS;
 }
 
+export async function getDealById(id: string): Promise<Deal | undefined> {
+  await mockDelay();
+  return MOCK_DEALS.find((deal) => deal.id === id);
+}
+
 export async function getAssets(group: AssetGroup): Promise<Asset[]> {
   await mockDelay();
   return MOCK_ASSETS.filter((asset) => asset.group === group);

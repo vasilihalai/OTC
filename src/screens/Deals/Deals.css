@@ -1,5 +1,27 @@
 .deals {
-  padding: 8px 16px 88px;
+  padding: 8px 16px 100px;
+}
+
+.deals__filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.deals__filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deals__filter-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.deals__filter-row .segmented-control {
+  overflow-x: auto;
 }
 
 .deals__empty {

@@ -1,0 +1,65 @@
+.withdraw-fiat {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 16px 100px;
+}
+
+.withdraw-fiat__title {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.withdraw-fiat__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.withdraw-fiat__label {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.withdraw-fiat__amount-row {
+  position: relative;
+}
+
+.withdraw-fiat__max {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.withdraw-fiat__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.withdraw-fiat__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.withdraw-fiat__success-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.withdraw-fiat__success-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+}

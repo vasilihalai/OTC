@@ -19,8 +19,13 @@ export class MockVerifyCodeError extends Error {
 // Consecutive failed verifyCode attempts since the last successful send.
 let failedAttempts = 0;
 
-/** Shared by sign-in (after the password step) and password recovery. */
-export async function sendVerificationCode(email: string): Promise<void> {
+/**
+ * Shared by sign-in (after the password step) and password recovery.
+ * `password` is unused by the mock (any non-empty value is accepted) — kept
+ * in the signature so the real implementation, which does need it, is a
+ * drop-in swap with no screen changes.
+ */
+export async function sendVerificationCode(email: string, _password?: string): Promise<void> {
   await mockDelay();
   if (!isValidEmail(email)) {
     throw new MockSignInError('EMAIL_INVALID');

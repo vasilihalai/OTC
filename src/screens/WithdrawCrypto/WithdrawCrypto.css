@@ -1,0 +1,63 @@
+.withdraw-crypto {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 16px 100px;
+}
+
+.withdraw-crypto__title {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.withdraw-crypto__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.withdraw-crypto__label {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.withdraw-crypto__amount-row {
+  position: relative;
+}
+
+.withdraw-crypto__max {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.withdraw-crypto__warning {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--warning);
+  margin: 0;
+}
+
+.withdraw-crypto__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.withdraw-crypto__success-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.withdraw-crypto__success-body {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0 0 16px;
+}

@@ -50,3 +50,47 @@ export type SocialProvider = 'google' | 'apple';
 export type SignInError = 'EMAIL_INVALID';
 
 export type VerifyCodeError = 'CODE_INVALID' | 'RATE_LIMIT';
+
+export type CryptoNetwork = 'TRC20' | 'ERC20';
+
+export interface CryptoWithdrawalRules {
+  ticker: string;
+  min: string;
+  limit: string;
+  networkFee: string;
+  networks: CryptoNetwork[];
+}
+
+export interface SavedAddress {
+  id: string;
+  ticker: string;
+  network?: CryptoNetwork;
+  label: string;
+  address: string;
+}
+
+export type FiatTransferType = 'internal' | 'kg' | 'ru';
+
+export interface FiatWithdrawalRules {
+  ticker: string;
+  min: string;
+  limit: string;
+  feePercent: number;
+}
+
+export interface SavedRequisite {
+  id: string;
+  ticker: string;
+  transferType: FiatTransferType;
+  label: string;
+  account: string;
+  bankName?: string;
+  bic?: string;
+  inn?: string;
+  correspondentAccount?: string;
+}
+
+export interface WithdrawalResult {
+  id: string;
+  status: 'PENDING';
+}

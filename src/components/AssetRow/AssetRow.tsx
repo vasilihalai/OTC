@@ -1,4 +1,5 @@
 import { bem } from '@/css/bem.ts';
+import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 
 import './AssetRow.css';
 
@@ -14,7 +15,7 @@ export interface AssetRowProps {
 export function AssetRow({ ticker, name, amount, onWithdraw }: AssetRowProps) {
   return (
     <div className={b()}>
-      <div className={e('icon')} aria-hidden="true">{ticker.slice(0, 1)}</div>
+      <CurrencyIcon ticker={ticker}/>
       <div className={e('info')}>
         <div className={e('ticker')}>{ticker}</div>
         <div className={e('name')}>{name}</div>

@@ -5,20 +5,6 @@
   padding: 10px 0;
 }
 
-.asset-row__icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 .asset-row__info {
   flex: 1;
   min-width: 0;
