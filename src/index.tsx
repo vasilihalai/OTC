@@ -8,11 +8,9 @@ import { retrieveLaunchParams } from '@tma.js/sdk-react';
 import { Root } from '@/components/Root.tsx';
 import { EnvUnsupported } from '@/components/EnvUnsupported.tsx';
 import { init } from '@/init.ts';
+import { ensureTelegramEnvironment } from '@/telegram/environment.ts';
 
 import './index.css';
-
-// Mock the environment in case, we are outside Telegram.
-import './mockEnv.ts';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 
@@ -21,6 +19,10 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 // silently renders a blank screen instead of the app.
 void (async () => {
   try {
+    // Mocks the environment when running outside real Telegram (including in
+    // production), so retrieveLaunchParams() below always has something to read.
+    await ensureTelegramEnvironment();
+
     const launchParams = retrieveLaunchParams();
     const { tgWebAppPlatform: platform } = launchParams;
     const debug = (launchParams.tgWebAppStartParam || '').includes('debug')

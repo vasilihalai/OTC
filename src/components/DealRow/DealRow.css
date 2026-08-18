@@ -1,0 +1,31 @@
+.deal-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.deal-row:last-child {
+  border-bottom: none;
+}
+
+.deal-row__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.deal-row__id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.deal-row__date {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-tertiary);
+}

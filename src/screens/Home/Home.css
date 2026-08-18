@@ -1,0 +1,53 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 16px 88px;
+}
+
+.home__hero-title {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.home__hero-subtitle {
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+
+.home__desk-hours {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+  margin: 0 0 12px;
+}
+
+.home__stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.home__empty {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 12px 0;
+  margin: 0;
+}
+
+.home__assets {
+  margin-top: 8px;
+}
+
+.home__hidden-caption {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}

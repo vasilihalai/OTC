@@ -1,0 +1,34 @@
+.code-input {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.code-input__cell {
+  width: 44px;
+  height: 52px;
+  border-radius: 10px;
+  border: none;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.code-input__cell::placeholder {
+  color: var(--text-tertiary);
+  font-weight: 400;
+}
+
+.code-input__cell:focus {
+  outline: none;
+}
+
+.code-input__cell:disabled {
+  opacity: 0.5;
+}
+
+.code-input--invalid .code-input__cell {
+  border: 1px solid var(--danger);
+}

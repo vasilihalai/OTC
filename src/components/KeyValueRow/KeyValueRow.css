@@ -1,0 +1,39 @@
+.key-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.key-value-row--clickable {
+  cursor: pointer;
+}
+
+.key-value-row__label {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.key-value-row__value {
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-primary);
+  text-align: right;
+  word-break: break-word;
+}
+
+.key-value-row__skeleton {
+  height: 14px;
+  width: 96px;
+  border-radius: 6px;
+  background: var(--bg-card);
+  animation: key-value-row-skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes key-value-row-skeleton-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}

@@ -1,11 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { copyTextToClipboard, hapticFeedback, mainButton, miniApp, openLink } from '@tma.js/sdk-react';
+import { copyTextToClipboard, hapticFeedback, miniApp, openLink } from '@tma.js/sdk-react';
 
-// Keep in sync with the palette in src/index.css.
+// Keep in sync with theme/tokens.css.
 const DARK_PALETTE = {
-  bg: '#0f1115',
-  headerBg: '#0f1115',
-  bottomBarBg: '#0f1115',
+  bg: '#0D0E10',
+  headerBg: '#0D0E10',
+  bottomBarBg: '#0D0E10',
 } as const;
 
 /** xRuby always renders dark, regardless of the user's Telegram theme. */
@@ -13,49 +12,6 @@ export function applyDarkTheme(): void {
   miniApp.setBgColor.ifAvailable(DARK_PALETTE.bg);
   miniApp.setHeaderColor.ifAvailable(DARK_PALETTE.headerBg);
   miniApp.setBottomBarColor.ifAvailable(DARK_PALETTE.bottomBarBg);
-}
-
-interface UseMainButtonOptions {
-  text: string;
-  onClick: () => void;
-  enabled?: boolean;
-  loading?: boolean;
-  visible?: boolean;
-}
-
-/**
- * Binds a screen's primary action to the Telegram MainButton so it never
- * needs to be duplicated as an in-page button.
- */
-export function useMainButton({
-  text,
-  onClick,
-  enabled = true,
-  loading = false,
-  visible = true,
-}: UseMainButtonOptions): void {
-  const onClickRef = useRef(onClick);
-  onClickRef.current = onClick;
-
-  useEffect(() => {
-    mainButton.mount.ifAvailable();
-    const clickResult = mainButton.onClick.ifAvailable(() => onClickRef.current());
-    const unsubscribe = clickResult.ok ? clickResult.data : undefined;
-
-    return () => {
-      unsubscribe?.();
-      mainButton.hide.ifAvailable();
-    };
-  }, []);
-
-  useEffect(() => {
-    mainButton.setParams.ifAvailable({
-      text,
-      isVisible: visible,
-      isEnabled: enabled && !loading,
-      isLoaderVisible: loading,
-    });
-  }, [text, visible, enabled, loading]);
 }
 
 export function notifySuccess(): void {

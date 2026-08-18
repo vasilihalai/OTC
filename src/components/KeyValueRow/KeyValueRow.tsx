@@ -2,18 +2,18 @@ import type { ReactNode } from 'react';
 
 import { bem } from '@/css/bem.ts';
 
-import './Row.css';
+import './KeyValueRow.css';
 
-const [b, e] = bem('row');
+const [b, e] = bem('key-value-row');
 
-export interface RowProps {
+export interface KeyValueRowProps {
   label: string;
   value?: ReactNode;
   loading?: boolean;
   onClick?: () => void;
 }
 
-export function Row({ label, value, loading, onClick }: RowProps) {
+export function KeyValueRow({ label, value, loading, onClick }: KeyValueRowProps) {
   const clickable = !!onClick;
 
   return (

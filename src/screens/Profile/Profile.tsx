@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Page } from '@/components/Page.tsx';
-import { Card } from '@/components/Card/Card.tsx';
-import { Row } from '@/components/Row/Row.tsx';
+import { Panel } from '@/components/Panel/Panel.tsx';
+import { KeyValueRow } from '@/components/KeyValueRow/KeyValueRow.tsx';
 import { Button } from '@/components/Button/Button.tsx';
-import { getProfile, type Profile as ProfileData, type VerificationStatus } from '@/api/index.ts';
-import { useSessionStore } from '@/store/session.ts';
+import { getUser } from '@/api/index.ts';
+import type { User, VerificationStatus } from '@/api/index.ts';
+import { useRequireSession, useSessionStore } from '@/store/session.ts';
 import { useToastStore } from '@/store/toast.ts';
 import { copyToClipboard, notifySuccess, openExternalLink } from '@/telegram/adapter.ts';
 import { formatInGroupsOf4 } from '@/lib/format.ts';
@@ -22,33 +22,32 @@ const VERIFICATION_LABEL: Record<VerificationStatus, string> = {
 
 export function Profile() {
   const navigate = useNavigate();
-  const session = useSessionStore((s) => s.session);
+  const session = useRequireSession();
   const clearSession = useSessionStore((s) => s.clearSession);
   const showToast = useToastStore((s) => s.show);
 
-  const [profile, setProfile] = useState<ProfileData>();
+  const [user, setUser] = useState<User>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
+    if (!session) {
+      return;
+    }
     setLoading(true);
     setError(false);
     try {
-      setProfile(await getProfile());
+      setUser(await getUser(session.clientType));
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [session]);
 
   useEffect(() => {
-    if (!session) {
-      navigate('/login', { replace: true });
-      return;
-    }
     void load();
-  }, [session, navigate, load]);
+  }, [load]);
 
   function handleSignOut() {
     clearSession();
@@ -56,65 +55,62 @@ export function Profile() {
   }
 
   async function handleCopyUserId() {
-    if (!profile) {
+    if (!user) {
       return;
     }
-    await copyToClipboard(profile.userId);
+    await copyToClipboard(user.userId);
     notifySuccess();
     showToast(ru.profile.copiedToast);
   }
 
-  if (!session) {
-    return null;
-  }
+  const nameLabel = session?.clientType === 'UL' ? ru.profile.companyRow : ru.profile.nameRow;
+  const typeBadge = user && (user.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl);
 
   return (
-    <Page back={false}>
-      <div className="profile">
-        {error ? (
-          <div className="profile__error">
-            <p>{ru.profile.errorTitle}</p>
-            <Button variant="secondary" onClick={() => void load()}>{ru.profile.retryAction}</Button>
-          </div>
-        ) : (
-          <Card>
-            <Row
-              label={ru.profile.companyRow}
-              loading={loading}
-              value={profile && `${profile.clientName} · ${profile.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl}`}
-            />
-            <Row
-              label={ru.profile.verificationRow}
-              loading={loading}
-              value={profile && VERIFICATION_LABEL[profile.verification]}
-            />
-            <Row label={ru.profile.emailRow} loading={loading} value={profile?.email} />
-            <Row
-              label={ru.profile.userIdRow}
-              loading={loading}
-              value={profile && formatInGroupsOf4(profile.userId)}
-              onClick={profile ? () => void handleCopyUserId() : undefined}
-            />
-          </Card>
-        )}
-
-        <div className="profile__actions">
-          <Button variant="secondary" onClick={() => profile && openExternalLink(profile.webCabinetUrl)} disabled={!profile}>
-            {ru.profile.openCabinetAction}
-          </Button>
-          <Button variant="secondary" onClick={handleSignOut}>
-            {ru.profile.signOutAction}
-          </Button>
+    <div className="profile">
+      {error ? (
+        <div className="profile__error">
+          <p>{ru.profile.errorTitle}</p>
+          <Button variant="social" onClick={() => void load()}>{ru.profile.retryAction}</Button>
         </div>
+      ) : (
+        <Panel>
+          <KeyValueRow
+            label={nameLabel}
+            loading={loading}
+            value={user && `${user.clientName} · ${typeBadge}`}
+          />
+          <KeyValueRow
+            label={ru.profile.verificationRow}
+            loading={loading}
+            value={user && VERIFICATION_LABEL[user.verification]}
+          />
+          <KeyValueRow label={ru.profile.emailRow} loading={loading} value={user?.email}/>
+          <KeyValueRow
+            label={ru.profile.userIdRow}
+            loading={loading}
+            value={user && formatInGroupsOf4(user.userId)}
+            onClick={user ? () => void handleCopyUserId() : undefined}
+          />
+        </Panel>
+      )}
 
-        <Button variant="ghost" onClick={() => navigate('/demo')}>
-          {ru.profile.demoLink}
+      <div className="profile__actions">
+        <Button variant="footer-link" disabled={!user} onClick={() => user && openExternalLink(user.webCabinetUrl)}>
+          {ru.profile.openCabinetAction}
         </Button>
-
-        <p className="profile__footer">
-          {ru.profile.lastUpdateLabel} {__LAST_COMMIT_DATE__} · {__LAST_COMMIT_HASH__}
-        </p>
+        <Button variant="footer-link" onClick={handleSignOut}>
+          {ru.profile.signOutAction}
+        </Button>
       </div>
-    </Page>
+
+      <Button variant="link" className="profile__demo-link" onClick={() => navigate('/demo')}>
+        {ru.profile.demoLink}
+      </Button>
+
+      <p className="profile__footer">
+        {ru.profile.lastUpdateLabel} {__LAST_COMMIT_DATE__} · {__LAST_COMMIT_HASH__}
+      </p>
+    </div>
   );
 }

@@ -33,6 +33,7 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-unused-expressions': 0,
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   }
 );

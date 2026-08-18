@@ -1,0 +1,25 @@
+.segmented-control {
+  display: inline-flex;
+  gap: 4px;
+  background: transparent;
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.segmented-control__item {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.segmented-control__item--active {
+  background: #2A2C31;
+  color: var(--text-primary);
+  font-weight: 600;
+}

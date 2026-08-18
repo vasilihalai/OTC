@@ -1,37 +1,61 @@
-import type { RequestCodeError, Session, VerifyCodeError } from '@/api/types.ts';
+import type { ClientType, Session, SignInError, SocialProvider, VerifyCodeError } from '@/api/types.ts';
 import { isValidEmail } from '@/lib/validate.ts';
-import { MAX_CONSECUTIVE_CODE_ATTEMPTS, mockDelay } from '@/api/mock/fixtures.ts';
+import { MOCK_USERS, mockDelay } from '@/api/mock/fixtures.ts';
 
-export class MockAuthError extends Error {
-  constructor(public readonly code: RequestCodeError | VerifyCodeError) {
+export const MAX_CONSECUTIVE_CODE_ATTEMPTS = 3;
+
+export class MockSignInError extends Error {
+  constructor(public readonly code: SignInError) {
     super(code);
   }
 }
 
-// Consecutive failed verifyCode attempts since the last successful requestCode call.
+export class MockVerifyCodeError extends Error {
+  constructor(public readonly code: VerifyCodeError) {
+    super(code);
+  }
+}
+
+// Consecutive failed verifyCode attempts since the last successful send.
 let failedAttempts = 0;
 
-export async function requestCode(email: string): Promise<void> {
+/** Shared by sign-in (after the password step) and password recovery. */
+export async function sendVerificationCode(email: string): Promise<void> {
   await mockDelay();
   if (!isValidEmail(email)) {
-    throw new MockAuthError('EMAIL_INVALID');
+    throw new MockSignInError('EMAIL_INVALID');
   }
   failedAttempts = 0;
 }
 
-export async function verifyCode(email: string, code: string): Promise<Session> {
+/** Any 6 digits succeed except '000000'; 3 consecutive failures rate-limit. */
+export async function verifyCode(code: string): Promise<void> {
   await mockDelay();
 
   if (failedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS) {
-    throw new MockAuthError('RATE_LIMIT');
+    throw new MockVerifyCodeError('RATE_LIMIT');
   }
 
-  // Any email + any non-empty code is accepted by this mock.
-  if (!code.trim()) {
+  if (code === '000000') {
     failedAttempts += 1;
-    throw new MockAuthError('CODE_INVALID');
+    if (failedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS) {
+      throw new MockVerifyCodeError('RATE_LIMIT');
+    }
+    throw new MockVerifyCodeError('CODE_INVALID');
   }
 
   failedAttempts = 0;
-  return { email, token: `mock-token-${Date.now()}` };
+}
+
+export function completeSignIn(email: string, clientType: ClientType): Session {
+  return { email, clientType, token: `mock-token-${Date.now()}` };
+}
+
+export async function signInSocial(_provider: SocialProvider, clientType: ClientType): Promise<Session> {
+  await mockDelay();
+  return completeSignIn(MOCK_USERS[clientType].email, clientType);
+}
+
+export async function resetPassword(_email: string, _password: string): Promise<void> {
+  await mockDelay();
 }

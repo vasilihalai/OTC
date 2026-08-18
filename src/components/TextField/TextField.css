@@ -6,21 +6,27 @@
 
 .text-field__label {
   font-size: 13px;
-  color: var(--xr-text-secondary);
+  line-height: 18px;
+  color: var(--text-secondary);
 }
 
 .text-field__input {
-  padding: 14px 16px;
+  height: 48px;
+  padding: 0 16px;
   border-radius: 12px;
-  border: 1px solid var(--xr-border);
-  background: var(--xr-surface);
-  color: var(--xr-text);
-  font-size: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.text-field__input::placeholder {
+  color: var(--text-tertiary);
 }
 
 .text-field__input:focus {
   outline: none;
-  border-color: var(--xr-accent);
+  border-color: var(--text-secondary);
 }
 
 .text-field__input:disabled {
@@ -28,10 +34,11 @@
 }
 
 .text-field--invalid .text-field__input {
-  border-color: var(--xr-danger);
+  border-color: var(--danger);
 }
 
 .text-field__error {
-  font-size: 13px;
-  color: var(--xr-danger);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--danger);
 }

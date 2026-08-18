@@ -1,0 +1,21 @@
+:root {
+  --bg-page: #0D0E10;
+  --bg-panel: #16181B;
+  --bg-card: #1E2024;
+  --bg-modal: #141518;
+  --bg-scrim: rgba(0, 0, 0, .62);
+  --border: #26282C;
+  --text-primary: #FFFFFF;
+  --text-secondary: #9BA0A8;
+  --text-tertiary: #6B7078;
+  --text-inverse: #0D0E10;
+  --brand-red: #E5232E;
+  --cta: #FFFFFF;
+  --cta-disabled: #212226;
+  --success: #34C77B;
+  --success-bg: rgba(52, 199, 123, .14);
+  --info: #3E9BFF;
+  --info-bg: rgba(62, 155, 255, .14);
+  --warning: #E8B04B;
+  --danger: #E5232E;
+}

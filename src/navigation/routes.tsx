@@ -5,26 +5,54 @@ import { InitDataPage } from '@/pages/InitDataPage.tsx';
 import { LaunchParamsPage } from '@/pages/LaunchParamsPage.tsx';
 import { ThemeParamsPage } from '@/pages/ThemeParamsPage.tsx';
 import { TONConnectPage } from '@/pages/TONConnectPage/TONConnectPage';
-import { Login } from '@/screens/Login/Login.tsx';
+import { SignIn } from '@/screens/SignIn/SignIn.tsx';
+import { PasswordRecovery } from '@/screens/PasswordRecovery/PasswordRecovery.tsx';
+import { NewPassword } from '@/screens/NewPassword/NewPassword.tsx';
+import { Home } from '@/screens/Home/Home.tsx';
+import { Deals } from '@/screens/Deals/Deals.tsx';
 import { Profile } from '@/screens/Profile/Profile.tsx';
+import { Stub } from '@/screens/Stub/Stub.tsx';
 
-interface Route {
+export type HeaderVariant = 'close' | 'back' | 'home' | 'none';
+
+export interface Route {
   path: string;
   Component: ComponentType;
+  tabBar: boolean;
+  headerVariant: HeaderVariant;
   title?: string;
   icon?: JSX.Element;
 }
 
 export const routes: Route[] = [
-  { path: '/login', Component: Login },
-  { path: '/profile', Component: Profile },
-  { path: '/demo', Component: IndexPage },
-  { path: '/init-data', Component: InitDataPage, title: 'Init Data' },
-  { path: '/theme-params', Component: ThemeParamsPage, title: 'Theme Params' },
-  { path: '/launch-params', Component: LaunchParamsPage, title: 'Launch Params' },
+  { path: '/login', Component: () => <SignIn variant="personal"/>, tabBar: false, headerVariant: 'close' },
+  { path: '/login/business', Component: () => <SignIn variant="business"/>, tabBar: false, headerVariant: 'back' },
+  { path: '/forgot', Component: PasswordRecovery, tabBar: false, headerVariant: 'back' },
+  { path: '/reset-password', Component: NewPassword, tabBar: false, headerVariant: 'back' },
+  { path: '/home', Component: Home, tabBar: true, headerVariant: 'home' },
+  { path: '/deals', Component: Deals, tabBar: true, headerVariant: 'home' },
+  {
+    path: '/deals/:id',
+    Component: () => <Stub titlePrefix="Заявка" param="id"/>,
+    tabBar: true,
+    headerVariant: 'back',
+  },
+  { path: '/profile', Component: Profile, tabBar: true, headerVariant: 'home' },
+  {
+    path: '/withdraw/:asset',
+    Component: () => <Stub titlePrefix="Вывод" param="asset"/>,
+    tabBar: true,
+    headerVariant: 'back',
+  },
+  { path: '/demo', Component: IndexPage, tabBar: false, headerVariant: 'back' },
+  { path: '/init-data', Component: InitDataPage, tabBar: false, headerVariant: 'back', title: 'Init Data' },
+  { path: '/theme-params', Component: ThemeParamsPage, tabBar: false, headerVariant: 'back', title: 'Theme Params' },
+  { path: '/launch-params', Component: LaunchParamsPage, tabBar: false, headerVariant: 'back', title: 'Launch Params' },
   {
     path: '/ton-connect',
     Component: TONConnectPage,
+    tabBar: false,
+    headerVariant: 'back',
     title: 'TON Connect',
     icon: (
       <svg

@@ -1,0 +1,21 @@
+.verification-modal__sent-to {
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.verification-modal__email {
+  margin: -12px 0 4px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.verification-modal__error {
+  margin: -8px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--danger);
+}
