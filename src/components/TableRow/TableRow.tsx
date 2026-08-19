@@ -24,15 +24,19 @@ export interface TableRowProps {
 export function TableRow({ ticker, name, amount, onAction, actionLabel }: TableRowProps) {
   return (
     <div className={b()}>
-      <CurrencyIcon ticker={ticker}/>
-      <div className={e('info')}>
-        <div className={e('ticker')}>{ticker}</div>
-        <div className={e('name')}>{name}</div>
+      <div className={e('info-cell')}>
+        <CurrencyIcon ticker={ticker}/>
+        <div className={e('info')}>
+          <div className={e('ticker')}>{ticker}</div>
+          <div className={e('name')}>{name}</div>
+        </div>
       </div>
-      <div className={e('amount')}>{amount}</div>
-      <button type="button" className={e('action')} aria-label={actionLabel} onClick={onAction}>
-        <span className={e('action-circle')}><ActionIcon/></span>
-      </button>
+      <div className={e('amount-cell')}>{amount}</div>
+      <div className={e('action-cell')}>
+        <button type="button" className={e('action')} aria-label={actionLabel} onClick={onAction}>
+          <span className={e('action-circle')}><ActionIcon/></span>
+        </button>
+      </div>
     </div>
   );
 }

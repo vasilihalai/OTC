@@ -61,30 +61,32 @@ export function Home() {
 
   return (
     <div className="home">
-      <Panel>
-        <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
-        <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>
-        <p className="home__desk-hours">{ru.home.deskHours}</p>
-        {user ? <CompanyChip>{user.clientName}</CompanyChip> : <Skeleton width={140} height={22} radius={8}/>}
-        <div className="home__stats">
-          {stats ? (
-            <>
-              <StatCard value={String(stats.activeDeals)} label={ru.home.statActiveDeals}/>
-              <StatCard value={stats.volume30d} unit={stats.volumeAsset} label={ru.home.statVolume30d}/>
-            </>
-          ) : (
-            <>
-              <Skeleton height={78} radius={14}/>
-              <Skeleton height={78} radius={14}/>
-            </>
-          )}
+      <Panel radius="0 0 24px 24px" padding="20px 16px">
+        <div className="home__hero">
+          <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
+          <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>
+          <p className="home__desk-hours">{ru.home.deskHours}</p>
+          {user ? <CompanyChip>{user.clientName}</CompanyChip> : <Skeleton width={140} height={22} radius={8}/>}
+          <div className="home__stats">
+            {stats ? (
+              <>
+                <StatCard value={String(stats.activeDeals)} label={ru.home.statActiveDeals}/>
+                <StatCard value={stats.volume30d} unit={stats.volumeAsset} label={ru.home.statVolume30d}/>
+              </>
+            ) : (
+              <>
+                <Skeleton height={84} radius={16}/>
+                <Skeleton height={84} radius={16}/>
+              </>
+            )}
+          </div>
         </div>
       </Panel>
 
-      <Panel heading={ru.home.recentDealsTitle}>
+      <Panel radius="16px" padding="20px 0 4px">
+        <h2 className="home__panel-heading">{ru.home.recentDealsTitle}</h2>
         {!deals && (
           <div className="home__deals-skeleton">
-            <Skeleton height={72} radius={12}/>
             <Skeleton height={72} radius={12}/>
             <Skeleton height={72} radius={12}/>
           </div>
@@ -95,15 +97,18 @@ export function Home() {
         ))}
       </Panel>
 
-      <Panel heading={ru.home.depositAccountTitle}>
-        <SegmentedControl
-          options={[
-            { value: 'crypto', label: ru.home.segmentCrypto },
-            { value: 'fiat', label: ru.home.segmentFiat },
-          ]}
-          value={selectedGroup}
-          onChange={setSelectedGroup}
-        />
+      <Panel radius="24px" padding="20px 0">
+        <h2 className="home__panel-heading">{ru.home.depositAccountTitle}</h2>
+        <div className="home__segment">
+          <SegmentedControl
+            options={[
+              { value: 'crypto', label: ru.home.segmentCrypto },
+              { value: 'fiat', label: ru.home.segmentFiat },
+            ]}
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+          />
+        </div>
         <div className="home__assets">
           {assetsLoading && (
             <div className="home__deals-skeleton">

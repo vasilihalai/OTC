@@ -1,6 +1,6 @@
 .stat-card {
   flex: 1;
-  background: var(--bg-raised);
+  background: var(--bg-surface);
   border-radius: 16px;
   padding: 12px;
 }

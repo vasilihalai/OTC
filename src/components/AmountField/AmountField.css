@@ -44,7 +44,7 @@
   display: flex;
   align-items: center;
   height: 44px;
-  padding: 0 16px;
+  padding: 0 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--bg-page);
@@ -57,7 +57,7 @@
 
 .amount-field__asset {
   flex-shrink: 0;
-  margin: 0 8px 0 -16px;
+  margin: 0 8px 0 -12px;
   padding-right: 8px;
   border-right: 1px solid var(--border);
 }
@@ -73,7 +73,7 @@
 .amount-field__asset .select__box {
   height: 44px;
   border: none;
-  padding: 0 8px 0 16px;
+  padding: 0 8px 0 12px;
   background: none;
 }
 

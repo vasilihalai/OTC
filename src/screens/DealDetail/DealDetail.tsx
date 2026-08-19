@@ -94,7 +94,7 @@ export function DealDetail() {
       {deal && <p className="deal-detail__direction">{DIRECTION_LABEL[deal.direction]}</p>}
 
       {loading && (
-        <Panel surface="card">
+        <Panel fill="surface" radius="16px">
           <Skeleton height={90} radius={14}/>
         </Panel>
       )}
@@ -106,7 +106,8 @@ export function DealDetail() {
       )}
 
       {deal && (
-        <Panel heading={ru.dealDetail.detailsTitle}>
+        <div className="deal-detail__section">
+          <h2 className="deal-detail__section-title">{ru.dealDetail.detailsTitle}</h2>
           {showDetails && (
             <>
               <KeyValueRow label={ru.dealDetail.createdDateLabel} value={deal.date}/>
@@ -119,11 +120,12 @@ export function DealDetail() {
             label={ru.dealDetail.rateLabel}
             value={deal.status === 'RATE_PENDING' || deal.status === 'RATE_STALE' ? ru.common.tbd : (deal.rate ?? ru.common.tbd)}
           />
-        </Panel>
+        </div>
       )}
 
       {docs && (
-        <Panel heading={ru.dealDetail.documentsTitle}>
+        <div className="deal-detail__section">
+          <h2 className="deal-detail__section-title">{ru.dealDetail.documentsTitle}</h2>
           <DocumentRow
             name={ru.dealDetail.documentAccept}
             enabled={docs.accept}
@@ -142,7 +144,7 @@ export function DealDetail() {
             caption={docs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
             onOpen={openDocument}
           />
-        </Panel>
+        </div>
       )}
     </div>
   );

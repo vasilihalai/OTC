@@ -2,18 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
-import { KeyValueRow } from '@/components/KeyValueRow/KeyValueRow.tsx';
-import { Badge } from '@/components/Badge/Badge.tsx';
-import { StatusChip } from '@/components/StatusChip/StatusChip.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { SettingRow } from '@/components/SettingRow/SettingRow.tsx';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
-import { getUser } from '@/api/index.ts';
-import type { User } from '@/api/index.ts';
+import { getAccountCertificate, getUser } from '@/api/index.ts';
+import type { SecurityLevel, User } from '@/api/index.ts';
 import { useRequireSession, useSessionStore } from '@/store/session.ts';
 import { useCopy } from '@/lib/useCopy.ts';
 import { groupOf4 } from '@/lib/text.ts';
-import { openExternalLink } from '@/telegram/adapter.ts';
+import { maskEmail } from '@/lib/mask.ts';
+import { openExternalLink, notifyError } from '@/telegram/adapter.ts';
+import { useToastStore } from '@/store/toast.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './Profile.css';
@@ -27,37 +27,86 @@ function CopyIcon() {
   );
 }
 
-function ExternalLinkIcon() {
+function VerifiedIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M6 4H4a1.5 1.5 0 0 0-1.5 1.5V12A1.5 1.5 0 0 0 4 13.5h6.5A1.5 1.5 0 0 0 12 12v-2M9 3h4v4M13 3L7 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    <span className="profile__verified-icon" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </span>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.3 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.3-3.8-8.5S9.5 5.8 12 3.5z" stroke="currentColor" strokeWidth="1.5"/>
     </svg>
   );
 }
 
-function AvatarIcon() {
+function ThemeIcon() {
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <circle cx="14" cy="10.5" r="4.5" stroke="#fff" strokeWidth="1.8"/>
-      <path d="M5 23c1.6-4.6 5.4-7 9-7s7.4 2.4 9 7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   );
 }
 
-function CopyableRow({ label, value, display }: { label: string; value: string; display?: string }) {
+function FaqIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M9.6 9.3a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1 .8-1 1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="12" cy="16.3" r="0.9" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function AboutIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M12 11v5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      <circle cx="12" cy="7.8" r="1" fill="currentColor"/>
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M9 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H9M14 16l4-4-4-4M18 12H8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function securityLabel(level: SecurityLevel): string {
+  if (level === 'HIGH') {
+    return ru.profile.securityHigh;
+  }
+  if (level === 'MEDIUM') {
+    return ru.profile.securityMedium;
+  }
+  return ru.profile.securityLow;
+}
+
+function DetailRow({ label, value, display, copyValue }: { label: string; value: string; display?: string; copyValue?: string }) {
   const copy = useCopy();
   return (
-    <KeyValueRow
-      label={label}
-      value={(
-        <span className="profile__row-value">
-          <span className="profile__row-text">{display ?? value}</span>
-          <button type="button" className="profile__copy" aria-label={ru.common.copyAction} onClick={() => copy(value)}>
+    <div className="profile__detail-row">
+      <span className="profile__detail-label">{label}</span>
+      <span className="profile__detail-value">
+        <span className="profile__detail-text">{display ?? value}</span>
+        {copyValue && (
+          <button type="button" className="profile__copy" aria-label={ru.common.copyAction} onClick={() => copy(copyValue)}>
             <CopyIcon/>
           </button>
-        </span>
-      )}
-    />
+        )}
+      </span>
+    </div>
   );
 }
 
@@ -65,9 +114,11 @@ export function Profile() {
   const session = useRequireSession();
   const navigate = useNavigate();
   const clearSession = useSessionStore((s) => s.clearSession);
+  const showToast = useToastStore((s) => s.show);
   const [user, setUser] = useState<User>();
   const [error, setError] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
+  const [certLoading, setCertLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!session) {
@@ -92,6 +143,22 @@ export function Profile() {
     navigate('/login', { replace: true });
   }
 
+  async function handleCertificate() {
+    if (certLoading) {
+      return;
+    }
+    setCertLoading(true);
+    try {
+      const { url } = await getAccountCertificate();
+      openExternalLink(url);
+    } catch {
+      notifyError();
+      showToast(ru.profile.certificateError);
+    } finally {
+      setCertLoading(false);
+    }
+  }
+
   if (error) {
     return (
       <div className="profile">
@@ -106,58 +173,60 @@ export function Profile() {
   if (!user) {
     return (
       <div className="profile">
-        <Panel>
-          <div className="profile__identity">
-            <Skeleton width={56} height={56} radius={28}/>
-            <div className="profile__identity-info">
-              <Skeleton width={140} height={20}/>
-              <Skeleton width={90} height={22} radius={8}/>
-            </div>
+        <div className="profile__panel1">
+          <Skeleton width={160} height={24}/>
+          <div className="profile__details-card">
+            <Skeleton height={120} radius={8}/>
           </div>
-        </Panel>
-        <Panel surface="card">
-          <Skeleton height={60} radius={8}/>
-        </Panel>
+        </div>
       </div>
     );
   }
 
-  const isLevel2 = user.verificationLevel === 2;
-  const levelLabel = `${isLevel2 ? ru.profile.level2Label : ru.profile.level1Label} ✓`;
-
   return (
     <div className="profile">
-      <Panel>
-        <div className="profile__identity">
-          <div className="profile__monogram" aria-hidden="true"><AvatarIcon/></div>
-          <div className="profile__identity-info">
-            <h2 className="profile__name">{user.clientName}</h2>
-            <div className="profile__badges">
-              <Badge>{user.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl}</Badge>
-              <StatusChip tone="success">{levelLabel}</StatusChip>
-            </div>
+      <div className="profile__panel1">
+        <div className="profile__title-row">
+          <h1 className="profile__name">{user.clientName}</h1>
+          {user.verified && (
+            <span className="profile__verified-badge">
+              <VerifiedIcon/>
+              {ru.profile.verifiedBadge}
+            </span>
+          )}
+        </div>
+
+        <div className="profile__details-card">
+          <DetailRow label={ru.profile.emailRow} value={user.email} display={maskEmail(user.email)} copyValue={user.email}/>
+          <DetailRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)} copyValue={user.userId}/>
+          <div className="profile__detail-row">
+            <span className="profile__detail-label">{ru.profile.securityRow}</span>
+            <span className={`profile__detail-value profile__security--${user.securityLevel.toLowerCase()}`}>
+              <span className="profile__detail-text">{securityLabel(user.securityLevel)}</span>
+            </span>
           </div>
+          <DetailRow label={ru.profile.phoneRow} value={user.phone}/>
         </div>
 
-        <div className="profile__account-rows">
-          <CopyableRow label={ru.profile.emailRow} value={user.email}/>
-          <CopyableRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)}/>
-          <KeyValueRow
-            label={ru.profile.verificationRow}
-            value={<StatusChip tone="success">{levelLabel}</StatusChip>}
-          />
+        <div className="profile__desk-hours">
+          <h2 className="profile__desk-hours-title">{ru.profile.deskHoursTitle}</h2>
+          <p className="profile__desk-hours-text">{ru.profile.deskHoursText}</p>
         </div>
-      </Panel>
 
-      <Panel surface="card">
-        <button type="button" className="profile__action" onClick={() => openExternalLink(user.webCabinetUrl)}>
-          <span>{ru.profile.openCabinetAction}</span>
-          <ExternalLinkIcon/>
-        </button>
-        <button type="button" className="profile__action profile__action--danger" onClick={() => setSignOutOpen(true)}>
-          <span>{ru.profile.signOutAction}</span>
-        </button>
-      </Panel>
+        <Button variant="secondary" size="compact" loading={certLoading} onClick={() => void handleCertificate()}>
+          {ru.profile.certificateAction}
+        </Button>
+      </div>
+
+      <div className="profile__panel2">
+        <SettingRow icon={<GlobeIcon/>} label={ru.profile.languageRow} value={ru.profile.languageValue}/>
+        <SettingRow icon={<ThemeIcon/>} label={ru.profile.themeRow} value={ru.profile.themeValue}/>
+        <div className="profile__divider"/>
+        <SettingRow icon={<FaqIcon/>} label={ru.profile.faqRow} onClick={() => openExternalLink(user.faqUrl)}/>
+        <SettingRow icon={<AboutIcon/>} label={ru.profile.aboutRow} onClick={() => openExternalLink(user.aboutUrl)}/>
+        <div className="profile__spacer"/>
+        <SettingRow icon={<LogoutIcon/>} label={ru.profile.signOutAction} danger onClick={() => setSignOutOpen(true)}/>
+      </div>
 
       <ConfirmDialog
         open={signOutOpen}

@@ -193,7 +193,7 @@ export function WithdrawCrypto() {
         <h1 className="withdraw-crypto__title">{ru.withdraw.cryptoTitle}</h1>
         <Skeleton height={48} radius={12}/>
         <Skeleton height={48} radius={12}/>
-        <Panel surface="card">
+        <Panel fill="surface" radius="12px">
           <Skeleton height={100} radius={8}/>
         </Panel>
       </div>

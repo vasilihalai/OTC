@@ -93,6 +93,17 @@
   opacity: .6;
 }
 
+/* Compact size — §3: 36 high, radius 18, `button-sm` label. */
+.button--compact.button--primary,
+.button--compact.button--accent,
+.button--compact.button--secondary {
+  height: 36px;
+  border-radius: 18px;
+  padding: 8px 14px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
 /* Link — text only, centred, no fill. */
 .button--link {
   background: transparent;

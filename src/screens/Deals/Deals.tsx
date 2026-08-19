@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Panel } from '@/components/Panel/Panel.tsx';
 import { DealRow } from '@/components/DealRow/DealRow.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { FilterChips } from '@/components/FilterChips/FilterChips.tsx';
@@ -52,7 +51,7 @@ export function Deals() {
         onChange={setFilter}
       />
 
-      <Panel>
+      <div className="deals__list">
         {error && (
           <div className="deals__error">
             <p>{ru.common.errorGeneric}</p>
@@ -78,7 +77,7 @@ export function Deals() {
         {!error && filteredDeals.map((deal) => (
           <DealRow key={deal.id} deal={deal} onClick={() => navigate(`/deals/${deal.id}`)}/>
         ))}
-      </Panel>
+      </div>
     </div>
   );
 }

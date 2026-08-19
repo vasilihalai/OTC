@@ -55,7 +55,8 @@ export function RequisitesPanel({ requisites }: { requisites: FiatRequisites | C
     const allText = rows.map(([label, value]) => `${label}: ${value}`).join('\n');
 
     return (
-      <Panel heading={ru.dealDetail.requisitesTitle}>
+      <Panel fill="surface" radius="16px">
+        <h2 className={e('heading')}>{ru.dealDetail.requisitesTitle}</h2>
         {rows.map(([label, value]) => (
           <FiatRow key={label} label={label} value={value} copy={() => copy(value)}/>
         ))}
@@ -81,7 +82,8 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
   }, [requisites.address]);
 
   return (
-    <Panel heading={ru.dealDetail.requisitesTitle}>
+    <Panel fill="surface" radius="16px">
+      <h2 className={e('heading')}>{ru.dealDetail.requisitesTitle}</h2>
       <Select
         label={ru.dealDetail.requisitesAssetLabel}
         layout="asset"

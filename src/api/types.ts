@@ -6,19 +6,24 @@ export interface Session {
   clientType: ClientType;
 }
 
-export type VerificationLevel = 1 | 2;
-
 export type OtcAccessReason = 'GRANTED' | 'VERIFICATION_REQUIRED' | 'NOT_ELIGIBLE';
+
+/** How the account is protected — not its verification status. */
+export type SecurityLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface User {
   clientName: string;
   clientType: ClientType;
-  verificationLevel: VerificationLevel;
+  verified: boolean;
+  securityLevel: SecurityLevel;
   otcAccess: OtcAccessReason;
   email: string;
+  phone: string;
   userId: string;
   webCabinetUrl: string;
   supportUrl: string;
+  faqUrl: string;
+  aboutUrl: string;
   /** Gates the 2FA method: Google Authenticator when true, email code otherwise. */
   authenticatorEnabled: boolean;
 }

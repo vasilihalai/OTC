@@ -1,0 +1,50 @@
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.setting-row__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-quiet);
+}
+
+.setting-row__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-strong);
+}
+
+.setting-row--danger .setting-row__icon,
+.setting-row--danger .setting-row__label {
+  color: var(--accent);
+}
+
+.setting-row__value-group {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-primary);
+}
+
+.setting-row__value-group svg {
+  color: var(--text-quiet);
+}

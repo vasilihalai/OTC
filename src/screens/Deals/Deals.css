@@ -1,15 +1,24 @@
 .deals {
-  padding: 8px 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 100%;
+  padding-top: 4px;
+  padding-bottom: 16px;
+  background: var(--bg-page);
 }
 
 .deals__title {
+  padding: 0 16px;
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
+}
+
+.deals__list {
+  display: flex;
+  flex-direction: column;
 }
 
 .deals__empty-filtered {
@@ -17,7 +26,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 12px 0;
+  padding: 12px 16px;
 }
 
 .deals__error {
@@ -25,7 +34,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 24px 0;
+  padding: 24px 16px;
   color: var(--text-muted);
 }
 
@@ -33,4 +42,5 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 0 16px;
 }

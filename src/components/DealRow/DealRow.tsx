@@ -23,7 +23,7 @@ export interface DealRowProps {
 export function DealRow({ deal, onClick }: DealRowProps) {
   const meta = DEAL_STATUS_META[deal.status];
   return (
-    <div className={b()} onClick={onClick} role="button" tabIndex={0}>
+    <div className={b({ highlight: deal.status === 'RATE_ACTIVE' })} onClick={onClick} role="button" tabIndex={0}>
       <div className={e('top')}>
         <span className={e('id')}>
           {deal.id}

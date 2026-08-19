@@ -1,83 +1,121 @@
 .profile {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 8px 12px 16px;
+  min-height: 100%;
+  background: var(--bg-raised);
 }
 
 .profile__error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
   padding: 32px 12px;
   text-align: center;
   color: var(--text-muted);
 }
 
-.profile__identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.profile__monogram {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--accent), #8E141B);
-}
-
-.profile__identity-info {
+.profile__panel1 {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
+  gap: 16px;
+  background: var(--bg-page);
+  border-radius: 0 0 24px 24px;
+  padding: 16px 16px 24px;
+}
+
+.profile__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 28px;
 }
 
 .profile__name {
   font-size: 18px;
-  line-height: 24px;
-  font-weight: 700;
+  line-height: 28px;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.profile__badges {
-  display: flex;
+.profile__verified-badge {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: 12px;
+  background: var(--badge-success-bg);
+  color: var(--badge-success-text);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.profile__account-rows {
+.profile__verified-icon {
+  display: inline-flex;
+  color: var(--verified);
+}
+
+.profile__details-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 16px;
 }
 
-.profile__account-rows > .key-value-row:not(:first-child) {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
+.profile__detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px;
+  justify-content: center;
 }
 
-.profile__row-value {
+.profile__detail-row + .profile__detail-row {
+  margin-top: 12px;
+}
+
+.profile__detail-label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-quiet);
+}
+
+.profile__detail-value {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
-.profile__row-text {
+.profile__detail-text {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-body);
   font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__security--low .profile__detail-text {
+  color: var(--warning-text);
+}
+
+.profile__security--medium .profile__detail-text {
+  color: var(--text-body);
+}
+
+.profile__security--high .profile__detail-text {
+  color: var(--badge-success-text);
 }
 
 .profile__copy {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -86,29 +124,47 @@
   padding: 0;
   background: none;
   border: none;
-  color: var(--text-muted);
+  color: var(--text-quiet);
   cursor: pointer;
 }
 
-.profile__action {
+.profile__desk-hours {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 14px 0;
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.profile__action:last-child {
-  border-bottom: none;
+.profile__desk-hours-title {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin: 0;
 }
 
-.profile__action--danger {
-  color: var(--accent);
+.profile__desk-hours-text {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.profile__panel2 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  background: var(--bg-page);
+  border-radius: 24px 24px 0 0;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.profile__divider {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--border);
+}
+
+.profile__spacer {
+  flex: 1;
 }

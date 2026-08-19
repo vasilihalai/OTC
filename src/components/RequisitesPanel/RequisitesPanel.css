@@ -1,3 +1,11 @@
+.requisites-panel__heading {
+  margin: 0 0 12px;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text-body);
+}
+
 .requisites-panel__row {
   display: flex;
   flex-direction: column;

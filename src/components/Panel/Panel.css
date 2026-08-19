@@ -1,28 +1,4 @@
 .panel {
-  padding: 16px;
-}
-
-.panel--panel {
-  background: var(--bg-surface);
-  border-radius: 16px;
-}
-
-.panel--card {
-  background: var(--bg-surface);
-  border-radius: 12px;
-}
-
-.panel__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.panel__heading {
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 600;
-  color: var(--text-body);
-  margin: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
