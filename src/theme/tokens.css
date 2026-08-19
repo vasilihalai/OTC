@@ -12,10 +12,26 @@
   --brand-red: #E5232E;
   --cta: #FFFFFF;
   --cta-disabled: #212226;
+  --cta-accent: #C8202A;
   --success: #34C77B;
-  --success-bg: rgba(52, 199, 123, .14);
   --info: #3E9BFF;
-  --info-bg: rgba(62, 155, 255, .14);
   --warning: #E8B04B;
   --danger: #E5232E;
+
+  --st-success: #34C77B;
+  --st-success-fill: rgba(52, 199, 123, .14);
+  --st-info: #3E9BFF;
+  --st-info-fill: rgba(62, 155, 255, .14);
+  --st-amber: #E8A33D;
+  --st-amber-fill: rgba(232, 163, 61, .14);
+  --st-danger: #F2555F;
+  --st-danger-fill: rgba(229, 35, 46, .14);
+  --st-violet: #9B7BFF;
+  --st-violet-fill: rgba(155, 123, 255, .16);
+  --st-neutral: #9BA0A8;
+  --st-neutral-fill: rgba(255, 255, 255, .06);
+
+  --callout-danger-bg: rgba(229, 35, 46, .12);
+  --callout-danger-border: rgba(229, 35, 46, .32);
+  --callout-neutral-bg: #1E2024;
 }

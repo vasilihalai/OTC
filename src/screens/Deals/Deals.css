@@ -1,12 +1,8 @@
 .deals {
   padding: 8px 16px 100px;
-}
-
-.deals__toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .deals__title {
@@ -16,42 +12,20 @@
   margin: 0;
 }
 
-.deals__filters-button {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  border: none;
-  background: var(--bg-card);
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.deals__filters-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: var(--brand-red);
-  color: var(--text-primary);
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .deals__empty {
   font-size: 14px;
   color: var(--text-tertiary);
   text-align: center;
   padding: 12px 0;
   margin: 0;
+}
+
+.deals__empty-filtered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
 }
 
 .deals__error {
@@ -67,27 +41,4 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.deals__filter-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.deals__filter-field .segmented-control {
-  flex-wrap: wrap;
-}
-
-.deals__filter-label {
-  font-size: 12px;
-  color: var(--text-tertiary);
-}
-
-.deals__filter-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
 }

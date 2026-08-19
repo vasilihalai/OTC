@@ -7,6 +7,7 @@
 import * as mockAuth from '@/api/mock/auth.mock.ts';
 import * as realAuth from '@/api/real/auth.ts';
 import * as mockData from '@/api/mock/data.mock.ts';
+import * as mockActions from '@/api/mock/actions.mock.ts';
 import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
@@ -46,7 +47,11 @@ export const submitFiatWithdrawal = USE_REAL_API
 // Always mocked — see header comment.
 export const getDeals = mockData.getDeals;
 export const getDealById = mockData.getDealById;
+export const getRequisites = mockData.getRequisites;
 export const getStats = mockData.getStats;
+export const confirmDeal = mockActions.confirmDeal;
+export const declineDeal = mockActions.declineDeal;
+export const requestNewRate = mockActions.requestNewRate;
 
 // Called once from index.tsx's bootstrap, ahead of everything else above;
 // a no-op unless VITE_USE_REAL_API is on (VITE_SKIP_INITDATA skips just the
@@ -69,7 +74,7 @@ export type {
   Asset,
   AssetGroup,
   ClientType,
-  VerificationStatus,
+  VerificationLevel,
   SocialProvider,
   SignInError,
   VerifyCodeError,
@@ -80,4 +85,8 @@ export type {
   FiatWithdrawalRules,
   SavedRequisite,
   WithdrawalResult,
+  Requisites,
+  FiatRequisites,
+  CryptoRequisites,
+  BalanceScenario,
 } from '@/api/types.ts';

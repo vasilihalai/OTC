@@ -1,5 +1,7 @@
-import type { Asset, AssetGroup, ClientType, Deal, Stats, User } from '@/api/types.ts';
-import { MOCK_ASSETS, MOCK_DEALS, MOCK_STATS, MOCK_USERS, mockDelay } from '@/api/mock/fixtures.ts';
+import type { Asset, AssetGroup, ClientType, Deal, Requisites, Stats, User } from '@/api/types.ts';
+import { MOCK_ASSETS, MOCK_REQUISITES_CRYPTO, MOCK_REQUISITES_FIAT, MOCK_STATS, MOCK_USERS, mockDelay } from '@/api/mock/fixtures.ts';
+import { findDeal, listDeals } from '@/api/mock/store.ts';
+import { isFiatTicker } from '@/lib/money.ts';
 
 export async function getUser(clientType: ClientType): Promise<User> {
   await mockDelay();
@@ -13,12 +15,21 @@ export async function getStats(): Promise<Stats> {
 
 export async function getDeals(): Promise<Deal[]> {
   await mockDelay();
-  return MOCK_DEALS;
+  return listDeals();
 }
 
 export async function getDealById(id: string): Promise<Deal | undefined> {
   await mockDelay();
-  return MOCK_DEALS.find((deal) => deal.id === id);
+  return findDeal(id);
+}
+
+export async function getRequisites(id: string): Promise<Requisites | undefined> {
+  await mockDelay();
+  const deal = findDeal(id);
+  if (!deal) {
+    return undefined;
+  }
+  return isFiatTicker(deal.ticker) ? MOCK_REQUISITES_FIAT : MOCK_REQUISITES_CRYPTO;
 }
 
 export async function getAssets(group: AssetGroup): Promise<Asset[]> {

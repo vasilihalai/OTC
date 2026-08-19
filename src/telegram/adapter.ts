@@ -1,5 +1,7 @@
 import { copyTextToClipboard, hapticFeedback, miniApp, openLink } from '@tma.js/sdk-react';
 
+import { isRealTelegram } from '@/telegram/environment.ts';
+
 // Keep in sync with theme/tokens.css.
 const DARK_PALETTE = {
   bg: '#0D0E10',
@@ -23,10 +25,20 @@ export function notifyError(): void {
 }
 
 export function openExternalLink(url: string): void {
-  const result = openLink.ifAvailable(url);
-  if (!result.ok) {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  // Outside real Telegram, ensureTelegramEnvironment() mocks the bridge so
+  // openLink.ifAvailable() reports "available" without actually opening
+  // anything — go straight to window.open there instead of no-op'ing.
+  if (isRealTelegram) {
+    try {
+      const result = openLink.ifAvailable(url);
+      if (result.ok) {
+        return;
+      }
+    } catch {
+      // fall through to window.open
+    }
   }
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export async function copyToClipboard(text: string): Promise<void> {

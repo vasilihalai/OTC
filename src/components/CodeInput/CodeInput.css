@@ -25,7 +25,6 @@
 .code-input__cell:focus {
   outline: none;
   border-color: var(--text-secondary);
-  transform: scale(1.05);
 }
 
 .code-input__cell:disabled {

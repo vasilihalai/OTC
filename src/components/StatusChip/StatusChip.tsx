@@ -5,7 +5,7 @@ import './StatusChip.css';
 const [b] = bem('status-chip');
 
 export interface StatusChipProps {
-  tone: 'success' | 'info' | 'neutral';
+  tone: 'success' | 'info' | 'amber' | 'danger' | 'violet' | 'neutral' | 'badge';
   children: string;
 }
 

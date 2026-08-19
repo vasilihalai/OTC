@@ -1,39 +1,20 @@
 .app-header {
   display: flex;
   padding: 10px 16px;
-  padding-top: calc(
-    10px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
-  );
 }
 
 /* Extra clearance so our own pill never sits under Telegram's floating
-   Close (left) / "..." menu (right) buttons in fullscreen. */
+   Close (left) / "..." menu (right) buttons — only relevant in fullscreen;
+   outside it, the normal 10px keeps the button in its usual spot. */
 body.is-fullscreen .app-header {
+  padding-top: calc(
+    10px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
+  );
   padding-left: 80px;
   padding-right: 56px;
 }
 
-.app-header__nav-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border: none;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.1s ease;
-}
-
-.app-header__nav-button:active {
-  background: rgba(255, 255, 255, 0.12);
-  transform: scale(0.92);
-}
-
+.app-header__pill,
 .app-header__brand {
   display: inline-flex;
   align-items: center;
@@ -45,6 +26,17 @@ body.is-fullscreen .app-header {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
+}
+
+.app-header__pill {
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.app-header__pill:active {
+  background: #26282C;
+  transform: scale(0.96);
 }
 
 .app-header__mark {

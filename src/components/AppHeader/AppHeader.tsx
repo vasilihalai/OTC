@@ -50,13 +50,9 @@ export function AppHeader({ variant, onBack }: AppHeaderProps) {
 
   return (
     <div className={b()}>
-      <button
-        type="button"
-        className={e('nav-button')}
-        aria-label={variant === 'close' ? ru.header.close : ru.header.back}
-        onClick={onBack}
-      >
+      <button type="button" className={e('pill')} onClick={onBack}>
         {variant === 'close' ? <CloseIcon/> : <ChevronIcon/>}
+        {variant === 'close' ? ru.header.close : ru.header.back}
       </button>
     </div>
   );

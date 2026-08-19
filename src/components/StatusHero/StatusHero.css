@@ -1,0 +1,66 @@
+.status-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  border-radius: 14px;
+  padding: 24px 16px;
+  background: var(--bg-card);
+  background-repeat: no-repeat;
+  background-size: 100% 120px;
+  background-position: top;
+}
+
+.status-hero--success {
+  background-image: linear-gradient(to bottom, rgba(52, 199, 123, .18), transparent);
+}
+
+.status-hero--danger {
+  background-image: linear-gradient(to bottom, rgba(229, 35, 46, .18), transparent);
+}
+
+.status-hero--running {
+  background-image: linear-gradient(to bottom, rgba(62, 155, 255, .10), transparent);
+}
+
+.status-hero--stale {
+  background-image: none;
+}
+
+.status-hero__title {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.status-hero__subtitle {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.status-hero__subtitle b {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.status-hero__action {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.status-hero__spin {
+  animation: status-hero-spin 0.9s linear infinite;
+}
+
+@keyframes status-hero-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-hero__spin {
+    animation: none;
+  }
+}

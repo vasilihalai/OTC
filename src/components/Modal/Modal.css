@@ -5,8 +5,13 @@
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
+  /* Anchored near the top (not vertically centered) so the card holds still
+     when the on-screen keyboard shrinks the visible viewport, instead of
+     re-centering into a new position on every keystroke. */
+  align-items: flex-start;
   justify-content: center;
+  padding: 96px 16px 16px;
+  overflow-y: auto;
   z-index: 1000;
   animation: modal-scrim-in 0.18s ease-out;
 }

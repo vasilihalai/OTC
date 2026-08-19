@@ -1,14 +1,8 @@
 .profile {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   padding: 8px 16px 100px;
-}
-
-.profile__actions {
-  display: flex;
-  flex-direction: column;
-  margin-top: 8px;
 }
 
 .profile__error {
@@ -21,9 +15,107 @@
   color: var(--text-secondary);
 }
 
-.profile__id-value {
+.profile__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile__monogram {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--brand-red), #8E141B);
+  color: #FFFFFF;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.profile__identity-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.profile__name {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.profile__badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile__upgrade {
+  width: 100%;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.profile__account-rows > .key-value-row:not(:first-child) {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.profile__row-value {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.profile__row-text {
+  font-variant-numeric: tabular-nums;
+}
+
+.profile__copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.profile__caption {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+  margin: 4px 0 0;
+}
+
+.profile__action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
   color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.profile__action:last-child {
+  border-bottom: none;
+}
+
+.profile__action--danger {
+  color: var(--brand-red);
 }

@@ -1,0 +1,24 @@
+.callout {
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.callout--danger {
+  background: var(--callout-danger-bg);
+  border: 1px solid var(--callout-danger-border);
+  color: rgba(255, 255, 255, .9);
+}
+
+.callout--danger b,
+.callout--danger strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.callout--neutral {
+  background: var(--callout-neutral-bg);
+  color: var(--text-secondary);
+  text-align: center;
+}

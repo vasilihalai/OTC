@@ -22,7 +22,7 @@ export function CodeInput({ value, onChange, onComplete, error, disabled }: Code
 
   useEffect(() => {
     if (!disabled && value.length < LENGTH) {
-      refs.current[value.length]?.focus();
+      refs.current[value.length]?.focus({ preventScroll: true });
     }
   }, [disabled]);
 
@@ -40,13 +40,13 @@ export function CodeInput({ value, onChange, onComplete, error, disabled }: Code
     const digit = raw.replace(/\D/g, '').slice(-1);
     setDigitAt(index, digit);
     if (digit && index < LENGTH - 1) {
-      refs.current[index + 1]?.focus();
+      refs.current[index + 1]?.focus({ preventScroll: true });
     }
   }
 
   function handleKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'Backspace' && !digits[index] && index > 0) {
-      refs.current[index - 1]?.focus();
+      refs.current[index - 1]?.focus({ preventScroll: true });
       setDigitAt(index - 1, '');
     }
   }
@@ -61,7 +61,7 @@ export function CodeInput({ value, onChange, onComplete, error, disabled }: Code
     if (pasted.length === LENGTH) {
       onComplete(pasted);
     } else {
-      refs.current[pasted.length]?.focus();
+      refs.current[pasted.length]?.focus({ preventScroll: true });
     }
   }
 

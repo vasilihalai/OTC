@@ -6,19 +6,40 @@
   font-size: 12px;
   line-height: 16px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .status-chip--success {
-  background: var(--success-bg);
-  color: var(--success);
+  background: var(--st-success-fill);
+  color: var(--st-success);
 }
 
 .status-chip--info {
-  background: var(--info-bg);
-  color: var(--info);
+  background: var(--st-info-fill);
+  color: var(--st-info);
+}
+
+.status-chip--amber {
+  background: var(--st-amber-fill);
+  color: var(--st-amber);
+}
+
+.status-chip--danger {
+  background: var(--st-danger-fill);
+  color: var(--st-danger);
+}
+
+.status-chip--violet {
+  background: var(--st-violet-fill);
+  color: var(--st-violet);
 }
 
 .status-chip--neutral {
+  background: var(--st-neutral-fill);
+  color: var(--st-neutral);
+}
+
+.status-chip--badge {
   background: rgba(255, 255, 255, .06);
   color: var(--text-secondary);
 }

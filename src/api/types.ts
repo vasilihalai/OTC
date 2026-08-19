@@ -6,12 +6,12 @@ export interface Session {
   clientType: ClientType;
 }
 
-export type VerificationStatus = 'KYB_PASSED' | 'KYC_PASSED' | 'NONE';
+export type VerificationLevel = 1 | 2;
 
 export interface User {
   clientName: string;
   clientType: ClientType;
-  verification: VerificationStatus;
+  verificationLevel: VerificationLevel;
   email: string;
   userId: string;
   webCabinetUrl: string;
@@ -23,7 +23,14 @@ export interface Stats {
   volumeAsset: string;
 }
 
-export type DealStatus = 'DONE' | 'RUNNING';
+export type DealStatus =
+  | 'RATE_PENDING'
+  | 'RATE_ACTIVE'
+  | 'RATE_STALE'
+  | 'AWAITING_FUNDS'
+  | 'RUNNING'
+  | 'DONE'
+  | 'DECLINED';
 
 export type DealDirection = 'BUY' | 'SELL' | 'EXCHANGE';
 
@@ -33,7 +40,10 @@ export interface Deal {
   date: string;
   direction: DealDirection;
   from: string;
-  to: string;
+  to: string | null;
+  rate: string | null;
+  /** Ticker of the `from` asset — drives which requisites variant (fiat/crypto) applies. */
+  ticker: string;
 }
 
 export type AssetGroup = 'crypto' | 'fiat';
@@ -94,3 +104,28 @@ export interface WithdrawalResult {
   id: string;
   status: 'PENDING';
 }
+
+export interface FiatRequisites {
+  kind: 'fiat';
+  companyName: string;
+  bank: string;
+  bankAddress: string;
+  bik: string;
+  account: string;
+  recipient: string;
+  recipientAddress: string;
+  corrAccount: string;
+  purpose: string;
+}
+
+export interface CryptoRequisites {
+  kind: 'crypto';
+  asset: string;
+  assetName: string;
+  network: string;
+  address: string;
+}
+
+export type Requisites = FiatRequisites | CryptoRequisites;
+
+export type BalanceScenario = 'sufficient' | 'short1' | 'short' | 'belowmin';
