@@ -61,7 +61,7 @@ export function Home() {
 
   return (
     <div className="home">
-      <Panel radius="0 0 24px 24px" padding="20px 16px">
+      <Panel radius="0 0 24px 24px" padding="8px 16px 20px">
         <div className="home__hero">
           <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
           <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>

@@ -9,8 +9,19 @@
   box-sizing: border-box;
 }
 
+/* `position: fixed` (not just `overflow: hidden`) is the only thing that
+   reliably stops iOS Safari's rubber-band bounce on the document itself —
+   `overflow: hidden` alone still lets the page rubber-band on a touch drag
+   that starts outside `.app-content`'s own scroll area (e.g. on the tab
+   bar), which visibly dragged the "fixed" tab bar along with it since it's
+   only pinned relative to `.app-shell`, not the viewport. */
 html, body {
   height: 100%;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  position: fixed;
+  inset: 0;
 }
 
 body {

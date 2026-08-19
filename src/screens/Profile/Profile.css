@@ -17,7 +17,7 @@
   gap: 16px;
   background: var(--bg-page);
   border-radius: 0 0 24px 24px;
-  padding: 16px 16px 24px;
+  padding: 8px 16px 24px;
 }
 
 .profile__title-row {
