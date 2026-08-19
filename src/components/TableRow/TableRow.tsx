@@ -1,4 +1,5 @@
 import { bem } from '@/css/bem.ts';
+import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 
 import './TableRow.css';
 
@@ -23,6 +24,7 @@ export interface TableRowProps {
 export function TableRow({ ticker, name, amount, onAction, actionLabel }: TableRowProps) {
   return (
     <div className={b()}>
+      <CurrencyIcon ticker={ticker}/>
       <div className={e('info')}>
         <div className={e('ticker')}>{ticker}</div>
         <div className={e('name')}>{name}</div>

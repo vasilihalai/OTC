@@ -35,14 +35,13 @@ function ExternalLinkIcon() {
   );
 }
 
-const SKIP_WORDS = new Set(['ООО', 'ОАО', 'ЗАО', 'АО', 'ИП', 'ПАО']);
-
-function monogram(name: string): string {
-  const words = name
-    .replace(/[«»"']/g, '')
-    .split(/\s+/)
-    .filter((w) => w.length > 1 && !SKIP_WORDS.has(w.toUpperCase()));
-  return words.slice(0, 2).map((w) => w[0].toUpperCase()).join('') || name.slice(0, 2).toUpperCase();
+function AvatarIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <circle cx="14" cy="10.5" r="4.5" stroke="#fff" strokeWidth="1.8"/>
+      <path d="M5 23c1.6-4.6 5.4-7 9-7s7.4 2.4 9 7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  );
 }
 
 function CopyableRow({ label, value, display }: { label: string; value: string; display?: string }) {
@@ -129,7 +128,7 @@ export function Profile() {
     <div className="profile">
       <Panel>
         <div className="profile__identity">
-          <div className="profile__monogram" aria-hidden="true">{monogram(user.clientName)}</div>
+          <div className="profile__monogram" aria-hidden="true"><AvatarIcon/></div>
           <div className="profile__identity-info">
             <h2 className="profile__name">{user.clientName}</h2>
             <div className="profile__badges">

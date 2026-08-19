@@ -16,7 +16,7 @@
    outside it, the normal 10px keeps the button in its usual spot. */
 body.is-fullscreen .app-header {
   padding-top: calc(
-    10px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
+    10px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px))
   );
   padding-left: 80px;
   padding-right: 56px;

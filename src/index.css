@@ -48,10 +48,12 @@ button, input, select {
 
 /* AppHeader is a floating pill positioned absolutely over the content (§2.3:
    "Screen content starts at y 92"), not a normal-flow bar — so the content
-   area itself reserves that space, plus the real device's safe-area inset
-   and, in Telegram fullscreen, the extra footprint of its own floating
-   Close/menu buttons (contentSafeAreaInset). Defaults to 0px via
-   bindCssVars() outside fullscreen/on unsupported clients. */
+   area itself reserves that space, plus the real device's top inset. Uses
+   `max()`, not a sum: on-device, contentSafeAreaInset is measured from the
+   very top of the screen and already includes the notch/status-bar inset
+   rather than sitting additively below it (matching how the bottom edge is
+   already handled everywhere else in this file / TabBar.css) — summing the
+   two double-counts the notch and pushes content down by roughly 2x. */
 .app-content {
   flex: 1;
   min-height: 0;
@@ -59,7 +61,7 @@ button, input, select {
   flex-direction: column;
   overflow-y: auto;
   padding-top: calc(
-    92px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
+    92px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px))
   );
   overscroll-behavior: contain;
 }

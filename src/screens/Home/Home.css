@@ -1,18 +1,8 @@
-/* Home's own frame sits a shade lighter than the page (`--bg-raised`), with
-   its section cards a shade darker again (`--bg-page`) — the one screen
-   that inverts the shared Panel surface, per the design's Home-specific
-   hierarchy. */
 .home {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 8px 16px 16px;
-  background: var(--bg-raised);
-}
-
-.home .panel--panel,
-.home .panel--card {
-  background: var(--bg-page);
 }
 
 .home__hero-title {

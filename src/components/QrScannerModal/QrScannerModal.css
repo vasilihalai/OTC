@@ -12,8 +12,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px;
+  padding: calc(16px + var(--tg-viewport-safe-area-inset-top, 0px)) 16px 16px;
   gap: 12px;
+}
+
+/* Clears Telegram's own floating Close/"..." menu buttons in fullscreen,
+   same clearance as AppHeader's pill. */
+body.is-fullscreen .qr-scanner-modal__top {
+  padding-top: calc(
+    16px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px))
+  );
+  padding-left: 80px;
+  padding-right: 56px;
 }
 
 .qr-scanner-modal__title {

@@ -30,9 +30,6 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, var(--accent), #8E141B);
-  color: #FFFFFF;
-  font-size: 20px;
-  font-weight: 700;
 }
 
 .profile__identity-info {
