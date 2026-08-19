@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
 import { KeyValueRow } from '@/components/KeyValueRow/KeyValueRow.tsx';
@@ -15,14 +15,17 @@ import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import {
   confirmDeal,
   declineDeal,
+  getAccounts,
   getDealById,
   getRequisites,
   requestNewRate,
+  setDepositBalanceForTesting,
 } from '@/api/index.ts';
 import type { Deal, Requisites } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { useToastStore } from '@/store/toast.ts';
+import { useTransferModalStore } from '@/store/transferModal.ts';
 import { DEAL_STATUS_META, getDocumentAvailability, isConfirmationStatus } from '@/lib/dealStatus.ts';
 import { computeScenarioBalance, getMinDealAmount, isBalanceScenario, parseAmountValue } from '@/lib/balanceScenario.ts';
 import { formatAmount, parseAmountWithTicker } from '@/lib/money.ts';
@@ -139,13 +142,16 @@ export function DealDetail() {
 type Branch = 'sufficient' | 'short1' | 'short' | 'belowmin';
 
 function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlScenario = searchParams.get('scenario');
   const storeScenario = useUiStore((s) => s.balanceScenario);
   const cycleScenario = useUiStore((s) => s.cycleBalanceScenario);
+  const balancesVersion = useUiStore((s) => s.balancesVersion);
+  const openTransferModal = useTransferModalStore((s) => s.open);
+  // null = no dev override, show the real deposit balance.
   const scenario = isBalanceScenario(urlScenario) ? urlScenario : storeScenario;
   const [requisites, setRequisites] = useState<Requisites>();
+  const [balance, setBalance] = useState<number>();
   const [confirming, setConfirming] = useState(false);
   const [declining, setDeclining] = useState(false);
   const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
@@ -155,16 +161,37 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
   }, [deal.id]);
 
   const dealAmount = parseAmountValue(deal.from);
-  const balance = computeScenarioBalance(dealAmount, deal.ticker, scenario);
+
+  // Explicit dev override only — forces the deposit balance to whatever
+  // produces the requested case for this deal, then it's read back below
+  // like any other real balance.
+  useEffect(() => {
+    if (!scenario) {
+      return;
+    }
+    const target = computeScenarioBalance(dealAmount, deal.ticker, scenario);
+    setDepositBalanceForTesting(deal.ticker, target);
+  }, [scenario, deal.ticker, dealAmount]);
+
+  useEffect(() => {
+    void getAccounts().then((accounts) => setBalance(Number(accounts.deposit[deal.ticker] ?? '0')));
+  }, [deal.ticker, scenario, balancesVersion]);
+
   const minDeal = getMinDealAmount(deal.ticker);
 
+  if (balance === undefined) {
+    return <Skeleton height={90} radius={14}/>;
+  }
+
+  // §6.8.1's exact order: sufficient, then the ≤1% case, then below-minimum,
+  // else short — belowmin can never coincide with short1 by construction.
   let branch: Branch;
   if (balance >= dealAmount) {
     branch = 'sufficient';
-  } else if (balance < minDeal) {
-    branch = 'belowmin';
   } else if ((dealAmount - balance) / dealAmount <= 0.01) {
     branch = 'short1';
+  } else if (balance < minDeal) {
+    branch = 'belowmin';
   } else {
     branch = 'short';
   }
@@ -172,14 +199,20 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
   const balanceLabel = `${formatAmount(String(balance), deal.ticker)} ${deal.ticker}`;
   const minLabel = `${formatAmount(String(minDeal), deal.ticker)} ${deal.ticker}`;
   const counter = deal.to ? parseAmountWithTicker(deal.to) : undefined;
-  const recalculated = counter
-    ? `${formatAmount(String((balance / dealAmount) * counter.value), counter.ticker)} ${counter.ticker}`
+  const recalculatedValue = counter ? (balance / dealAmount) * counter.value : undefined;
+  const recalculated = counter && recalculatedValue !== undefined
+    ? `${formatAmount(String(recalculatedValue), counter.ticker)} ${counter.ticker}`
     : balanceLabel;
 
   async function handleConfirm() {
     setConfirming(true);
     try {
-      const updated = await confirmDeal(deal.id);
+      const patch = branch === 'short1'
+        ? { status: 'RUNNING' as const, from: balanceLabel, to: recalculated }
+        : branch === 'short'
+          ? { status: 'RATE_PENDING' as const }
+          : { status: 'RUNNING' as const };
+      const updated = await confirmDeal(deal.id, patch);
       if (updated) {
         onUpdate(updated);
       }
@@ -208,7 +241,7 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
         ticker={deal.ticker}
         dealAmount={deal.from}
         shortfall={branch !== 'sufficient' ? `${formatAmount(String(dealAmount - balance), deal.ticker)} ${deal.ticker}` : undefined}
-        onTransfer={() => navigate('/transfer')}
+        onTransfer={openTransferModal}
         onLongPressBalance={cycleScenario}
       />
 
@@ -229,20 +262,19 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
         </Callout>
       )}
 
-      <Button loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
+      <Button variant="accent" loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
         {ru.dealDetail.confirmDealAction}
       </Button>
       <Button
         type="button"
-        variant="outline"
-        danger
+        variant="danger-link"
         loading={declining}
         onClick={() => setDeclineDialogOpen(true)}
       >
         {ru.dealDetail.declineAction}
       </Button>
 
-      {branch !== 'sufficient' && requisites && <RequisitesPanel requisites={requisites}/>}
+      {(branch === 'short' || branch === 'belowmin') && requisites && <RequisitesPanel requisites={requisites}/>}
 
       <ConfirmDialog
         open={declineDialogOpen}
@@ -296,8 +328,7 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
             action={(
               <Button
                 type="button"
-                variant="outline"
-                danger
+                variant="danger-link"
                 loading={busy}
                 onClick={() => setCancelDialogOpen(true)}
               >
@@ -319,7 +350,7 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
           icon="hourglass"
           tone="stale"
           title={ru.dealDetail.heroRateStaleTitle}
-          action={<Button loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
+          action={<Button variant="accent" loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
         />
       );
     case 'RUNNING':

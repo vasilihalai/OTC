@@ -1,44 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
-import { TextField } from '@/components/TextField/TextField.tsx';
-import { SegmentedControl } from '@/components/SegmentedControl/SegmentedControl.tsx';
-import { KeyValueRow } from '@/components/KeyValueRow/KeyValueRow.tsx';
+import { Select } from '@/components/Select/Select.tsx';
+import { AmountField } from '@/components/AmountField/AmountField.tsx';
+import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
+import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
-import { SavedOptionSelect, NEW_OPTION_VALUE } from '@/components/SavedOptionSelect/SavedOptionSelect.tsx';
-import { getAssets, getFiatWithdrawalRules, getSavedRequisites, submitFiatWithdrawal } from '@/api/index.ts';
-import type { Asset, FiatTransferType, FiatWithdrawalRules, SavedRequisite } from '@/api/index.ts';
+import { getAssets, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
+import type { Asset, FiatWithdrawOptions } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
+import { useUiStore } from '@/store/ui.ts';
+import { useTransferModalStore } from '@/store/transferModal.ts';
 import { formatAmount } from '@/lib/money.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawFiat.css';
 
-const FIAT_TICKERS = ['KGS', 'RUB', 'USD'];
-
 export function WithdrawFiat() {
   useRequireSession();
   const navigate = useNavigate();
-  const location = useLocation();
-  const preselected = (location.state as { ticker?: string } | null)?.ticker;
+  const [searchParams] = useSearchParams();
+  const preselected = searchParams.get('asset');
+  const bumpBalancesVersion = useUiStore((s) => s.bumpBalancesVersion);
+  const balancesVersion = useUiStore((s) => s.balancesVersion);
+  const openTransferModal = useTransferModalStore((s) => s.open);
 
-  const [ticker, setTicker] = useState(preselected && FIAT_TICKERS.includes(preselected) ? preselected : FIAT_TICKERS[0]);
-  const [transferType, setTransferType] = useState<FiatTransferType>('internal');
-  const [asset, setAsset] = useState<Asset>();
-  const [rules, setRules] = useState<FiatWithdrawalRules>();
-  const [savedRequisites, setSavedRequisites] = useState<SavedRequisite[]>([]);
-  const [requisiteChoice, setRequisiteChoice] = useState<string>(NEW_OPTION_VALUE);
-  const [account, setAccount] = useState('');
-  const [bankName, setBankName] = useState('');
-  const [bic, setBic] = useState('');
-  const [inn, setInn] = useState('');
-  const [correspondentAccount, setCorrespondentAccount] = useState('');
-  const [saveRequisite, setSaveRequisite] = useState(false);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [currency, setCurrency] = useState(preselected ?? '');
+  const [options, setOptions] = useState<FiatWithdrawOptions>();
+  const [methodId, setMethodId] = useState('');
   const [amount, setAmount] = useState('');
-  const [accountError, setAccountError] = useState<string>();
   const [amountError, setAmountError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -47,25 +41,27 @@ export function WithdrawFiat() {
   const idempotencyKey = useRef(crypto.randomUUID());
 
   useEffect(() => {
-    void Promise.all([getFiatWithdrawalRules(ticker), getAssets('fiat')]).then(([rulesData, assets]) => {
-      setRules(rulesData);
-      setAsset(assets.find((a) => a.ticker === ticker));
+    void getAssets('fiat').then((data) => {
+      setAssets(data);
+      setCurrency((current) => (current && data.some((a) => a.ticker === current) ? current : (data[0]?.ticker ?? '')));
       setInitialLoading(false);
     });
-  }, [ticker]);
+  }, [balancesVersion]);
 
   useEffect(() => {
-    void getSavedRequisites(ticker).then((requisites) => {
-      const matching = requisites.filter((r) => r.transferType === transferType);
-      setSavedRequisites(matching);
-      setRequisiteChoice(matching[0]?.id ?? NEW_OPTION_VALUE);
+    if (!currency) {
+      return;
+    }
+    void getWithdrawFiatOptions(currency).then((data) => {
+      setOptions(data);
+      setMethodId((current) => (data.methods.some((m) => m.id === current) ? current : (data.methods[0]?.id ?? '')));
     });
-  }, [ticker, transferType]);
+  }, [currency]);
 
-  const selectedRequisite = savedRequisites.find((r) => r.id === requisiteChoice);
-  const isNewRequisite = requisiteChoice === NEW_OPTION_VALUE;
+  const asset = assets.find((a) => a.ticker === currency);
   const available = asset?.balance ?? '0';
-  const feePercent = rules?.feePercent ?? 0;
+  const method = options?.methods.find((m) => m.id === methodId);
+  const feePercent = method ? Number(method.feePct) : 0;
 
   const maxAmount = useMemo(() => {
     if (!available) {
@@ -75,7 +71,7 @@ export function WithdrawFiat() {
     return max > 0 ? max.toFixed(2) : '0';
   }, [available, feePercent]);
 
-  const fee = useMemo(() => (amount ? (Number(amount) * feePercent) / 100 : 0), [amount, feePercent]);
+  const fee = amount ? (Number(amount) * feePercent) / 100 : 0;
   const totalDebit = amount ? Number(amount) + fee : 0;
 
   function handleMax() {
@@ -83,42 +79,29 @@ export function WithdrawFiat() {
     setAmountError(undefined);
   }
 
-  async function handleConfirm() {
-    setAccountError(undefined);
+  function handleAmountChange(value: string) {
+    setAmount(value);
     setAmountError(undefined);
+  }
 
-    let hasError = false;
-    if (isNewRequisite && !account.trim()) {
-      setAccountError(ru.withdraw.errorAccountRequired);
-      hasError = true;
-    }
-    if (rules && Number(amount) < Number(rules.min)) {
+  async function handleConfirm() {
+    setAmountError(undefined);
+    if (options && Number(amount) < Number(options.limits.min)) {
       setAmountError(ru.withdraw.errorBelowMin);
-      hasError = true;
-    } else if (totalDebit > Number(available)) {
-      setAmountError(ru.withdraw.errorAboveAvailable);
-      hasError = true;
+      notifyError();
+      return;
     }
-    if (hasError) {
+    if (totalDebit > Number(available)) {
+      setAmountError(ru.withdraw.errorAboveAvailable);
       notifyError();
       return;
     }
 
     setSubmitting(true);
     try {
-      await submitFiatWithdrawal({
-        ticker,
-        transferType,
-        account: isNewRequisite ? account : (selectedRequisite?.account ?? ''),
-        bankName: isNewRequisite ? bankName : selectedRequisite?.bankName,
-        bic: isNewRequisite ? bic : selectedRequisite?.bic,
-        inn: isNewRequisite ? inn : selectedRequisite?.inn,
-        correspondentAccount: isNewRequisite ? correspondentAccount : selectedRequisite?.correspondentAccount,
-        amount,
-        saveRequisite: isNewRequisite && saveRequisite,
-        idempotencyKey: idempotencyKey.current,
-      });
+      await submitFiatWithdrawal({ ticker: currency, methodId, amount, idempotencyKey: idempotencyKey.current });
       notifySuccess();
+      bumpBalancesVersion();
       setSuccess(true);
     } finally {
       setSubmitting(false);
@@ -131,7 +114,7 @@ export function WithdrawFiat() {
         <Panel>
           <h1 className="withdraw-fiat__success-title">{ru.withdraw.successTitle}</h1>
           <p className="withdraw-fiat__success-body">{ru.withdraw.successBody}</p>
-          <Button onClick={() => navigate('/home', { replace: true })}>{ru.withdraw.doneAction}</Button>
+          <Button variant="accent" onClick={() => navigate('/home', { replace: true })}>{ru.withdraw.doneAction}</Button>
         </Panel>
       </div>
     );
@@ -141,11 +124,10 @@ export function WithdrawFiat() {
     return (
       <div className="withdraw-fiat">
         <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
-        <Skeleton height={44} radius={999}/>
-        <Skeleton height={44} radius={999}/>
+        <Skeleton height={48} radius={12}/>
         <Skeleton height={48} radius={12}/>
         <Panel surface="card">
-          <Skeleton height={80} radius={8}/>
+          <Skeleton height={100} radius={8}/>
         </Panel>
       </div>
     );
@@ -153,102 +135,61 @@ export function WithdrawFiat() {
 
   return (
     <div className="withdraw-fiat">
-      <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
+      <div className="withdraw-fiat__scroll">
+        <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
 
-      <div className="withdraw-fiat__field">
-        <span className="withdraw-fiat__label">{ru.withdraw.currencyLabel}</span>
-        <SegmentedControl
-          options={FIAT_TICKERS.map((t) => ({ value: t, label: t }))}
-          value={ticker}
-          onChange={setTicker}
+        <h2 className="withdraw-fiat__section-title">{ru.withdraw.chooseCurrencyMethodTitle}</h2>
+        <Select
+          label={ru.withdraw.currencyLabel}
+          layout="asset"
+          options={assets.map((a) => ({
+            value: a.ticker,
+            label: a.ticker,
+            secondary: a.name,
+            icon: <CurrencyIcon ticker={a.ticker} size={24}/>,
+          }))}
+          value={currency}
+          onChange={setCurrency}
         />
-      </div>
-
-      <div className="withdraw-fiat__field">
-        <span className="withdraw-fiat__label">{ru.withdraw.transferTypeLabel}</span>
-        <SegmentedControl
-          options={[
-            { value: 'internal' as const, label: ru.withdraw.transferTypeInternal },
-            { value: 'kg' as const, label: ru.withdraw.transferTypeKg },
-            { value: 'ru' as const, label: ru.withdraw.transferTypeRu },
-          ]}
-          value={transferType}
-          onChange={setTransferType}
-        />
-      </div>
-
-      <SavedOptionSelect
-        label={ru.withdraw.requisiteLabel}
-        options={savedRequisites.map((r) => ({ id: r.id, label: r.label }))}
-        value={requisiteChoice}
-        onChange={setRequisiteChoice}
-        newOptionLabel={ru.withdraw.newRequisiteOption}
-        manageLabel={ru.withdraw.manageRequisites}
-        onManage={() => navigate('/manage/requisites')}
-      />
-
-      {isNewRequisite ? (
-        <>
-          {transferType !== 'internal' && (
-            <>
-              <TextField label={ru.withdraw.bicLabel} value={bic} onChange={(e) => setBic(e.target.value)}/>
-              <TextField label={ru.withdraw.bankNameLabel} value={bankName} onChange={(e) => setBankName(e.target.value)}/>
-              <TextField label={ru.withdraw.innLabel} value={inn} onChange={(e) => setInn(e.target.value)}/>
-            </>
-          )}
-          {transferType === 'ru' && (
-            <TextField
-              label={ru.withdraw.correspondentAccountLabel}
-              value={correspondentAccount}
-              onChange={(e) => setCorrespondentAccount(e.target.value)}
-            />
-          )}
-          <TextField
-            label={ru.withdraw.recipientAccountLabel}
-            value={account}
-            error={accountError}
-            onChange={(e) => setAccount(e.target.value)}
+        {options && (
+          <Select
+            label={ru.withdraw.methodLabel}
+            layout="method"
+            options={options.methods.map((m) => ({ value: m.id, label: m.name, secondary: `${m.feePct}%` }))}
+            value={methodId}
+            onChange={setMethodId}
           />
-          <label className="withdraw-fiat__checkbox">
-            <input type="checkbox" checked={saveRequisite} onChange={(e) => setSaveRequisite(e.target.checked)}/>
-            {ru.withdraw.saveRequisiteLabel}
-          </label>
-        </>
-      ) : (
-        selectedRequisite && (
-          <Panel surface="card">
-            {selectedRequisite.bankName && <KeyValueRow label={ru.withdraw.bankNameLabel} value={selectedRequisite.bankName}/>}
-            <KeyValueRow label={ru.withdraw.recipientAccountLabel} value={selectedRequisite.account}/>
-          </Panel>
-        )
-      )}
-
-      <TextField
-        label={`${ru.withdraw.amountLabel} · ${ru.withdraw.availableLabel}: ${formatAmount(available, ticker)} ${ticker}`}
-        inputMode="decimal"
-        value={amount}
-        error={amountError}
-        onChange={(e) => setAmount(e.target.value)}
-        suffix={(
-          <Button type="button" variant="link" onClick={handleMax}>
-            {ru.withdraw.maxAction}
-          </Button>
         )}
-      />
 
-      {rules && (
-        <Panel surface="card">
-          <KeyValueRow label={ru.withdraw.minAmountLabel} value={`${formatAmount(rules.min, ticker)} ${ticker}`}/>
-          <KeyValueRow label={ru.withdraw.limitLabel} value={`${formatAmount(rules.limit, ticker)} ${ticker}`}/>
-          <KeyValueRow label={ru.withdraw.payoutLabel} value={`${formatAmount(amount || '0', ticker)} ${ticker}`}/>
-          <KeyValueRow label={ru.withdraw.feeLabel} value={`${formatAmount(String(fee), ticker)} ${ticker}`}/>
-          <KeyValueRow label={ru.withdraw.totalDebitLabel} value={`${formatAmount(String(totalDebit), ticker)} ${ticker}`}/>
-        </Panel>
-      )}
+        <h2 className="withdraw-fiat__section-title">{ru.withdraw.amountSectionTitle}</h2>
+        <AmountField
+          label={ru.withdraw.sendLabel}
+          availableLabel={ru.withdraw.balanceLabel}
+          available={`${formatAmount(available, currency)} ${currency}`}
+          value={amount}
+          onChange={handleAmountChange}
+          onMax={handleMax}
+          maxLabel={ru.withdraw.maxAction}
+          error={amountError}
+          onTransfer={openTransferModal}
+        />
 
-      <div className="withdraw-fiat__actions">
-        <Button loading={submitting} onClick={() => void handleConfirm()}>{ru.withdraw.confirmAction}</Button>
-        <Button type="button" variant="outline" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
+        {options && (
+          <SummaryCard
+            rows={[
+              { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(options.limits.min, currency)} ${currency}` },
+              { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(options.limits.available, currency)} ${currency}` },
+              { key: 'amount', label: ru.withdraw.enteredAmountLabel, value: `${formatAmount(amount || '0', currency)} ${currency}` },
+              { key: 'fee', label: ru.withdraw.feeLabel, value: `${formatAmount(String(fee), currency)} ${currency}` },
+            ]}
+            totalLabel={ru.withdraw.totalDebitLabel}
+            totalValue={`${formatAmount(String(totalDebit), currency)} ${currency}`}
+          />
+        )}
+      </div>
+
+      <div className="withdraw-fiat__submit">
+        <Button variant="accent" loading={submitting} onClick={() => void handleConfirm()}>{ru.withdraw.confirmAction}</Button>
       </div>
     </div>
   );

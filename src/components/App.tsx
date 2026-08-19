@@ -6,6 +6,7 @@ import { routes } from '@/navigation/routes.tsx';
 import { Toast } from '@/components/Toast/Toast.tsx';
 import { AppHeader } from '@/components/AppHeader/AppHeader.tsx';
 import { TabBar } from '@/components/TabBar/TabBar.tsx';
+import { TransferModal } from '@/components/TransferModal/TransferModal.tsx';
 import { useSessionStore } from '@/store/session.ts';
 import { useAppBackButton, useGoBack } from '@/telegram/backButton.ts';
 
@@ -24,7 +25,7 @@ function Shell() {
   const showTabBar = matched?.tabBar ?? false;
 
   return (
-    <>
+    <div className="app-shell">
       <AppHeader variant={headerVariant} onBack={goBack}/>
       <main className="app-content">
         <div key={location.pathname} className="app-content__page">
@@ -37,7 +38,8 @@ function Shell() {
       </main>
       {showTabBar && <TabBar/>}
       <Toast/>
-    </>
+      <TransferModal/>
+    </div>
   );
 }
 

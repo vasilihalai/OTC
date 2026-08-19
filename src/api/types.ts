@@ -8,13 +8,17 @@ export interface Session {
 
 export type VerificationLevel = 1 | 2;
 
+export type OtcAccessReason = 'GRANTED' | 'VERIFICATION_REQUIRED' | 'NOT_ELIGIBLE';
+
 export interface User {
   clientName: string;
   clientType: ClientType;
   verificationLevel: VerificationLevel;
+  otcAccess: OtcAccessReason;
   email: string;
   userId: string;
   webCabinetUrl: string;
+  supportUrl: string;
 }
 
 export interface Stats {
@@ -61,48 +65,62 @@ export type SignInError = 'EMAIL_INVALID';
 
 export type VerifyCodeError = 'CODE_INVALID' | 'RATE_LIMIT';
 
-export type CryptoNetwork = 'TRC20' | 'ERC20';
-
-export interface CryptoWithdrawalRules {
-  ticker: string;
-  min: string;
-  limit: string;
-  networkFee: string;
-  networks: CryptoNetwork[];
-}
+/** Display string, e.g. `TRON (TRC-20)` — the fixture set defines the whole vocabulary, not an enum. */
+export type CryptoNetwork = string;
 
 export interface SavedAddress {
   id: string;
-  ticker: string;
-  network?: CryptoNetwork;
-  label: string;
   address: string;
+  /** Chains this address can receive on — an address is asset-agnostic, a network is not. */
+  networks: CryptoNetwork[];
 }
 
-export type FiatTransferType = 'internal' | 'kg' | 'ru';
-
-export interface FiatWithdrawalRules {
-  ticker: string;
+export interface CryptoWithdrawLimits {
   min: string;
-  limit: string;
-  feePercent: number;
+  available: string;
+  fee: string;
+  contractTail: string | null;
 }
 
-export interface SavedRequisite {
+export interface CryptoWithdrawOptions {
+  addresses: SavedAddress[];
+  networks: CryptoNetwork[];
+  limits: CryptoWithdrawLimits;
+}
+
+export interface WithdrawMethod {
   id: string;
-  ticker: string;
-  transferType: FiatTransferType;
-  label: string;
-  account: string;
-  bankName?: string;
-  bic?: string;
-  inn?: string;
-  correspondentAccount?: string;
+  name: string;
+  feePct: string;
+}
+
+export interface FiatWithdrawLimits {
+  min: string;
+  available: string;
+}
+
+export interface FiatWithdrawOptions {
+  methods: WithdrawMethod[];
+  limits: FiatWithdrawLimits;
 }
 
 export interface WithdrawalResult {
   id: string;
   status: 'PENDING';
+}
+
+export type TransferAccount = 'deposit' | 'trading';
+
+export interface TransferRequest {
+  from: TransferAccount;
+  to: TransferAccount;
+  ticker: string;
+  amount: string;
+}
+
+export interface Accounts {
+  deposit: Record<string, string>;
+  trading: Record<string, string>;
 }
 
 export interface FiatRequisites {

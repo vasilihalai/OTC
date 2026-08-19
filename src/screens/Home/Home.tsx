@@ -10,7 +10,7 @@ import { AssetRow } from '@/components/AssetRow/AssetRow.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { getAssets, getDeals, getStats, getUser } from '@/api/index.ts';
 import type { Asset, Deal, Stats, User } from '@/api/index.ts';
-import { useRequireSession } from '@/store/session.ts';
+import { useRequireOtcAccess, useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { formatAmount } from '@/lib/money.ts';
 import { ru } from '@/i18n/ru.ts';
@@ -20,9 +20,11 @@ import './Home.css';
 export function Home() {
   const navigate = useNavigate();
   const session = useRequireSession();
+  useRequireOtcAccess();
   const clientType = session?.clientType ?? 'FL';
   const selectedGroup = useUiStore((s) => s.selectedAssetGroup);
   const setSelectedGroup = useUiStore((s) => s.setSelectedAssetGroup);
+  const balancesVersion = useUiStore((s) => s.balancesVersion);
 
   const [user, setUser] = useState<User>();
   const [stats, setStats] = useState<Stats>();
@@ -51,7 +53,7 @@ export function Home() {
       setAssets(data);
       setAssetsLoading(false);
     });
-  }, [selectedGroup]);
+  }, [selectedGroup, balancesVersion]);
 
   const positiveAssets = (assets ?? []).filter((a) => Number(a.balance) > 0);
   const hiddenZeroBalance = (assets ?? []).length > positiveAssets.length;
@@ -117,7 +119,7 @@ export function Home() {
               ticker={asset.ticker}
               name={asset.name}
               amount={formatAmount(asset.balance, asset.ticker)}
-              onWithdraw={() => navigate(`/withdraw/${asset.group}`, { state: { ticker: asset.ticker } })}
+              onWithdraw={() => navigate(`/withdraw/${asset.group}?asset=${asset.ticker}`)}
             />
           ))}
         </div>

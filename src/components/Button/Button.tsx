@@ -8,17 +8,15 @@ import './Button.css';
 const [b, e] = bem('button');
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'social' | 'link' | 'footer-link' | 'outline';
-  /** Recolors the `outline` variant's border/text in `--brand-red`, for cancel/decline actions. */
-  danger?: boolean;
+  variant?: 'primary' | 'accent' | 'secondary' | 'social' | 'link' | 'danger-link' | 'footer-link';
   loading?: boolean;
   icon?: ReactNode;
 }
 
-export function Button({ variant = 'primary', danger, loading, icon, className, children, disabled, ...rest }: ButtonProps) {
+export function Button({ variant = 'primary', loading, icon, className, children, disabled, ...rest }: ButtonProps) {
   return (
     <button
-      className={classNames(b(variant, { loading, danger: !!danger }), className)}
+      className={classNames(b(variant, { loading }), className)}
       disabled={disabled || loading}
       {...rest}
     >

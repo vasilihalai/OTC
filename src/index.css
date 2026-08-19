@@ -21,11 +21,35 @@ button, input, select {
   font-family: inherit;
 }
 
+/* Caps the app at a mobile-like width on desktop browsers instead of
+   stretching full-bleed, and centers it. The transform gives fixed-position
+   descendants (TabBar, Toast, Modal scrims) a containing block scoped to
+   this shell instead of the full desktop viewport — no per-component
+   changes needed for those to size/center correctly. Harmless on real
+   mobile, where the viewport is already narrower than the cap. `height`
+   (not `min-height`) plus the column flex is what lets `.app-content`
+   below resolve to "exactly the space left after the header," which
+   individual screens rely on to pin footer content without a false
+   page-level scroll (e.g. sign-in's account-switch link). */
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform: translateZ(0);
+}
+
 /* Telegram fullscreen (Bot API 8.0): floating Close/menu buttons overlay the
    top of the screen; contentSafeAreaInset already accounts for their footprint.
    Defaults to 0px via bindCssVars() outside fullscreen/on unsupported clients. */
 .app-content {
-  min-height: 100dvh;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   padding-top: calc(
     var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
   );
@@ -33,6 +57,7 @@ button, input, select {
 }
 
 .app-content__page {
+  min-height: 100%;
   animation: page-in 0.18s ease-out;
 }
 

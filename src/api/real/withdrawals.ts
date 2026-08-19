@@ -1,34 +1,19 @@
-import type {
-  CryptoWithdrawalRules,
-  FiatWithdrawalRules,
-  SavedAddress,
-  SavedRequisite,
-  WithdrawalResult,
-} from '@/api/types.ts';
+import type { CryptoWithdrawOptions, FiatWithdrawOptions, WithdrawalResult } from '@/api/types.ts';
 import type { CryptoWithdrawalPayload, FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
 import { apiFetch } from '@/api/http.ts';
 
 /**
- * Assumed endpoints — reconcile against Swagger once available. Min/limit/fee
- * must come from the backend (mini-app-v1.md §5.4 rule: never hardcode), and
- * submission carries the idempotency key as a header so a double-tap retry
- * is safe to resend.
+ * Assumed endpoints — reconcile against Swagger once available. Limits/methods/
+ * addresses must come from the backend (never hardcode), and submission carries
+ * the idempotency key as a header so a double-tap retry is safe to resend.
  */
 
-export async function getCryptoWithdrawalRules(ticker: string): Promise<CryptoWithdrawalRules> {
-  return apiFetch<CryptoWithdrawalRules>(`/withdrawals/crypto/rules?ticker=${ticker}`);
+export async function getWithdrawFiatOptions(currency: string): Promise<FiatWithdrawOptions> {
+  return apiFetch<FiatWithdrawOptions>(`/withdrawals/fiat/options?currency=${currency}`);
 }
 
-export async function getFiatWithdrawalRules(ticker: string): Promise<FiatWithdrawalRules> {
-  return apiFetch<FiatWithdrawalRules>(`/withdrawals/fiat/rules?ticker=${ticker}`);
-}
-
-export async function getSavedAddresses(ticker: string): Promise<SavedAddress[]> {
-  return apiFetch<SavedAddress[]>(`/withdrawals/crypto/addresses?ticker=${ticker}`);
-}
-
-export async function getSavedRequisites(ticker: string): Promise<SavedRequisite[]> {
-  return apiFetch<SavedRequisite[]>(`/withdrawals/fiat/requisites?ticker=${ticker}`);
+export async function getWithdrawCryptoOptions(asset: string): Promise<CryptoWithdrawOptions> {
+  return apiFetch<CryptoWithdrawOptions>(`/withdrawals/crypto/options?asset=${asset}`);
 }
 
 export async function submitCryptoWithdrawal(payload: CryptoWithdrawalPayload): Promise<WithdrawalResult> {

@@ -21,8 +21,8 @@ export function ConfirmDialog({ open, title, body, onConfirm, onCancel }: Confir
       <div className={b()}>
         {body && <p className={e('body')}>{body}</p>}
         <div className={e('actions')}>
-          <Button onClick={onConfirm}>{ru.common.confirmYes}</Button>
-          <Button type="button" variant="outline" onClick={onCancel}>{ru.common.confirmNo}</Button>
+          <Button variant="accent" onClick={onConfirm}>{ru.common.confirmYes}</Button>
+          <Button type="button" variant="secondary" onClick={onCancel}>{ru.common.confirmNo}</Button>
         </div>
       </div>
     </Modal>

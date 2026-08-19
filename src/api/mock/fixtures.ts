@@ -1,15 +1,17 @@
 import type {
+  Accounts,
   Asset,
   ClientType,
   CryptoRequisites,
-  CryptoWithdrawalRules,
+  CryptoWithdrawLimits,
+  CryptoNetwork,
   Deal,
   FiatRequisites,
-  FiatWithdrawalRules,
+  FiatWithdrawLimits,
   SavedAddress,
-  SavedRequisite,
   Stats,
   User,
+  WithdrawMethod,
 } from '@/api/types.ts';
 
 export const MOCK_USERS: Record<ClientType, User> = {
@@ -17,17 +19,21 @@ export const MOCK_USERS: Record<ClientType, User> = {
     clientName: 'ООО «Альфа Трейд»',
     clientType: 'UL',
     verificationLevel: 2,
+    otcAccess: 'GRANTED',
     email: 'karimov@gmail.com',
     userId: '8f3a92c17b4e55d0a6f23e81c94b1d07',
     webCabinetUrl: 'https://xruby.example/cabinet',
+    supportUrl: 'https://t.me/xruby_support',
   },
   FL: {
     clientName: 'Каримов Азамат',
     clientType: 'FL',
     verificationLevel: 1,
+    otcAccess: 'GRANTED',
     email: 'karimov@gmail.com',
     userId: '8f3a92c17b4e55d0a6f23e81c94b1d07',
     webCabinetUrl: 'https://xruby.example/cabinet',
+    supportUrl: 'https://t.me/xruby_support',
   },
 };
 
@@ -206,48 +212,59 @@ export const MOCK_ASSETS: Asset[] = [
   { ticker: 'BTC', name: 'Bitcoin', balance: '0.420000', group: 'crypto' },
 ];
 
-export const MOCK_CRYPTO_RULES: Record<string, CryptoWithdrawalRules> = {
-  USDT: { ticker: 'USDT', min: '10', limit: '250000', networkFee: '1', networks: ['TRC20', 'ERC20'] },
-  USDC: { ticker: 'USDC', min: '10', limit: '250000', networkFee: '3', networks: ['TRC20', 'ERC20'] },
-  BTC: { ticker: 'BTC', min: '0.0005', limit: '5', networkFee: '0.0001', networks: [] },
+/** Deposit vs. trading account balances — the mutable source of truth lives in `accountsStore.ts`. */
+export const MOCK_ACCOUNTS: Accounts = {
+  deposit: { KGS: '10000000', RUB: '5000000', USD: '200000', USDT: '56889.65', USDC: '12500.00', BTC: '0.420000' },
+  trading: { KGS: '1000000', RUB: '0', USD: '0', USDT: '50000.00', USDC: '0', BTC: '0' },
 };
 
-export const MOCK_FIAT_RULES: Record<string, FiatWithdrawalRules> = {
-  KGS: { ticker: 'KGS', min: '1000', limit: '15000000', feePercent: 0.5 },
-  RUB: { ticker: 'RUB', min: '1000', limit: '10000000', feePercent: 0.5 },
-  USD: { ticker: 'USD', min: '50', limit: '300000', feePercent: 0.8 },
+export const MOCK_WITHDRAW_FIAT: {
+  currencies: string[];
+  methods: Record<string, WithdrawMethod[]>;
+  limits: Record<string, FiatWithdrawLimits>;
+} = {
+  currencies: ['KGS', 'RUB', 'USD'],
+  methods: {
+    KGS: [
+      { id: 'bakai', name: 'Бакай Банк', feePct: '1.0' },
+      { id: 'other_kg', name: 'Другой Банк Кыргызстана', feePct: '1.5' },
+    ],
+    RUB: [{ id: 'other_ru', name: 'Межбанковский перевод RU', feePct: '1.5' }],
+    USD: [{ id: 'swift', name: 'SWIFT-перевод', feePct: '2.0' }],
+  },
+  limits: {
+    KGS: { min: '100000', available: '15000000' },
+    RUB: { min: '100000', available: '10000000' },
+    USD: { min: '1000', available: '200000' },
+  },
 };
 
-export const MOCK_SAVED_ADDRESSES: SavedAddress[] = [
-  { id: 'addr-1', ticker: 'USDT', network: 'TRC20', label: 'Основной кошелёк', address: 'TXn9s8gQmZ4vK7pR2wYbLd5fH1cJ6eA3xT' },
-  { id: 'addr-2', ticker: 'USDT', network: 'ERC20', label: 'Binance', address: '0x8f2A3bC1d4E6f7A9B0C1d2E3f4A5b6C7d8E9f0A1' },
-  { id: 'addr-3', ticker: 'BTC', label: 'Ledger', address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh' },
-];
-
-export const MOCK_SAVED_REQUISITES: SavedRequisite[] = [
-  { id: 'req-1', ticker: 'KGS', transferType: 'internal', label: 'Свой счёт xRuby', account: '1234 5678 9012 3456' },
-  {
-    id: 'req-2',
-    ticker: 'KGS',
-    transferType: 'kg',
-    label: 'Optima Bank',
-    account: '1234567890123456',
-    bankName: 'ОАО «Optima Bank»',
-    bic: '129001',
-    inn: '01234567891011',
+// No saved address supports the 'Bitcoin' network on purpose — this is how the
+// empty-saved-address-list state (§7's scenario switch) is reached without a
+// separate dev toggle: just pick BTC.
+export const MOCK_WITHDRAW_CRYPTO: {
+  assets: string[];
+  addresses: SavedAddress[];
+  networks: Record<string, CryptoNetwork[]>;
+  limits: Record<string, CryptoWithdrawLimits>;
+} = {
+  assets: ['USDT', 'USDC', 'BTC'],
+  addresses: [
+    { id: 'addr-1', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976', networks: ['Ethereum (ERC-20)'] },
+    { id: 'addr-2', address: '0x8f2A3bC1d4E6f7A9B0C1d2E3f4A5b6C7d8E9f0A1', networks: ['Ethereum (ERC-20)'] },
+    { id: 'addr-3', address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', networks: ['TRON (TRC-20)'] },
+  ],
+  networks: {
+    USDT: ['TRON (TRC-20)', 'Ethereum (ERC-20)'],
+    USDC: ['Ethereum (ERC-20)'],
+    BTC: ['Bitcoin'],
   },
-  {
-    id: 'req-3',
-    ticker: 'RUB',
-    transferType: 'ru',
-    label: 'Т-Банк',
-    account: '40817810000000012345',
-    bankName: 'АО «Т-Банк»',
-    bic: '044525974',
-    inn: '7710140679',
-    correspondentAccount: '30101810145250000974',
+  limits: {
+    USDT: { min: '7', available: '30000', fee: '0.50', contractTail: 'frsku4u7' },
+    USDC: { min: '7', available: '12500', fee: '0.50', contractTail: 'a1c9e2b4' },
+    BTC: { min: '0.0005', available: '0.42', fee: '0.0002', contractTail: null },
   },
-];
+};
 
 export function mockDelay(): Promise<void> {
   const ms = 400 + Math.random() * 400;

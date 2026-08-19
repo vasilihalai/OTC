@@ -84,25 +84,22 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
     <Panel heading={ru.dealDetail.requisitesTitle}>
       <Select
         label={ru.dealDetail.requisitesAssetLabel}
-        options={[{ value: requisites.asset, label: requisites.assetName }]}
+        layout="asset"
+        options={[{
+          value: requisites.asset,
+          label: requisites.asset,
+          secondary: requisites.assetName,
+          icon: <CurrencyIcon ticker={requisites.asset} size={24}/>,
+        }]}
         value={requisites.asset}
-        readOnly
-        renderValue={() => (
-          <span className={e('asset-value')}>
-            <span className={e('asset-left')}>
-              <CurrencyIcon ticker={requisites.asset} size={24}/>
-              {requisites.asset}
-            </span>
-            <span className={e('asset-name')}>{requisites.assetName}</span>
-          </span>
-        )}
+        onChange={() => {}}
       />
       <Select
         label={ru.dealDetail.requisitesNetworkLabel}
+        layout="plain"
         options={[{ value: requisites.network, label: requisites.network }]}
         value={requisites.network}
-        readOnly
-        showClear
+        onChange={() => {}}
       />
       <p className={e('qr-caption')}>{ru.dealDetail.requisitesScanQr}</p>
       <div className={e('qr-plate')}>

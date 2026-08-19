@@ -1,0 +1,114 @@
+.amount-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.amount-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.amount-field__label {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.amount-field__available {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.amount-field__transfer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--brand-red);
+  cursor: pointer;
+}
+
+.amount-field__box {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: border-color 0.15s ease;
+}
+
+.amount-field--invalid .amount-field__box {
+  border-color: var(--danger);
+}
+
+.amount-field__asset {
+  flex-shrink: 0;
+  margin: 0 8px 0 -16px;
+  padding-right: 8px;
+  border-right: 1px solid var(--border);
+}
+
+.amount-field__asset .select {
+  gap: 0;
+}
+
+.amount-field__asset .select__label {
+  display: none;
+}
+
+.amount-field__asset .select__box {
+  height: 48px;
+  border: none;
+  padding: 0 8px 0 16px;
+  background: none;
+}
+
+.amount-field__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  /* 16px, not the 15px body size, so iOS Safari/WKWebView doesn't auto-zoom on focus. */
+  font-size: 16px;
+}
+
+.amount-field__input:focus {
+  outline: none;
+}
+
+.amount-field__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.amount-field__max {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brand-red);
+  cursor: pointer;
+}
+
+.amount-field__error {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--danger);
+}

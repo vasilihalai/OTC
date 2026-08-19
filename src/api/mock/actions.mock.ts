@@ -1,10 +1,18 @@
-import type { Deal } from '@/api/types.ts';
+import type { Deal, TransferRequest } from '@/api/types.ts';
 import { mockDelay } from '@/api/mock/fixtures.ts';
 import { updateDeal } from '@/api/mock/store.ts';
+import { moveBetweenAccounts, setAccountBalance } from '@/api/mock/accountsStore.ts';
 
-export async function confirmDeal(id: string): Promise<Deal | undefined> {
+export interface ConfirmDealPatch {
+  status: Deal['status'];
+  from?: string;
+  to?: string;
+  rate?: string;
+}
+
+export async function confirmDeal(id: string, patch: ConfirmDealPatch): Promise<Deal | undefined> {
   await mockDelay();
-  return updateDeal(id, { status: 'RUNNING' });
+  return updateDeal(id, patch);
 }
 
 export async function declineDeal(id: string): Promise<Deal | undefined> {
@@ -15,4 +23,14 @@ export async function declineDeal(id: string): Promise<Deal | undefined> {
 export async function requestNewRate(id: string): Promise<Deal | undefined> {
   await mockDelay();
   return updateDeal(id, { status: 'RATE_PENDING' });
+}
+
+export async function transfer(request: TransferRequest): Promise<void> {
+  await mockDelay();
+  moveBetweenAccounts(request.from, request.to, request.ticker, Number(request.amount));
+}
+
+/** Dev-only: forces the deposit balance for a ticker, used by the deal-detail scenario switch. */
+export function setDepositBalanceForTesting(ticker: string, amount: number): void {
+  setAccountBalance('deposit', ticker, amount);
 }

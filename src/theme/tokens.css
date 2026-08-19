@@ -12,7 +12,9 @@
   --brand-red: #E5232E;
   --cta: #FFFFFF;
   --cta-disabled: #212226;
-  --cta-accent: #C8202A;
+  --cta-accent: #C0202B;
+  --cta-accent-pressed: #A81B24;
+  --cta-secondary: #1E2024;
   --success: #34C77B;
   --info: #3E9BFF;
   --warning: #E8B04B;

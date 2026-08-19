@@ -1,11 +1,35 @@
-import type { Asset, AssetGroup, ClientType, Deal, Requisites, Stats, User } from '@/api/types.ts';
-import { MOCK_ASSETS, MOCK_REQUISITES_CRYPTO, MOCK_REQUISITES_FIAT, MOCK_STATS, MOCK_USERS, mockDelay } from '@/api/mock/fixtures.ts';
+import type {
+  Accounts,
+  Asset,
+  AssetGroup,
+  ClientType,
+  CryptoWithdrawOptions,
+  Deal,
+  FiatWithdrawOptions,
+  Requisites,
+  Stats,
+  User,
+} from '@/api/types.ts';
+import {
+  MOCK_ASSETS,
+  MOCK_REQUISITES_CRYPTO,
+  MOCK_REQUISITES_FIAT,
+  MOCK_STATS,
+  MOCK_USERS,
+  MOCK_WITHDRAW_CRYPTO,
+  MOCK_WITHDRAW_FIAT,
+  mockDelay,
+} from '@/api/mock/fixtures.ts';
 import { findDeal, listDeals } from '@/api/mock/store.ts';
+import { getAccountBalance, getAccountsSnapshot } from '@/api/mock/accountsStore.ts';
 import { isFiatTicker } from '@/lib/money.ts';
+import { otcAccessOverride } from '@/lib/devSwitches.ts';
 
 export async function getUser(clientType: ClientType): Promise<User> {
   await mockDelay();
-  return MOCK_USERS[clientType];
+  const user = MOCK_USERS[clientType];
+  const override = otcAccessOverride();
+  return override ? { ...user, otcAccess: override } : user;
 }
 
 export async function getStats(): Promise<Stats> {
@@ -34,5 +58,33 @@ export async function getRequisites(id: string): Promise<Requisites | undefined>
 
 export async function getAssets(group: AssetGroup): Promise<Asset[]> {
   await mockDelay();
-  return MOCK_ASSETS.filter((asset) => asset.group === group);
+  return MOCK_ASSETS
+    .filter((asset) => asset.group === group)
+    .map((asset) => ({ ...asset, balance: String(getAccountBalance('deposit', asset.ticker)) }));
+}
+
+export async function getAccounts(): Promise<Accounts> {
+  await mockDelay();
+  return getAccountsSnapshot();
+}
+
+export async function getWithdrawFiatOptions(currency: string): Promise<FiatWithdrawOptions> {
+  await mockDelay();
+  return {
+    methods: MOCK_WITHDRAW_FIAT.methods[currency] ?? [],
+    limits: MOCK_WITHDRAW_FIAT.limits[currency] ?? { min: '0', available: '0' },
+  };
+}
+
+export async function getWithdrawCryptoOptions(asset: string): Promise<CryptoWithdrawOptions> {
+  await mockDelay();
+  const assetNetworks = MOCK_WITHDRAW_CRYPTO.networks[asset] ?? [];
+  const addresses = MOCK_WITHDRAW_CRYPTO.addresses.filter(
+    (address) => address.networks.some((network) => assetNetworks.includes(network)),
+  );
+  return {
+    addresses,
+    networks: assetNetworks,
+    limits: MOCK_WITHDRAW_CRYPTO.limits[asset] ?? { min: '0', available: '0', fee: '0', contractTail: null },
+  };
 }

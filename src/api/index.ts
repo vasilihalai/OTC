@@ -27,16 +27,12 @@ export const MockVerifyCodeError = mockAuth.MockVerifyCodeError;
 export const getUser = USE_REAL_API ? realProfile.getUser : mockData.getUser;
 export const getAssets = USE_REAL_API ? realBalances.getAssets : mockData.getAssets;
 
-export const getCryptoWithdrawalRules = USE_REAL_API
-  ? realWithdrawals.getCryptoWithdrawalRules
-  : mockWithdrawals.getCryptoWithdrawalRules;
-export const getFiatWithdrawalRules = USE_REAL_API
-  ? realWithdrawals.getFiatWithdrawalRules
-  : mockWithdrawals.getFiatWithdrawalRules;
-export const getSavedAddresses = USE_REAL_API ? realWithdrawals.getSavedAddresses : mockWithdrawals.getSavedAddresses;
-export const getSavedRequisites = USE_REAL_API
-  ? realWithdrawals.getSavedRequisites
-  : mockWithdrawals.getSavedRequisites;
+export const getWithdrawFiatOptions = USE_REAL_API
+  ? realWithdrawals.getWithdrawFiatOptions
+  : mockData.getWithdrawFiatOptions;
+export const getWithdrawCryptoOptions = USE_REAL_API
+  ? realWithdrawals.getWithdrawCryptoOptions
+  : mockData.getWithdrawCryptoOptions;
 export const submitCryptoWithdrawal = USE_REAL_API
   ? realWithdrawals.submitCryptoWithdrawal
   : mockWithdrawals.submitCryptoWithdrawal;
@@ -49,9 +45,12 @@ export const getDeals = mockData.getDeals;
 export const getDealById = mockData.getDealById;
 export const getRequisites = mockData.getRequisites;
 export const getStats = mockData.getStats;
+export const getAccounts = mockData.getAccounts;
 export const confirmDeal = mockActions.confirmDeal;
 export const declineDeal = mockActions.declineDeal;
 export const requestNewRate = mockActions.requestNewRate;
+export const transfer = mockActions.transfer;
+export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 
 // Called once from index.tsx's bootstrap, ahead of everything else above;
 // a no-op unless VITE_USE_REAL_API is on (VITE_SKIP_INITDATA skips just the
@@ -64,6 +63,7 @@ export async function verifyTelegramInitData(): Promise<void> {
 }
 
 export type { CryptoWithdrawalPayload, FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
+export type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';
 export type {
   Session,
   User,
@@ -75,16 +75,21 @@ export type {
   AssetGroup,
   ClientType,
   VerificationLevel,
+  OtcAccessReason,
   SocialProvider,
   SignInError,
   VerifyCodeError,
   CryptoNetwork,
-  CryptoWithdrawalRules,
   SavedAddress,
-  FiatTransferType,
-  FiatWithdrawalRules,
-  SavedRequisite,
+  CryptoWithdrawLimits,
+  CryptoWithdrawOptions,
+  WithdrawMethod,
+  FiatWithdrawLimits,
+  FiatWithdrawOptions,
   WithdrawalResult,
+  TransferAccount,
+  TransferRequest,
+  Accounts,
   Requisites,
   FiatRequisites,
   CryptoRequisites,

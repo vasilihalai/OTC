@@ -53,25 +53,6 @@
   cursor: pointer;
 }
 
-.requisites-panel__asset-value {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.requisites-panel__asset-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-}
-
-.requisites-panel__asset-name {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
 .requisites-panel__qr-caption {
   text-align: center;
   font-size: 12px;
