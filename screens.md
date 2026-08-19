@@ -1,6 +1,6 @@
 # xRuby OTC — screens.md
 
-Reverse-documented from the current implementation (`/Users/vasilihalai/Desktop/OTC`) as of 2026-08-20. This describes what's actually built and live, not a design intent — use it as the baseline for the next round of changes. Supersedes the 2026-08-19 version: that one predates the full-bleed panel-layout fix, the Profile rebuild, and this round's polish pass (all folded in below).
+Reverse-documented from the current implementation (`/Users/vasilihalai/Desktop/OTC`) as of 2026-08-20. This describes what's actually built and live, not a design intent — use it as the baseline for the next round of changes. Supersedes the 2026-08-19 version: that one predates the full-bleed panel-layout fix, the Profile rebuild, this round's polish pass, and the TransferModal rebuild against its Figma frame (all folded in below).
 
 ## 1. Scope
 
@@ -109,7 +109,7 @@ This is the thing most likely to regress, so it's stated first. A panel on Home,
 - **SummaryCard** — kv rows, 16 gap, bold "total" row, optional two-line value via `tail`. The crypto-withdrawal instance no longer carries the "На вывод комиссии сети" caption under it — removed per explicit request, the fee line item above the total already says this.
 - **Callout** — plain text block, no icon/title, 3 fills: `neutral` (`--bg-surface`, centered) / `warning` (`--panel-warning`) / `danger` (`--panel-error`).
 - **WarningPanel** — icon (triangle) + title + body, single `--panel-warning` fill, radius 12. Distinct from Callout — used for the crypto-withdrawal "Внимание!" notice.
-- **Modal** — scrim centers the card both horizontally and vertically. Card 400px wide (`max-width: calc(100% - 32px)`), radius 16, `--bg-page`, fade+scale-in animation. Structure: `top` (title + 28×28 round close button — shrunk from 48×48, was oversized relative to the title) → `body` (24px horizontal padding) → optional `bottom` (footer actions).
+- **Modal** — scrim centers the card both horizontally and vertically. Card width is now a **per-instance prop** (`width`, default 400, still capped by `max-width: calc(100% - 32px)` for narrow screens) so one modal can be narrowed without affecting every other modal — added specifically because TransferModal needed 343 while the 2FA/email-code modals needed to stay responsive at their own width (see §6.11). Close button is also a per-instance prop (`closeVariant: 'round' | 'bare'`): `round` (default) is the 28×28 `--bg-raised` button every other modal uses; `bare` is a plain 20px glyph with no button chrome, used only by TransferModal per its Figma frame. Structure: `top` (title + close) → `body` (24px horizontal padding) → optional `bottom` (footer actions).
 - **TabBar** — `position: absolute; bottom: 0` inside `.app-shell`, 88px + safe-area, radius 16 top corners, 1px top border. It never scrolls: `html`/`body` are `position: fixed; inset: 0; overflow: hidden; overscroll-behavior: none` (`src/index.css`) specifically so a touch-drag starting outside `.app-content`'s own scroll area — e.g. directly on the tab bar — can't rubber-band the document itself. That mattered because the tab bar is only pinned relative to `.app-shell`, not the viewport; if the document could scroll/bounce, the "fixed" tab bar visibly dragged along with it. `.app-content` keeps its own `overscroll-behavior: contain` on top of this so its internal scroll never chains to a parent that no longer has anywhere to go.
 - **CodeInput** — 6 cells, `--bg-raised` fill, radius 8, digit `clamp(18px, 6vw, 24px)`. **Responsive now**: cells are `flex:1` with `max-width:44px` and `aspect-ratio:1`, gap `min(8px, 2vw)` — on a 400px-wide modal card they render at the original 44×44, but on a narrow phone (~340px viewport, ~280px available body width) they shrink to fit instead of overflowing the modal. The overflow was the "кривая модалка" bug reported against the 2FA/email-code modals: six fixed 44px cells plus gaps needed ~304px, more than the modal body had on a narrow screen.
 - **TableRow** — see §2.3.
@@ -123,7 +123,7 @@ This is the thing most likely to regress, so it's stated first. A panel on Home,
 - **AuthenticatorModal** — 6-digit `CodeInput`, no "sync issues" helper link. Reuses the same mock `verifyCode` as email verification (any 6 digits except `000000`).
 - **TwoFactorGate** — the shared second-factor entry point. Renders `AuthenticatorModal` when `authenticatorEnabled` is true, `VerificationModal` (email code) otherwise. Used identically by sign-in, crypto withdrawal, and fiat withdrawal — see §5.
 - **QrScannerModal** — full-screen camera overlay (`getUserMedia` + `jsQR`), used to scan a wallet address into the crypto-withdrawal manual-address field. Parses `bitcoin:`/`ethereum:`/`tron:`-style URI payloads down to the bare address. Permission-denied state shows a retry button.
-- **TransferModal** — global modal (`store/transferModal.ts`), opened from any withdrawal screen's amount-field transfer glyph. From/To account `Select`s (plain layout, `--bg-raised` fill, min-height 40px) with a 44px swap button between them (was 52px); amount field uses the standard `AmountField` sizing with an embedded asset `Select`. Tightened this round (gaps, select/button sizes) specifically so the whole thing fits without feeling cramped or needing to scroll on a normal phone.
+- **TransferModal** — global modal (`store/transferModal.ts`), opened from any withdrawal screen's amount-field transfer glyph. Rebuilt this round against its Figma frame — full geometry and behaviour in **§6.11**, that section is the source of truth for this surface.
 
 ## 4. Navigation
 
@@ -215,6 +215,24 @@ Two full-bleed panels, bg-raised frame, 16px seam (see §2.3). `User` now carrie
 ### 6.10 OtcUnavailable (`/otc-unavailable`)
 `BlockingState`: 80×80 shield illustration, title/body per reason (`VERIFICATION_REQUIRED` vs `NOT_ELIGIBLE`), action button (open web cabinet / contact support).
 
+### 6.11 TransferModal (global)
+
+Rebuilt this round against the `Трансфер` Figma frame (node `2328-79489`) — the geometry below is measured off that export, not approximated. Opens over any withdrawal screen via the amount-field transfer glyph; the screen underneath stays fully legible (the scrim is only the 10% white wash, `--modal-scrim`, no extra darkening or blur beyond that).
+
+**Card.** 343 wide (`Modal`'s `width={343}` prop, capped by the shared `max-width: calc(100% - 32px)` on narrow screens), radius 16, `--bg-page`, centered. Title `Трансфер между аккаунтами` wraps to two lines. Close control is a **bare 20px `×` glyph** in `--text-quiet` (`Modal`'s `closeVariant="bare"`) at the top right — not the round `--bg-raised` button every other modal uses, on a 44px tap target.
+
+**Account fields — stacked, not side by side.** `С` and `На` are two full-width `Select`s (plain layout, `--bg-raised` fill, 44px height) stacked vertically with an 8px gap, **not** side-by-side with a swap button between them (that was the pre-rebuild layout, and it didn't match the frame). The swap control floats centered on the seam between the two fields, overlapping each slightly: a 52px `--bg-page` ring (`.transfer-modal__swap-ring`) containing a 44px `--bg-raised` circular button with a 24px up/down-arrows glyph. The two fields can never hold the same account — picking one flips the other; the swap button exchanges them and leaves the asset/amount alone.
+
+**Spacing rhythm — three different gaps, not normalized to one.** 8px between the `С` and `На` field groups (the swap ring straddles this seam). **40px** between the account block and the amount block (`Списать`) — they're separate blocks and the frame draws the separation that way. 12px between the two footer buttons (`.transfer-modal__footer`, not the shared `.button-row`'s default 16px). Do not collapse these to a single uniform gap.
+
+**Amount field.** Standard `AmountField` (44px, `--bg-page` fill — the one place besides the account selects where a field's fill matters: `--bg-raised` means "pick a thing", `--bg-page` means "type a number"), with an embedded 24px `CurrencyIcon` asset `Select` and a "Макс" button. A transfer carries no fee, so "Макс" is the full available balance of the source account for the selected asset.
+
+**Footer.** Paired `Отменить` (secondary) / `Подтвердить` (accent) buttons, 12px gap (see above).
+
+**Behaviour** (unchanged by the rebuild): on confirm, the modal closes, a toast confirms, and the screen underneath re-fetches balances — which on the deal hold-confirmation screen can move the callout into a different case, the reason the transfer glyph is reachable from there at all.
+
+**Still open:** the Figma export doesn't cover the modal's loading, error, or empty-source-account states — those exist in the build (spinner on confirm, insufficient-funds error under the amount field) and stay as they are until a frame exists to check them against.
+
 ## 7. Mock/dev switches (`src/lib/devSwitches.ts`, `?param=` on the hash route)
 
 - `?otc=verification|not_eligible|granted` — forces `user.otcAccess`.
@@ -228,3 +246,4 @@ Two full-bleed panels, bg-raised frame, 16px seam (see §2.3). `User` now carrie
 - Deal history (list/detail/status actions) intentionally stays mock-only per an earlier round's instruction — revisit when that Swagger surface exists.
 - Profile's language/theme pickers are UI-only (§6.9) — no i18n dictionary swap or light-theme token set exists yet. Building either is a real feature, not a follow-up polish item.
 - Worth confirming whether `isRealTelegram` detection is reliable in the actual deployed bot context (§4) — several past layout issues traced back to uncertainty here.
+- TransferModal's loading/error/empty-source-account states aren't covered by its Figma frame (§6.11) — they exist in the build as-is, revisit if a frame for them ever shows up.

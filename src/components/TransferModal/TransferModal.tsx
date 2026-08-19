@@ -18,8 +18,8 @@ import './TransferModal.css';
 
 function SwapIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M3 6h9m0 0l-2.5-2.5M12 6L9.5 8.5M13 10H4m0 0l2.5-2.5M4 10l2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 4v13M8 4L4.5 7.5M8 4l3.5 3.5M16 20V7M16 20l-3.5-3.5M16 20l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -102,8 +102,10 @@ export function TransferModal() {
       open={isOpen}
       title={ru.transferModal.title}
       onClose={close}
+      width={343}
+      closeVariant="bare"
       footer={(
-        <div className="button-row">
+        <div className="button-row transfer-modal__footer">
           <Button type="button" variant="secondary" onClick={close}>{ru.transferModal.cancelAction}</Button>
           <Button loading={submitting} disabled={!canConfirm} onClick={() => void handleConfirm()}>
             {ru.transferModal.confirmAction}
@@ -114,10 +116,12 @@ export function TransferModal() {
       <div className="transfer-modal">
         <div className="transfer-modal__accounts">
           <Select label={ru.transferModal.fromLabel} layout="plain" options={ACCOUNT_OPTIONS} value={from} onChange={selectFrom}/>
-          <button type="button" className="transfer-modal__swap" aria-label="Swap" onClick={handleSwap}>
-            <SwapIcon/>
-          </button>
           <Select label={ru.transferModal.toLabel} layout="plain" options={ACCOUNT_OPTIONS} value={to} onChange={selectTo}/>
+          <div className="transfer-modal__swap-ring">
+            <button type="button" className="transfer-modal__swap" aria-label="Swap" onClick={handleSwap}>
+              <SwapIcon/>
+            </button>
+          </div>
         </div>
 
         <AmountField

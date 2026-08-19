@@ -1,26 +1,35 @@
 .transfer-modal {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 40px;
 }
 
 .transfer-modal__accounts {
+  position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.transfer-modal__accounts .select {
-  flex: 1;
-  min-width: 0;
-  gap: 4px;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .transfer-modal__accounts .select__box {
   background: var(--bg-raised);
   border-color: transparent;
-  min-height: 40px;
-  padding: 6px 10px;
+  min-height: 44px;
+}
+
+.transfer-modal__swap-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .transfer-modal__swap {
@@ -30,11 +39,11 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  margin-bottom: -2px;
   border-radius: 50%;
-  background: var(--bg-page);
+  background: var(--bg-raised);
   border: none;
   cursor: pointer;
+  color: var(--text-muted);
   transition: transform 0.1s ease;
 }
 
@@ -42,15 +51,6 @@
   transform: scale(0.92);
 }
 
-.transfer-modal__swap > svg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 10px;
-  border-radius: 50%;
-  background: var(--bg-raised);
-  color: var(--text-primary);
-  box-sizing: border-box;
+.transfer-modal__footer {
+  gap: 12px;
 }

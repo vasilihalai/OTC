@@ -14,7 +14,6 @@
 }
 
 .modal__card {
-  width: 400px;
   max-width: calc(100% - 32px);
   background: var(--bg-page);
   border-radius: 16px;
@@ -67,6 +66,20 @@
 .modal__close svg {
   width: 11px;
   height: 11px;
+}
+
+.modal__close--bare {
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px 0;
+  background: none;
+  border-radius: 0;
+  color: var(--text-quiet);
+}
+
+.modal__close--bare svg {
+  width: 20px;
+  height: 20px;
 }
 
 .modal__body {
