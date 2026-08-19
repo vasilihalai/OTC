@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { classNames } from '@/css/classnames.ts';
 import { bem } from '@/css/bem.ts';
 import type { TextFieldProps } from '@/components/TextField/TextField.tsx';
+import { EyeIcon, EyeOffIcon } from '@/components/PasswordField/icons.tsx';
 
 import './PasswordField.css';
 
@@ -29,7 +30,7 @@ export function PasswordField({ label, error, className, ...rest }: Omit<TextFie
           aria-label={visible ? 'Hide password' : 'Show password'}
           onClick={() => setVisible((v) => !v)}
         >
-          {visible ? '🙈' : '👁'}
+          {visible ? <EyeOffIcon/> : <EyeIcon/>}
         </button>
       </div>
       {error && <span className={e('error')}>{error}</span>}

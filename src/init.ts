@@ -55,6 +55,19 @@ export async function init(options: {
           return emitEvent('safe_area_changed', { left: 0, top: 0, right: 0, bottom: 0 });
         }
 
+        // Some macOS Telegram Desktop builds also never answer this one,
+        // which would otherwise leave viewport.mount() pending forever
+        // below and the app stuck blank — belt-and-suspenders alongside
+        // the timeout guard on that call.
+        if (event.name === 'web_app_request_viewport') {
+          return emitEvent('viewport_changed', {
+            height: window.innerHeight,
+            width: window.innerWidth,
+            is_expanded: true,
+            is_state_stable: true,
+          });
+        }
+
         next();
       },
     });
@@ -72,7 +85,17 @@ export async function init(options: {
   }
 
   if (viewport.mount.isAvailable()) {
-    await viewport.mount().then(() => {
+    // Some Telegram clients (macOS Desktop has a history of this) never
+    // answer the viewport request the SDK waits on, which would otherwise
+    // leave this awaited forever and the whole app stuck blank. A timeout
+    // lets the app render in a degraded (unbound safe-area vars) state
+    // instead of never rendering at all.
+    const mounted = await Promise.race([
+      viewport.mount().then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2500)),
+    ]);
+
+    if (mounted) {
       viewport.bindCssVars();
       viewport.expand.ifAvailable();
 
@@ -89,7 +112,9 @@ export async function init(options: {
 
       swipeBehavior.mount.ifAvailable();
       swipeBehavior.disableVertical.ifAvailable();
-    });
+    } else {
+      console.warn('viewport.mount() timed out — rendering without full viewport binding.');
+    }
   }
 
   // Keeps a CSS hook (body.is-fullscreen) in sync with the SDK's reactive

@@ -11,6 +11,7 @@ import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { notifyError } from '@/telegram/adapter.ts';
 import { AppleIcon, GoogleIcon } from '@/components/SocialIcons/SocialIcons.tsx';
+import { BuildingIcon, PersonIcon } from '@/screens/SignIn/icons.tsx';
 import { ru } from '@/i18n/ru.ts';
 
 import './SignIn.css';
@@ -143,7 +144,7 @@ export function SignIn({ variant }: SignInProps) {
             type="button"
             variant="footer-link"
             className="sign-in__switch-link"
-            icon="👤"
+            icon={<PersonIcon/>}
             onClick={() => navigate('/login/personal')}
           >
             {ru.signIn.personalAccountLink}
@@ -153,7 +154,7 @@ export function SignIn({ variant }: SignInProps) {
             type="button"
             variant="footer-link"
             className="sign-in__switch-link"
-            icon="🏢"
+            icon={<BuildingIcon/>}
             onClick={() => navigate('/login')}
           >
             {ru.signIn.businessAccountLink}
