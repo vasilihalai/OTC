@@ -30,12 +30,21 @@ function useHeaderClearance(active: boolean) {
     if (!active || !el) {
       // No pill of our own to measure — Telegram's native back/close chrome
       // is what needs clearing instead, so fall back to its reported safe
-      // area (real and accurate here, since this only happens when we're
-      // actually talking to the real Telegram bridge).
-      const rootStyle = getComputedStyle(document.documentElement);
-      const insetTop = parseFloat(rootStyle.getPropertyValue('--tg-viewport-safe-area-inset-top')) || 0;
-      const contentInsetTop = parseFloat(rootStyle.getPropertyValue('--tg-viewport-content-safe-area-inset-top')) || 0;
-      document.documentElement.style.setProperty('--header-clearance', `${DEFAULT_CLEARANCE + Math.max(insetTop, contentInsetTop)}px`);
+      // area. This effect only runs once per mount (it's keyed on `active`,
+      // which never changes across in-app navigation once we're in real
+      // Telegram), so baking a computed *number* here was a bug: on cold
+      // load, Telegram hasn't necessarily reported its safe-area insets yet,
+      // so the very first navigation could snapshot 0 and every route after
+      // it inherited that stale value — until a full reload re-ran this
+      // late enough for the real value to be available. Writing a `calc()`
+      // *expression* that references the live Telegram CSS vars instead of
+      // their parsed values keeps this correct forever: the browser
+      // re-resolves it automatically whenever Telegram updates those vars,
+      // with no JS re-run required.
+      document.documentElement.style.setProperty(
+        '--header-clearance',
+        `calc(${DEFAULT_CLEARANCE}px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px)))`,
+      );
       return;
     }
 

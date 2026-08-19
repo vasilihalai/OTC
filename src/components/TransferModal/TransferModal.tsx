@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { Select } from '@/components/Select/Select.tsx';
@@ -43,6 +43,11 @@ export function TransferModal() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
+  const accountsRef = useRef<HTMLDivElement>(null);
+  const fromFieldRef = useRef<HTMLDivElement>(null);
+  const toFieldRef = useRef<HTMLDivElement>(null);
+  const [swapTop, setSwapTop] = useState<number>();
+
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -52,6 +57,42 @@ export function TransferModal() {
       setAccounts(accountsData);
       setAssets([...fiat, ...crypto]);
     });
+  }, [isOpen]);
+
+  // Centers the swap ring on the seam between the two *select boxes*
+  // themselves, not the midpoint of the whole label+box+label+box stack —
+  // that midpoint sits much closer to "С" than to "На", since only "На"
+  // has a label in the way. Measured live off the actual boxes so it stays
+  // correct regardless of label size, font, or locale.
+  useLayoutEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    function measure() {
+      const container = accountsRef.current;
+      const fromBox = fromFieldRef.current?.querySelector('.select__box');
+      const toBox = toFieldRef.current?.querySelector('.select__box');
+      if (!container || !fromBox || !toBox) {
+        return;
+      }
+      const containerTop = container.getBoundingClientRect().top;
+      const fromBottom = fromBox.getBoundingClientRect().bottom;
+      const toTop = toBox.getBoundingClientRect().top;
+      setSwapTop((fromBottom + toTop) / 2 - containerTop);
+    }
+    measure();
+    // The modal card is still mid scale-in transform (`modal-card-in`,
+    // 0.2s) on the frame this effect first fires, so that initial
+    // measurement can be a few px off — re-measure once it settles.
+    const settleTimer = setTimeout(measure, 220);
+    const ro = new ResizeObserver(measure);
+    if (accountsRef.current) {
+      ro.observe(accountsRef.current);
+    }
+    return () => {
+      clearTimeout(settleTimer);
+      ro.disconnect();
+    };
   }, [isOpen]);
 
   if (!isOpen) {
@@ -114,10 +155,14 @@ export function TransferModal() {
       )}
     >
       <div className="transfer-modal">
-        <div className="transfer-modal__accounts">
-          <Select label={ru.transferModal.fromLabel} layout="plain" options={ACCOUNT_OPTIONS} value={from} onChange={selectFrom}/>
-          <Select label={ru.transferModal.toLabel} layout="plain" options={ACCOUNT_OPTIONS} value={to} onChange={selectTo}/>
-          <div className="transfer-modal__swap-ring">
+        <div className="transfer-modal__accounts" ref={accountsRef}>
+          <div ref={fromFieldRef}>
+            <Select label={ru.transferModal.fromLabel} layout="plain" options={ACCOUNT_OPTIONS} value={from} onChange={selectFrom}/>
+          </div>
+          <div ref={toFieldRef}>
+            <Select label={ru.transferModal.toLabel} layout="plain" options={ACCOUNT_OPTIONS} value={to} onChange={selectTo}/>
+          </div>
+          <div className="transfer-modal__swap-ring" style={swapTop !== undefined ? { top: swapTop } : undefined}>
             <button type="button" className="transfer-modal__swap" aria-label="Swap" onClick={handleSwap}>
               <SwapIcon/>
             </button>
