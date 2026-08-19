@@ -76,6 +76,14 @@ body:not(.in-telegram) .app-shell {
 
 .app-content__page {
   min-height: 100%;
+  /* `.app-content` is a flex column, so without this the page can be
+     flex-shrunk below its actual content height — the shrunk box still
+     reports the right scrollHeight (children overflow it visibly), but the
+     reserved tab-bar clearance (`.app-content--with-tab-bar`'s
+     padding-bottom) ends up measured against the wrong box, so scrolling to
+     the true bottom leaves the last content behind the tab bar instead of
+     above it. */
+  flex-shrink: 0;
   animation: page-in 0.18s ease-out;
 }
 

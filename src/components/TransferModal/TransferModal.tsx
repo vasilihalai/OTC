@@ -62,6 +62,7 @@ export function TransferModal() {
   const availableLabel = `${formatAmount(available, ticker)} ${ticker}`;
   const amountNum = Number(amount || '0');
   const canConfirm = amountNum > 0 && amountNum <= Number(available);
+  const amountError = amount && amountNum > Number(available) ? ru.withdraw.errorInsufficientFunds : undefined;
 
   function handleSwap() {
     const prevFrom = from;
@@ -127,7 +128,7 @@ export function TransferModal() {
           onChange={setAmount}
           onMax={() => setAmount(available)}
           maxLabel={ru.transferModal.maxAction}
-          transferVariant
+          error={amountError}
           assetSelect={(
             <Select
               label=""

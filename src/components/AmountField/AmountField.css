@@ -51,20 +51,6 @@
   transition: border-color 0.15s ease;
 }
 
-.amount-field__box--transfer {
-  height: 76px;
-  background: var(--bg-raised);
-}
-
-.amount-field__box--transfer .amount-field__input {
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.amount-field__box--transfer .amount-field__asset .select__box {
-  height: 76px;
-}
-
 .amount-field--invalid .amount-field__box {
   border-color: var(--accent);
 }

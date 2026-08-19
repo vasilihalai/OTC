@@ -123,6 +123,7 @@ export function Profile() {
   }
 
   const isLevel2 = user.verificationLevel === 2;
+  const levelLabel = `${isLevel2 ? ru.profile.level2Label : ru.profile.level1Label} ✓`;
 
   return (
     <div className="profile">
@@ -133,29 +134,17 @@ export function Profile() {
             <h2 className="profile__name">{user.clientName}</h2>
             <div className="profile__badges">
               <Badge>{user.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl}</Badge>
-              <StatusChip tone={isLevel2 ? 'success' : 'AWAITING_FUNDS'}>{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>
+              <StatusChip tone="success">{levelLabel}</StatusChip>
             </div>
           </div>
         </div>
-        {!isLevel2 && (
-          <Button
-            type="button"
-            variant="link"
-            className="profile__upgrade"
-            onClick={() => openExternalLink(user.webCabinetUrl)}
-          >
-            {ru.profile.upgradeAction}
-          </Button>
-        )}
-      </Panel>
 
-      <Panel surface="card">
         <div className="profile__account-rows">
           <CopyableRow label={ru.profile.emailRow} value={user.email}/>
           <CopyableRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)}/>
           <KeyValueRow
             label={ru.profile.verificationRow}
-            value={<StatusChip tone={isLevel2 ? 'success' : 'AWAITING_FUNDS'}>{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>}
+            value={<StatusChip tone="success">{levelLabel}</StatusChip>}
           />
         </div>
       </Panel>

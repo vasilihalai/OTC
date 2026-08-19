@@ -94,19 +94,21 @@ export function WithdrawCrypto() {
   const selectedSavedAddress = options?.addresses.find((a) => a.id === addressChoice);
   const isManualAddress = !selectedSavedAddress;
   const address = isManualAddress ? manualAddress.trim() : selectedSavedAddress.address;
-  const compatibleNetworks = options && selectedSavedAddress
-    ? options.networks.filter((n) => selectedSavedAddress.networks.includes(n))
-    : (options?.networks ?? []);
+  // Every network the asset supports is always selectable here — the network
+  // is independent of which saved address is picked (filtering it down to
+  // only the networks the selected address happens to support was hiding
+  // the choice entirely whenever that address only listed one, e.g. USDT
+  // defaulting to a saved ERC-20-only address hid TRC-20 completely).
+  const compatibleNetworks = options?.networks ?? [];
   const isBtc = ticker === 'BTC';
 
-  // Keeps the network selection valid whenever the address (or its
-  // compatible-network set) changes — a stale value would otherwise leave
-  // the Select unable to match any option.
+  // Keeps the network selection valid whenever the options change — a stale
+  // value would otherwise leave the Select unable to match any option.
   useEffect(() => {
     if (compatibleNetworks.length > 0 && !compatibleNetworks.includes(network)) {
       setNetwork(compatibleNetworks[0]);
     }
-  }, [addressChoice, options]);
+  }, [options]);
 
   function handleMax() {
     setAmount(available);
@@ -115,7 +117,7 @@ export function WithdrawCrypto() {
 
   function handleAmountChange(value: string) {
     setAmount(value);
-    setAmountError(undefined);
+    setAmountError(value && Number(value) > Number(available) ? ru.withdraw.errorInsufficientFunds : undefined);
   }
 
   function handleTickerChange(value: string) {

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 8px 16px 100px;
+  padding: 8px 12px 100px;
 }
 
 .deal-detail__header {
@@ -33,7 +33,7 @@
 .deal-detail__not-found {
   text-align: center;
   color: var(--text-disabled);
-  padding: 48px 16px;
+  padding: 48px 12px;
 }
 
 .quote-card {

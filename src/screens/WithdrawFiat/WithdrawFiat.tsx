@@ -77,7 +77,12 @@ export function WithdrawFiat() {
 
   function handleAmountChange(value: string) {
     setAmount(value);
-    setAmountError(undefined);
+    if (!value) {
+      setAmountError(undefined);
+      return;
+    }
+    const enteredTotal = Number(value) + (Number(value) * feePercent) / 100;
+    setAmountError(enteredTotal > Number(available) ? ru.withdraw.errorInsufficientFunds : undefined);
   }
 
   function handleContinue() {
