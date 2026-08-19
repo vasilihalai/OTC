@@ -25,6 +25,7 @@ export const MOCK_USERS: Record<ClientType, User> = {
     userId: '8f3a92c17b4e55d0a6f23e81c94b1d07',
     webCabinetUrl: 'https://xruby.example/cabinet',
     supportUrl: 'https://t.me/xruby_support',
+    authenticatorEnabled: true,
   },
   FL: {
     clientName: 'Каримов Азамат',
@@ -35,6 +36,7 @@ export const MOCK_USERS: Record<ClientType, User> = {
     userId: '8f3a92c17b4e55d0a6f23e81c94b1d07',
     webCabinetUrl: 'https://xruby.example/cabinet',
     supportUrl: 'https://t.me/xruby_support',
+    authenticatorEnabled: false,
   },
 };
 

@@ -11,9 +11,9 @@ import { WarningPanel } from '@/components/WarningPanel/WarningPanel.tsx';
 import { HelpTip } from '@/components/HelpTip/HelpTip.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
-import { AuthenticatorModal } from '@/components/AuthenticatorModal/AuthenticatorModal.tsx';
+import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
 import { QrScannerModal } from '@/components/QrScannerModal/QrScannerModal.tsx';
-import { getAssets, getWithdrawCryptoOptions, submitCryptoWithdrawal } from '@/api/index.ts';
+import { getAssets, getUser, getWithdrawCryptoOptions, submitCryptoWithdrawal } from '@/api/index.ts';
 import type { Asset, CryptoWithdrawOptions } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
@@ -38,7 +38,7 @@ function QrIcon() {
 }
 
 export function WithdrawCrypto() {
-  useRequireSession();
+  const session = useRequireSession();
   const navigate = useNavigate();
   const openTransferModal = useTransferModalStore((s) => s.open);
   const [searchParams] = useSearchParams();
@@ -60,8 +60,15 @@ export function WithdrawCrypto() {
   const [success, setSuccess] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [authenticatorOpen, setAuthenticatorOpen] = useState(false);
+  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
 
   const idempotencyKey = useRef(crypto.randomUUID());
+
+  useEffect(() => {
+    if (session) {
+      void getUser(session.clientType).then((user) => setAuthenticatorEnabled(user.authenticatorEnabled));
+    }
+  }, [session]);
 
   useEffect(() => {
     void getAssets('crypto').then((data) => {
@@ -303,8 +310,10 @@ export function WithdrawCrypto() {
         </Button>
       </div>
 
-      <AuthenticatorModal
+      <TwoFactorGate
         open={authenticatorOpen}
+        authenticatorEnabled={authenticatorEnabled}
+        email={session?.email ?? ''}
         onClose={() => setAuthenticatorOpen(false)}
         onVerified={handleAuthenticated}
       />

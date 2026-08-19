@@ -12,6 +12,7 @@ import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
+import * as realTransfers from '@/api/real/transfers.ts';
 import { verifyInitData } from '@/api/real/initdata.ts';
 
 const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === 'true';
@@ -40,18 +41,21 @@ export const submitFiatWithdrawal = USE_REAL_API
   ? realWithdrawals.submitFiatWithdrawal
   : mockWithdrawals.submitFiatWithdrawal;
 
-// Always mocked — see header comment.
+export const getStats = USE_REAL_API ? realProfile.getStats : mockData.getStats;
+export const getAccounts = USE_REAL_API ? realProfile.getAccounts : mockData.getAccounts;
+export const getRequisites = USE_REAL_API ? realWithdrawals.getRequisites : mockData.getRequisites;
+export const getSavedRequisites = USE_REAL_API ? realWithdrawals.getSavedRequisites : mockData.getSavedRequisites;
+export const transfer = USE_REAL_API ? realTransfers.transfer : mockActions.transfer;
+
+// Always mocked — deals (list, detail, and every status-changing action on
+// them) are one cohesive unit built entirely on the in-memory deal store;
+// swapping only some of these would leave the rest reading stale mock data.
 export const getDeals = mockData.getDeals;
 export const getDealById = mockData.getDealById;
-export const getRequisites = mockData.getRequisites;
-export const getSavedRequisites = mockData.getSavedRequisites;
-export const getStats = mockData.getStats;
-export const getAccounts = mockData.getAccounts;
 export const confirmDeal = mockActions.confirmDeal;
 export const declineDeal = mockActions.declineDeal;
 export const requestNewRate = mockActions.requestNewRate;
 export const expireQuote = mockActions.expireQuote;
-export const transfer = mockActions.transfer;
 export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 
 // Called once from index.tsx's bootstrap, ahead of everything else above;

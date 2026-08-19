@@ -32,7 +32,6 @@ export function Home() {
   const [deals, setDeals] = useState<Deal[]>();
   const [assets, setAssets] = useState<Asset[]>();
   const [assetsLoading, setAssetsLoading] = useState(true);
-  const [assetCounts, setAssetCounts] = useState<{ crypto: number; fiat: number }>();
 
   const load = useCallback(async () => {
     const [userData, statsData, dealsData] = await Promise.all([
@@ -56,15 +55,6 @@ export function Home() {
       setAssetsLoading(false);
     });
   }, [selectedGroup, balancesVersion]);
-
-  useEffect(() => {
-    void Promise.all([getAssets('crypto'), getAssets('fiat')]).then(([crypto, fiat]) => {
-      setAssetCounts({
-        crypto: crypto.filter((a) => Number(a.balance) > 0).length,
-        fiat: fiat.filter((a) => Number(a.balance) > 0).length,
-      });
-    });
-  }, [balancesVersion]);
 
   const positiveAssets = (assets ?? []).filter((a) => Number(a.balance) > 0);
   const hiddenZeroBalance = (assets ?? []).length > positiveAssets.length;
@@ -108,8 +98,8 @@ export function Home() {
       <Panel heading={ru.home.depositAccountTitle}>
         <SegmentedControl
           options={[
-            { value: 'crypto', label: ru.home.segmentCrypto, count: assetCounts?.crypto },
-            { value: 'fiat', label: ru.home.segmentFiat, count: assetCounts?.fiat },
+            { value: 'crypto', label: ru.home.segmentCrypto },
+            { value: 'fiat', label: ru.home.segmentFiat },
           ]}
           value={selectedGroup}
           onChange={setSelectedGroup}

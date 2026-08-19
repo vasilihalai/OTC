@@ -26,19 +26,13 @@ button, input, select {
   font-family: inherit;
 }
 
-/* Caps the app at a mobile-like width on desktop browsers instead of
-   stretching full-bleed, and centers it. The transform gives fixed-position
-   descendants (TabBar, Toast, Modal scrims) a containing block scoped to
-   this shell instead of the full desktop viewport — no per-component
-   changes needed for those to size/center correctly. Harmless on real
-   mobile, where the viewport is already narrower than the cap. `height`
-   (not `min-height`) plus the column flex is what lets `.app-content`
-   below resolve to "exactly the space left after the header," which
-   individual screens rely on to pin footer content without a false
-   page-level scroll (e.g. sign-in's account-switch link). */
+/* `height` (not `min-height`) plus the column flex is what lets
+   `.app-content` below resolve to "exactly the space left after the
+   header," which individual screens rely on to pin footer content without
+   a false page-level scroll (e.g. sign-in's account-switch link). The
+   transform gives fixed-position descendants (TabBar, Toast, Modal scrims)
+   a containing block scoped to this shell instead of the full viewport. */
 .app-shell {
-  max-width: 480px;
-  margin: 0 auto;
   height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -46,23 +40,31 @@ button, input, select {
   transform: translateZ(0);
 }
 
-/* AppHeader is a floating pill positioned absolutely over the content (§2.3:
-   "Screen content starts at y 92"), not a normal-flow bar — so the content
-   area itself reserves that space, plus the real device's top inset. Uses
-   `max()`, not a sum: on-device, contentSafeAreaInset is measured from the
-   very top of the screen and already includes the notch/status-bar inset
-   rather than sitting additively below it (matching how the bottom edge is
-   already handled everywhere else in this file / TabBar.css) — summing the
-   two double-counts the notch and pushes content down by roughly 2x. */
+/* Caps the app at a mobile-like width and centers it — but only in a
+   desktop browser preview. Inside real Telegram this can letterbox the app
+   with dead space on both sides: some WebViews report a logical viewport
+   wider than the device's physical screen, and there's never a reason to
+   cap width there anyway (the client already constrains the window). */
+body:not(.in-telegram) .app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* AppHeader is a floating pill positioned absolutely over the content, not
+   a normal-flow bar — so the content area reserves clearance for it. That
+   clearance is measured live off the header's own rendered height (see
+   AppHeader.tsx) rather than computed from the safe-area CSS vars here:
+   those vars' real composition (summed vs. overlapping) has proven
+   inconsistent across devices/Telegram versions, where a formula-based
+   guess kept over- or under-shooting the actual gap. Measuring the header
+   directly is correct by construction, on every device. */
 .app-content {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding-top: calc(
-    92px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px))
-  );
+  padding-top: var(--header-clearance, 92px);
   overscroll-behavior: contain;
 }
 

@@ -8,12 +8,13 @@ import { TextField } from '@/components/TextField/TextField.tsx';
 import { Checkbox } from '@/components/Checkbox/Checkbox.tsx';
 import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { Button } from '@/components/Button/Button.tsx';
-import { getSavedRequisites, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
+import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
+import { getSavedRequisites, getUser, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
 import type { FiatTransferType, FiatWithdrawOptions, SavedRequisite } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { formatAmount } from '@/lib/money.ts';
-import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
+import { notifyError } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawRequisites.css';
@@ -27,7 +28,7 @@ export interface WithdrawFiatRouteState {
 const NEW_OPTION = '__new__';
 
 export function WithdrawRequisites() {
-  useRequireSession();
+  const session = useRequireSession();
   const navigate = useNavigate();
   const location = useLocation();
   const routeState = location.state as WithdrawFiatRouteState | null;
@@ -47,6 +48,8 @@ export function WithdrawRequisites() {
   const [accountError, setAccountError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [authenticatorOpen, setAuthenticatorOpen] = useState(false);
+  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
 
   const idempotencyKey = useRef(crypto.randomUUID());
 
@@ -55,6 +58,12 @@ export function WithdrawRequisites() {
       navigate('/withdraw/fiat', { replace: true });
     }
   }, [routeState, navigate]);
+
+  useEffect(() => {
+    if (session) {
+      void getUser(session.clientType).then((user) => setAuthenticatorEnabled(user.authenticatorEnabled));
+    }
+  }, [session]);
 
   useEffect(() => {
     void getSavedRequisites().then(setSaved);
@@ -77,7 +86,7 @@ export function WithdrawRequisites() {
   const fee = feePercent ? (Number(amount) * Number(feePercent)) / 100 : 0;
   const totalDebit = Number(amount) + fee;
 
-  async function handleSubmit() {
+  function handleConfirm() {
     setAccountError(undefined);
     if (isNew && !account.trim()) {
       setAccountError(ru.withdraw.errorAccountRequired);
@@ -85,6 +94,10 @@ export function WithdrawRequisites() {
       return;
     }
 
+    setAuthenticatorOpen(true);
+  }
+
+  async function handleAuthenticated() {
     setSubmitting(true);
     try {
       await submitFiatWithdrawal({
@@ -112,9 +125,9 @@ export function WithdrawRequisites() {
           },
         idempotencyKey: idempotencyKey.current,
       });
-      notifySuccess();
       bumpBalancesVersion();
       setSuccess(true);
+      setAuthenticatorOpen(false);
     } finally {
       setSubmitting(false);
     }
@@ -204,8 +217,16 @@ export function WithdrawRequisites() {
 
       <div className="button-row">
         <Button type="button" variant="secondary" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
-        <Button loading={submitting} onClick={() => void handleSubmit()}>{ru.withdraw.confirmAction}</Button>
+        <Button disabled={submitting} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
       </div>
+
+      <TwoFactorGate
+        open={authenticatorOpen}
+        authenticatorEnabled={authenticatorEnabled}
+        email={session?.email ?? ''}
+        onClose={() => setAuthenticatorOpen(false)}
+        onVerified={handleAuthenticated}
+      />
     </div>
   );
 }

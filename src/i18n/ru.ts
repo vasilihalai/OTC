@@ -19,7 +19,7 @@ export const ru = {
     submitAction: 'Войти',
     googleAction: 'Google',
     appleAction: 'Apple',
-    businessAccountLink: 'Перейти в бизнес аккаунт',
+    businessAccountLink: 'Войти в бизнес-аккаунт',
     personalAccountLink: 'Войти в личный аккаунт',
     errorEmailInvalid: 'Введите корректный email',
   },
@@ -49,7 +49,6 @@ export const ru = {
   authenticator: {
     title: 'Введите код из Google Authenticator',
     body: 'Проверьте своё приложение Google Authenticator.\nВведите код, указанный в приложении',
-    syncIssuesLink: 'Возникли проблемы с синхронизацией?',
   },
   home: {
     heroTitle: 'OTC',

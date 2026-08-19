@@ -19,6 +19,8 @@ export interface User {
   userId: string;
   webCabinetUrl: string;
   supportUrl: string;
+  /** Gates the 2FA method: Google Authenticator when true, email code otherwise. */
+  authenticatorEnabled: boolean;
 }
 
 export interface Stats {

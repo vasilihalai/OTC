@@ -135,7 +135,6 @@ export function TransferModal() {
               options={assets.map((asset) => ({
                 value: asset.ticker,
                 label: asset.ticker,
-                secondary: asset.name,
                 icon: <CurrencyIcon ticker={asset.ticker} size={24}/>,
               }))}
               value={ticker}

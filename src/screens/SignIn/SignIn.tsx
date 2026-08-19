@@ -4,8 +4,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { TextField } from '@/components/TextField/TextField.tsx';
 import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
-import { VerificationModal } from '@/screens/VerificationModal/VerificationModal.tsx';
-import { MockSignInError, completeSignIn, sendVerificationCode, signInSocial } from '@/api/index.ts';
+import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
+import { MockSignInError, completeSignIn, getUser, sendVerificationCode, signInSocial } from '@/api/index.ts';
 import type { ClientType } from '@/api/index.ts';
 import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
@@ -39,6 +39,7 @@ export function SignIn({ variant }: SignInProps) {
   const [emailError, setEmailError] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple'>();
+  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
 
   const clientType = CLIENT_TYPE[variant];
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
@@ -52,6 +53,8 @@ export function SignIn({ variant }: SignInProps) {
     setLoading(true);
     try {
       await sendVerificationCode(email, password);
+      const user = await getUser(clientType);
+      setAuthenticatorEnabled(user.authenticatorEnabled);
       openModal();
     } catch (err) {
       if (err instanceof MockSignInError) {
@@ -162,8 +165,9 @@ export function SignIn({ variant }: SignInProps) {
         )}
       </form>
 
-      <VerificationModal
+      <TwoFactorGate
         open={modalOpen}
+        authenticatorEnabled={authenticatorEnabled}
         email={email}
         onClose={closeModal}
         onVerified={handleVerified}

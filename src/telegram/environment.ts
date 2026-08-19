@@ -33,6 +33,11 @@ const NO_INSETS = { left: 0, top: 0, bottom: 0, right: 0 } as const;
  */
 export async function ensureTelegramEnvironment(): Promise<void> {
   isRealTelegram = await isTMA('complete');
+  // The desktop-preview width cap (`.app-shell` max-width) only makes sense
+  // outside Telegram — inside a real client the WebView can occasionally
+  // report a wider logical viewport than the physical screen, and capping
+  // it there just letterboxes the app with dead space on both sides.
+  document.body.classList.toggle('in-telegram', isRealTelegram);
   if (isRealTelegram) {
     return;
   }

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
-import { Button } from '@/components/Button/Button.tsx';
 import { MockVerifyCodeError, verifyCode } from '@/api/index.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
@@ -58,9 +57,6 @@ export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorM
         disabled={verifying}
       />
       {error && <p className="authenticator-modal__error">{error}</p>}
-      <Button type="button" variant="link" className="authenticator-modal__help">
-        {ru.authenticator.syncIssuesLink}
-      </Button>
     </Modal>
   );
 }

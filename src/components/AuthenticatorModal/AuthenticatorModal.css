@@ -12,8 +12,3 @@
   font-size: 14px;
   color: var(--accent);
 }
-
-.authenticator-modal__help {
-  width: 100%;
-  margin-top: 4px;
-}

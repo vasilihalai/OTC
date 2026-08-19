@@ -7,23 +7,18 @@
   background: #000;
 }
 
+/* This is a full-screen overlay outside the normal app shell, so it can't
+   reuse AppHeader's measured `--header-clearance` (there's no pill here to
+   measure) — a fixed, generous offset instead, well clear of Telegram's own
+   persistent fullscreen window chrome (the collapse/menu buttons that sit
+   top-right on every screen, unrelated to our own back/close pill). */
 .qr-scanner-modal__top {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(16px + var(--tg-viewport-safe-area-inset-top, 0px)) 16px 16px;
+  padding: 110px 70px 16px 16px;
   gap: 12px;
-}
-
-/* Clears Telegram's own floating Close/"..." menu buttons in fullscreen,
-   same clearance as AppHeader's pill. */
-body.is-fullscreen .qr-scanner-modal__top {
-  padding-top: calc(
-    16px + max(var(--tg-viewport-safe-area-inset-top, 0px), var(--tg-viewport-content-safe-area-inset-top, 0px))
-  );
-  padding-left: 80px;
-  padding-right: 56px;
 }
 
 .qr-scanner-modal__title {

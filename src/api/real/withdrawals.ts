@@ -1,4 +1,10 @@
-import type { CryptoWithdrawOptions, FiatWithdrawOptions, WithdrawalResult } from '@/api/types.ts';
+import type {
+  CryptoWithdrawOptions,
+  FiatWithdrawOptions,
+  Requisites,
+  SavedRequisite,
+  WithdrawalResult,
+} from '@/api/types.ts';
 import type { CryptoWithdrawalPayload, FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
 import { apiFetch } from '@/api/http.ts';
 
@@ -32,4 +38,13 @@ export async function submitFiatWithdrawal(payload: FiatWithdrawalPayload): Prom
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(body),
   });
+}
+
+export async function getSavedRequisites(): Promise<SavedRequisite[]> {
+  return apiFetch<SavedRequisite[]>('/withdrawals/fiat/requisites');
+}
+
+/** Payment requisites to fund a specific deal — id is a deal id, not a withdrawal. */
+export async function getRequisites(dealId: string): Promise<Requisites | undefined> {
+  return apiFetch<Requisites | undefined>(`/deals/${dealId}/requisites`);
 }
