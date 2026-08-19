@@ -12,6 +12,10 @@
   gap: 20px;
 }
 
+.home__hero .badge {
+  align-self: flex-start;
+}
+
 .home__hero-title {
   font-size: 18px;
   line-height: 28px;
