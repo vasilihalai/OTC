@@ -40,11 +40,21 @@
   justify-content: center;
   border: none;
   background: none;
-  color: var(--text-muted);
   cursor: pointer;
   transition: transform 0.1s ease;
 }
 
-.table-row__action:active {
+.table-row__action-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  color: var(--text-body);
+}
+
+.table-row__action:active .table-row__action-circle {
   transform: scale(0.9);
 }
