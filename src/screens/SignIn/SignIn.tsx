@@ -148,7 +148,7 @@ export function SignIn({ variant }: SignInProps) {
             variant="footer-link"
             className="sign-in__switch-link"
             icon={<PersonIcon/>}
-            onClick={() => navigate('/login/personal')}
+            onClick={() => navigate('/login/personal', { replace: true })}
           >
             {ru.signIn.personalAccountLink}
           </Button>
@@ -158,7 +158,7 @@ export function SignIn({ variant }: SignInProps) {
             variant="footer-link"
             className="sign-in__switch-link"
             icon={<BuildingIcon/>}
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login', { replace: true })}
           >
             {ru.signIn.businessAccountLink}
           </Button>

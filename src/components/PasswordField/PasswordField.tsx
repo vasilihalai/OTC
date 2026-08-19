@@ -9,9 +9,13 @@ import './PasswordField.css';
 
 const [b, e] = bem('password-field');
 
-export function PasswordField({ label, error, className, ...rest }: Omit<TextFieldProps, 'type'>) {
+export function PasswordField({ label, error, className, value, ...rest }: Omit<TextFieldProps, 'type'>) {
   const id = useId();
   const [visible, setVisible] = useState(false);
+  // Only the native masked dots need the smaller font — an empty field
+  // shows the placeholder, which must stay at the same size as every other
+  // field's placeholder (e.g. Email's "Введите почту").
+  const masked = !visible && !!value;
 
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
@@ -22,9 +26,10 @@ export function PasswordField({ label, error, className, ...rest }: Omit<TextFie
       <div className={e('box')}>
         <input
           id={id}
-          className={e('input', { masked: !visible })}
+          className={e('input', { masked })}
           type={visible ? 'text' : 'password'}
           autoComplete="off"
+          value={value}
           {...rest}
         />
         <button

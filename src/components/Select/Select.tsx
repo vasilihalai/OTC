@@ -56,7 +56,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       viewBox="0 0 12 8"
       fill="none"
       aria-hidden="true"
-      style={{ transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }}
+      style={{ transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0, transition: 'transform 0.15s ease' }}
     >
       <path d="M1 1.5L6 6.5L11 1.5" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>

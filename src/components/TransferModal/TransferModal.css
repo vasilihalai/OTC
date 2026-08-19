@@ -1,23 +1,26 @@
 .transfer-modal {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .transfer-modal__accounts {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
 }
 
 .transfer-modal__accounts .select {
   flex: 1;
   min-width: 0;
+  gap: 4px;
 }
 
 .transfer-modal__accounts .select__box {
   background: var(--bg-raised);
   border-color: transparent;
+  min-height: 40px;
+  padding: 6px 10px;
 }
 
 .transfer-modal__swap {
@@ -25,22 +28,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  margin-bottom: -4px;
+  width: 44px;
+  height: 44px;
+  margin-bottom: -2px;
   border-radius: 50%;
   background: var(--bg-page);
   border: none;
   cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.transfer-modal__swap:active {
+  transform: scale(0.92);
 }
 
 .transfer-modal__swap > svg {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  padding: 14px;
+  width: 36px;
+  height: 36px;
+  padding: 10px;
   border-radius: 50%;
   background: var(--bg-raised);
   color: var(--text-primary);

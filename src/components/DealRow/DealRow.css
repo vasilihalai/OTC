@@ -7,10 +7,6 @@
   transition: background-color 0.12s ease;
 }
 
-.deal-row--highlight {
-  background: var(--bg-raised);
-}
-
 .deal-row__top {
   display: flex;
   align-items: center;

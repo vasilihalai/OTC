@@ -11,9 +11,9 @@ const [b, e] = bem('app-header');
 const FORCE_IN_APP = import.meta.env.VITE_FORCE_INAPP_HEADER === 'true';
 
 // How far below the pill's own bottom edge content should start.
-const CONTENT_GAP = 10;
+const CONTENT_GAP = 2;
 // Falls back to this when there's no header to measure (variant "none").
-const DEFAULT_CLEARANCE = 64;
+const DEFAULT_CLEARANCE = 48;
 
 /**
  * Ties `.app-content`'s top clearance to the pill's actual rendered height

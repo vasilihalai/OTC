@@ -299,7 +299,6 @@ export function WithdrawCrypto() {
             ]}
             totalLabel={ru.withdraw.payoutLabel}
             totalValue={`${formatAmount(amount || '0', ticker)} ${ticker}`}
-            caption={ru.withdraw.feeCaption}
           />
         )}
 

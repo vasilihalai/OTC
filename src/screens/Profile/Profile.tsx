@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Panel } from '@/components/Panel/Panel.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { SettingRow } from '@/components/SettingRow/SettingRow.tsx';
+import { PickerModal } from '@/components/PickerModal/PickerModal.tsx';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { getAccountCertificate, getUser } from '@/api/index.ts';
 import type { SecurityLevel, User } from '@/api/index.ts';
 import { useRequireSession, useSessionStore } from '@/store/session.ts';
+import { useSettingsStore } from '@/store/settings.ts';
 import { useCopy } from '@/lib/useCopy.ts';
 import { groupOf4 } from '@/lib/text.ts';
 import { maskEmail } from '@/lib/mask.ts';
@@ -83,6 +85,17 @@ function LogoutIcon() {
   );
 }
 
+const LANGUAGE_OPTIONS = [
+  { value: 'ru' as const, label: ru.profile.languageRu },
+  { value: 'en' as const, label: ru.profile.languageEn },
+  { value: 'ky' as const, label: ru.profile.languageKy },
+];
+
+const THEME_OPTIONS = [
+  { value: 'dark' as const, label: ru.profile.themeDark },
+  { value: 'light' as const, label: ru.profile.themeLight },
+];
+
 function securityLabel(level: SecurityLevel): string {
   if (level === 'HIGH') {
     return ru.profile.securityHigh;
@@ -115,10 +128,16 @@ export function Profile() {
   const navigate = useNavigate();
   const clearSession = useSessionStore((s) => s.clearSession);
   const showToast = useToastStore((s) => s.show);
+  const language = useSettingsStore((s) => s.language);
+  const setLanguage = useSettingsStore((s) => s.setLanguage);
+  const theme = useSettingsStore((s) => s.theme);
+  const setTheme = useSettingsStore((s) => s.setTheme);
   const [user, setUser] = useState<User>();
   const [error, setError] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [certLoading, setCertLoading] = useState(false);
+  const [languageModalOpen, setLanguageModalOpen] = useState(false);
+  const [themeModalOpen, setThemeModalOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!session) {
@@ -219,8 +238,18 @@ export function Profile() {
       </div>
 
       <div className="profile__panel2">
-        <SettingRow icon={<GlobeIcon/>} label={ru.profile.languageRow} value={ru.profile.languageValue}/>
-        <SettingRow icon={<ThemeIcon/>} label={ru.profile.themeRow} value={ru.profile.themeValue}/>
+        <SettingRow
+          icon={<GlobeIcon/>}
+          label={ru.profile.languageRow}
+          value={LANGUAGE_OPTIONS.find((o) => o.value === language)?.label}
+          onClick={() => setLanguageModalOpen(true)}
+        />
+        <SettingRow
+          icon={<ThemeIcon/>}
+          label={ru.profile.themeRow}
+          value={THEME_OPTIONS.find((o) => o.value === theme)?.label}
+          onClick={() => setThemeModalOpen(true)}
+        />
         <div className="profile__divider"/>
         <SettingRow icon={<FaqIcon/>} label={ru.profile.faqRow} onClick={() => openExternalLink(user.faqUrl)}/>
         <SettingRow icon={<AboutIcon/>} label={ru.profile.aboutRow} onClick={() => openExternalLink(user.aboutUrl)}/>
@@ -233,6 +262,23 @@ export function Profile() {
         title={ru.profile.signOutConfirmTitle}
         onConfirm={handleSignOut}
         onCancel={() => setSignOutOpen(false)}
+      />
+
+      <PickerModal
+        open={languageModalOpen}
+        title={ru.profile.languageModalTitle}
+        options={LANGUAGE_OPTIONS}
+        value={language}
+        onSelect={setLanguage}
+        onClose={() => setLanguageModalOpen(false)}
+      />
+      <PickerModal
+        open={themeModalOpen}
+        title={ru.profile.themeModalTitle}
+        options={THEME_OPTIONS}
+        value={theme}
+        onSelect={setTheme}
+        onClose={() => setThemeModalOpen(false)}
       />
     </div>
   );

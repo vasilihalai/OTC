@@ -1,18 +1,21 @@
 .code-input {
   display: flex;
-  gap: 8px;
+  gap: min(8px, 2vw);
   justify-content: center;
+  width: 100%;
 }
 
 .code-input__cell {
-  width: 44px;
-  height: 44px;
+  flex: 1;
+  max-width: 44px;
+  aspect-ratio: 1;
+  min-width: 0;
   border-radius: 8px;
   border: 1px solid transparent;
   background: var(--bg-raised);
   color: var(--text-primary);
-  font-size: 24px;
-  line-height: 32px;
+  font-size: clamp(18px, 6vw, 24px);
+  line-height: 1;
   font-weight: 400;
   text-align: center;
   transition: border-color 0.15s ease, transform 0.1s ease;
