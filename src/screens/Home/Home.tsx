@@ -87,7 +87,7 @@ export function Home() {
           </div>
         )}
         {deals && deals.length === 0 && <p className="home__empty">{ru.home.noDeals}</p>}
-        {deals?.slice(0, 3).map((deal) => (
+        {deals?.slice(0, 2).map((deal) => (
           <DealRow key={deal.id} deal={deal} onClick={() => navigate(`/deals/${deal.id}`)}/>
         ))}
       </Panel>

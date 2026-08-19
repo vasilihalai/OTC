@@ -22,7 +22,7 @@ export function ConfirmDialog({ open, title, body, onConfirm, onCancel }: Confir
         {body && <p className={e('body')}>{body}</p>}
         <div className={e('actions')}>
           <Button onClick={onConfirm}>{ru.common.confirmYes}</Button>
-          <Button type="button" variant="link" onClick={onCancel}>{ru.common.confirmNo}</Button>
+          <Button type="button" variant="outline" onClick={onCancel}>{ru.common.confirmNo}</Button>
         </div>
       </div>
     </Modal>

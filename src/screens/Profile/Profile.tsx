@@ -134,11 +134,7 @@ export function Profile() {
             <h2 className="profile__name">{user.clientName}</h2>
             <div className="profile__badges">
               <Badge>{user.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl}</Badge>
-              {isLevel2 ? (
-                <StatusChip tone="success">{`${ru.profile.level2Label} ✓`}</StatusChip>
-              ) : (
-                <StatusChip tone="amber">{ru.profile.level1Label}</StatusChip>
-              )}
+              <StatusChip tone="success">{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>
             </div>
           </div>
         </div>
@@ -160,14 +156,9 @@ export function Profile() {
           <CopyableRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)}/>
           <KeyValueRow
             label={ru.profile.verificationRow}
-            value={isLevel2 ? (
-              <StatusChip tone="success">{`${ru.profile.level2Label} ✓`}</StatusChip>
-            ) : (
-              <StatusChip tone="amber">{ru.profile.level1Label}</StatusChip>
-            )}
+            value={<StatusChip tone="success">{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>}
           />
         </div>
-        {!isLevel2 && <p className="profile__caption">{ru.profile.otcAccessCaption}</p>}
       </Panel>
 
       <Panel surface="card">

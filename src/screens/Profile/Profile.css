@@ -90,13 +90,6 @@
   cursor: pointer;
 }
 
-.profile__caption {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-tertiary);
-  margin: 4px 0 0;
-}
-
 .profile__action {
   display: flex;
   align-items: center;

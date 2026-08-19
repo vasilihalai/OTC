@@ -248,7 +248,7 @@ export function WithdrawFiat() {
 
       <div className="withdraw-fiat__actions">
         <Button loading={submitting} onClick={() => void handleConfirm()}>{ru.withdraw.confirmAction}</Button>
-        <Button type="button" variant="link" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
+        <Button type="button" variant="outline" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
       </div>
     </div>
   );

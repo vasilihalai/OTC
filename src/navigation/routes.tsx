@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { Navigate } from 'react-router-dom';
 
 import { SignIn } from '@/screens/SignIn/SignIn.tsx';
 import { PasswordRecovery } from '@/screens/PasswordRecovery/PasswordRecovery.tsx';
@@ -21,8 +22,9 @@ export interface Route {
 }
 
 export const routes: Route[] = [
-  { path: '/login', Component: () => <SignIn variant="personal"/>, tabBar: false, headerVariant: 'close' },
-  { path: '/login/business', Component: () => <SignIn variant="business"/>, tabBar: false, headerVariant: 'back' },
+  { path: '/login', Component: () => <SignIn variant="business"/>, tabBar: false, headerVariant: 'close' },
+  { path: '/login/personal', Component: () => <SignIn variant="personal"/>, tabBar: false, headerVariant: 'back' },
+  { path: '/login/business', Component: () => <Navigate to="/login" replace/>, tabBar: false, headerVariant: 'none' },
   { path: '/forgot', Component: PasswordRecovery, tabBar: false, headerVariant: 'back' },
   { path: '/reset-password', Component: NewPassword, tabBar: false, headerVariant: 'back' },
   { path: '/home', Component: Home, tabBar: true, headerVariant: 'home' },

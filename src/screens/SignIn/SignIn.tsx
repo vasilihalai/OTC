@@ -138,25 +138,25 @@ export function SignIn({ variant }: SignInProps) {
           </Button>
         </div>
 
-        {variant === 'personal' ? (
+        {variant === 'business' ? (
           <Button
             type="button"
             variant="footer-link"
-            className="sign-in__business-link"
-            icon="🏢"
-            onClick={() => navigate('/login/business')}
+            className="sign-in__switch-link"
+            icon="👤"
+            onClick={() => navigate('/login/personal')}
           >
-            {ru.signIn.businessAccountLink}
+            {ru.signIn.personalAccountLink}
           </Button>
         ) : (
           <Button
             type="button"
             variant="footer-link"
-            className="sign-in__business-link"
-            icon="👤"
+            className="sign-in__switch-link"
+            icon="🏢"
             onClick={() => navigate('/login')}
           >
-            {ru.signIn.personalAccountLink}
+            {ru.signIn.businessAccountLink}
           </Button>
         )}
       </form>

@@ -234,8 +234,8 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
       </Button>
       <Button
         type="button"
-        variant="link"
-        className="deal-detail__decline"
+        variant="outline"
+        danger
         loading={declining}
         onClick={() => setDeclineDialogOpen(true)}
       >
@@ -296,7 +296,8 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
             action={(
               <Button
                 type="button"
-                variant="link"
+                variant="outline"
+                danger
                 loading={busy}
                 onClick={() => setCancelDialogOpen(true)}
               >

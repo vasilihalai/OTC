@@ -19,8 +19,8 @@ export const ru = {
     submitAction: 'Войти',
     googleAction: 'Google',
     appleAction: 'Apple',
-    businessAccountLink: 'Войти бизнес-аккаунт',
-    personalAccountLink: 'Войти личный аккаунт',
+    businessAccountLink: 'Перейти в бизнес аккаунт',
+    personalAccountLink: 'Войти в личный аккаунт',
     errorEmailInvalid: 'Введите корректный email',
   },
   verification: {
@@ -187,7 +187,6 @@ export const ru = {
     level1Label: 'Уровень 1',
     level2Label: 'Уровень 2',
     upgradeAction: 'Повысить до Уровня 2 →',
-    otcAccessCaption: 'OTC доступен с Уровнем 2.',
     typeUl: 'ЮЛ',
     typeFl: 'ФЛ',
     openCabinetAction: 'Открыть веб-кабинет xRuby',

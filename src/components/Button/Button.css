@@ -87,6 +87,24 @@
   color: var(--text-primary);
 }
 
+/* Outline — bordered, full tap target: cancel/decline actions across deals,
+   withdrawals, sign-out and other confirm dialogs. */
+.button--outline {
+  width: 100%;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.button--outline.button--danger {
+  border-color: var(--brand-red);
+  color: var(--brand-red);
+}
+
 /* Footer link */
 .button--footer-link {
   width: 100%;
