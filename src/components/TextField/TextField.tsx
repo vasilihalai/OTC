@@ -19,7 +19,10 @@ export function TextField({ label, error, suffix, className, ...rest }: TextFiel
 
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
-      <label className={e('label')} htmlFor={id}>{label}</label>
+      <label className={e('label')} htmlFor={id}>
+        {label}
+        <span className={e('required')} aria-hidden="true">*</span>
+      </label>
       {suffix ? (
         <div className={e('box')}>
           <input id={id} className={e('input')} autoComplete="off" {...rest} />

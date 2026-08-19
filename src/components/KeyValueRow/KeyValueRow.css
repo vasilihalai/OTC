@@ -17,16 +17,16 @@
 }
 
 .key-value-row__label {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-subtle);
   flex-shrink: 0;
 }
 
 .key-value-row__value {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 20px;
-  color: var(--text-primary);
+  color: var(--text-body);
   text-align: right;
   word-break: break-word;
 }
@@ -35,7 +35,7 @@
   height: 14px;
   width: 96px;
   border-radius: 6px;
-  background: var(--bg-card);
+  background: var(--bg-raised);
   animation: key-value-row-skeleton-pulse 1.2s ease-in-out infinite;
 }
 

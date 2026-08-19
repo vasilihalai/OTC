@@ -24,3 +24,13 @@ export function otcAccessOverride(): OtcAccessReason | undefined {
   }
   return undefined;
 }
+
+/** `?scenario=quote_expiring` — the RATE_ACTIVE deal's quote countdown starts at ~10s instead of 5 minutes. */
+export function isQuoteExpiringScenario(): boolean {
+  return readHashParam('scenario') === 'quote_expiring';
+}
+
+/** `?scenario=empty_deals` — deals list loads empty, for the empty-state screens. */
+export function isEmptyDealsScenario(): boolean {
+  return readHashParam('scenario') === 'empty_deals';
+}

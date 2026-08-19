@@ -1,22 +1,25 @@
 .segmented-control {
   display: inline-flex;
-  gap: 4px;
-  background: transparent;
-  border-radius: 999px;
-  padding: 2px;
+  gap: 8px;
+  background: var(--bg-raised);
+  border-radius: 30px;
+  padding: 6px 12px;
 }
 
 .segmented-control__item {
-  height: 34px;
-  padding: 0 16px;
-  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 30px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-quiet);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.1s ease;
+  transition: color 0.18s ease, transform 0.1s ease;
 }
 
 .segmented-control__item:active {
@@ -24,7 +27,5 @@
 }
 
 .segmented-control__item--active {
-  background: #2A2C31;
-  color: var(--text-primary);
-  font-weight: 600;
+  color: var(--text-strong);
 }

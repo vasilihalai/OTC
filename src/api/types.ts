@@ -48,6 +48,11 @@ export interface Deal {
   rate: string | null;
   /** Ticker of the `from` asset — drives which requisites variant (fiat/crypto) applies. */
   ticker: string;
+  /** Quote-card fields — only meaningful while `status === 'RATE_ACTIVE'`. */
+  ratePerUnit?: string;
+  rateUnitLabel?: string;
+  /** ISO timestamp — the quote card counts down to this and flips to RATE_STALE at zero. */
+  quoteExpiresAt?: string;
 }
 
 export type AssetGroup = 'crypto' | 'fiat';
@@ -73,6 +78,31 @@ export interface SavedAddress {
   address: string;
   /** Chains this address can receive on — an address is asset-agnostic, a network is not. */
   networks: CryptoNetwork[];
+  /** Wallet labels shown as the dropdown row's second metadata line, e.g. `Trust Wallet, MetaMask +2`. */
+  labels: string[];
+}
+
+export type FiatTransferType = 'internal' | 'kg' | 'ru';
+
+export interface SavedRequisite {
+  id: string;
+  transferType: FiatTransferType;
+  label: string;
+  account: string;
+  bankName?: string;
+  bic?: string;
+  inn?: string;
+  correspondentAccount?: string;
+}
+
+export interface RequisitesPayload {
+  transferType: FiatTransferType;
+  account: string;
+  bankName?: string;
+  bic?: string;
+  inn?: string;
+  correspondentAccount?: string;
+  saveForLater: boolean;
 }
 
 export interface CryptoWithdrawLimits {

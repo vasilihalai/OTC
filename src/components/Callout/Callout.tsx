@@ -7,7 +7,7 @@ import './Callout.css';
 const [b] = bem('callout');
 
 export interface CalloutProps {
-  variant: 'danger' | 'neutral';
+  variant: 'neutral' | 'warning' | 'danger';
   children: ReactNode;
 }
 

@@ -98,7 +98,7 @@ export function Profile() {
       <div className="profile">
         <Panel>
           <p className="profile__error">{ru.profile.errorTitle}</p>
-          <Button variant="social" onClick={() => void load()}>{ru.profile.retryAction}</Button>
+          <Button variant="secondary" onClick={() => void load()}>{ru.profile.retryAction}</Button>
         </Panel>
       </div>
     );
@@ -134,7 +134,7 @@ export function Profile() {
             <h2 className="profile__name">{user.clientName}</h2>
             <div className="profile__badges">
               <Badge>{user.clientType === 'UL' ? ru.profile.typeUl : ru.profile.typeFl}</Badge>
-              <StatusChip tone="success">{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>
+              <StatusChip tone={isLevel2 ? 'success' : 'AWAITING_FUNDS'}>{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function Profile() {
           <CopyableRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)}/>
           <KeyValueRow
             label={ru.profile.verificationRow}
-            value={<StatusChip tone="success">{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>}
+            value={<StatusChip tone={isLevel2 ? 'success' : 'AWAITING_FUNDS'}>{isLevel2 ? `${ru.profile.level2Label} ✓` : ru.profile.level1Label}</StatusChip>}
           />
         </div>
       </Panel>

@@ -31,7 +31,7 @@ export function OtcUnavailable() {
 
   return (
     <BlockingState
-      logo={<span style={{ color: 'var(--brand-red)', fontWeight: 700, fontSize: 20 }}>xRuby</span>}
+      logo={<span style={{ color: 'var(--brand-mark)', fontWeight: 700, fontSize: 20 }}>xRuby</span>}
       title={isVerification ? ru.otcUnavailable.verificationTitle : ru.otcUnavailable.notEligibleTitle}
       body={isVerification ? ru.otcUnavailable.verificationBody : ru.otcUnavailable.notEligibleBody}
       caption={isVerification ? ru.otcUnavailable.verificationCaption : undefined}

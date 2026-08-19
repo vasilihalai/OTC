@@ -1,10 +1,7 @@
 import type { DealStatus } from '@/api/index.ts';
 import { ru } from '@/i18n/ru.ts';
 
-export type StatusTone = 'success' | 'info' | 'amber' | 'danger' | 'violet' | 'neutral';
-
 interface StatusMeta {
-  tone: StatusTone;
   listLabel: string;
   detailLabel: string;
 }
@@ -12,17 +9,13 @@ interface StatusMeta {
 // The chip text differs between the list and the detail header for
 // AWAITING_FUNDS only — every other status shares one label in both places.
 export const DEAL_STATUS_META: Record<DealStatus, StatusMeta> = {
-  RATE_PENDING: { tone: 'info', listLabel: ru.deals.statusRatePending, detailLabel: ru.deals.statusRatePending },
-  RATE_ACTIVE: { tone: 'violet', listLabel: ru.deals.statusRateActive, detailLabel: ru.deals.statusRateActive },
-  RATE_STALE: { tone: 'neutral', listLabel: ru.deals.statusRateStale, detailLabel: ru.deals.statusRateStale },
-  AWAITING_FUNDS: {
-    tone: 'amber',
-    listLabel: ru.deals.statusAwaitingFundsList,
-    detailLabel: ru.deals.statusAwaitingFundsDetail,
-  },
-  RUNNING: { tone: 'info', listLabel: ru.deals.statusRunning, detailLabel: ru.deals.statusRunning },
-  DONE: { tone: 'success', listLabel: ru.deals.statusDone, detailLabel: ru.deals.statusDone },
-  DECLINED: { tone: 'danger', listLabel: ru.deals.statusDeclined, detailLabel: ru.deals.statusDeclined },
+  RATE_PENDING: { listLabel: ru.deals.statusRatePending, detailLabel: ru.deals.statusRatePending },
+  RATE_ACTIVE: { listLabel: ru.deals.statusRateActive, detailLabel: ru.deals.statusRateActive },
+  RATE_STALE: { listLabel: ru.deals.statusRateStale, detailLabel: ru.deals.statusRateStale },
+  AWAITING_FUNDS: { listLabel: ru.deals.statusAwaitingFundsList, detailLabel: ru.deals.statusAwaitingFundsDetail },
+  RUNNING: { listLabel: ru.deals.statusRunning, detailLabel: ru.deals.statusRunning },
+  DONE: { listLabel: ru.deals.statusDone, detailLabel: ru.deals.statusDone },
+  DECLINED: { listLabel: ru.deals.statusDeclined, detailLabel: ru.deals.statusDeclined },
 };
 
 const ACTIVE_STATUSES: DealStatus[] = ['RATE_PENDING', 'RATE_ACTIVE', 'RATE_STALE', 'AWAITING_FUNDS', 'RUNNING'];
@@ -57,12 +50,19 @@ export function getDocumentAvailability(status: DealStatus): DocumentAvailabilit
   if (status === 'DECLINED') {
     return { accept: false, payment: false, certificate: false, showCaption: false };
   }
-  if (status === 'RATE_PENDING' || status === 'RATE_STALE') {
+  if (status === 'RATE_PENDING' || status === 'RATE_ACTIVE' || status === 'RATE_STALE') {
     return { accept: false, payment: false, certificate: false, showCaption: true };
   }
+  // AWAITING_FUNDS, RUNNING
   return { accept: true, payment: true, certificate: false, showCaption: true };
 }
 
-export function isConfirmationStatus(status: DealStatus): boolean {
-  return status === 'RATE_ACTIVE' || status === 'AWAITING_FUNDS';
+/** Only AWAITING_FUNDS is the hold-confirmation body now — RATE_ACTIVE is its own quote-card branch. */
+export function isHoldConfirmationStatus(status: DealStatus): boolean {
+  return status === 'AWAITING_FUNDS';
+}
+
+/** §4's `Детали` row visibility — RATE_PENDING/RATE_ACTIVE/RATE_STALE show only `Курс`. */
+export function showsFullDetailsRows(status: DealStatus): boolean {
+  return status !== 'RATE_PENDING' && status !== 'RATE_ACTIVE' && status !== 'RATE_STALE';
 }

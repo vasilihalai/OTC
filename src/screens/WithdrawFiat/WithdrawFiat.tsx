@@ -1,20 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { Panel } from '@/components/Panel/Panel.tsx';
 import { Select } from '@/components/Select/Select.tsx';
 import { AmountField } from '@/components/AmountField/AmountField.tsx';
 import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Panel } from '@/components/Panel/Panel.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
-import { getAssets, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
+import { getAssets, getWithdrawFiatOptions } from '@/api/index.ts';
 import type { Asset, FiatWithdrawOptions } from '@/api/index.ts';
+import type { WithdrawFiatRouteState } from '@/screens/WithdrawRequisites/WithdrawRequisites.tsx';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { useTransferModalStore } from '@/store/transferModal.ts';
 import { formatAmount } from '@/lib/money.ts';
-import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
+import { notifyError } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawFiat.css';
@@ -24,7 +25,6 @@ export function WithdrawFiat() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselected = searchParams.get('asset');
-  const bumpBalancesVersion = useUiStore((s) => s.bumpBalancesVersion);
   const balancesVersion = useUiStore((s) => s.balancesVersion);
   const openTransferModal = useTransferModalStore((s) => s.open);
 
@@ -34,11 +34,7 @@ export function WithdrawFiat() {
   const [methodId, setMethodId] = useState('');
   const [amount, setAmount] = useState('');
   const [amountError, setAmountError] = useState<string>();
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-
-  const idempotencyKey = useRef(crypto.randomUUID());
 
   useEffect(() => {
     void getAssets('fiat').then((data) => {
@@ -84,7 +80,7 @@ export function WithdrawFiat() {
     setAmountError(undefined);
   }
 
-  async function handleConfirm() {
+  function handleContinue() {
     setAmountError(undefined);
     if (options && Number(amount) < Number(options.limits.min)) {
       setAmountError(ru.withdraw.errorBelowMin);
@@ -97,27 +93,8 @@ export function WithdrawFiat() {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await submitFiatWithdrawal({ ticker: currency, methodId, amount, idempotencyKey: idempotencyKey.current });
-      notifySuccess();
-      bumpBalancesVersion();
-      setSuccess(true);
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  if (success) {
-    return (
-      <div className="withdraw-fiat">
-        <Panel>
-          <h1 className="withdraw-fiat__success-title">{ru.withdraw.successTitle}</h1>
-          <p className="withdraw-fiat__success-body">{ru.withdraw.successBody}</p>
-          <Button variant="accent" onClick={() => navigate('/home', { replace: true })}>{ru.withdraw.doneAction}</Button>
-        </Panel>
-      </div>
-    );
+    const state: WithdrawFiatRouteState = { ticker: currency, methodId, amount };
+    navigate('/withdraw/fiat/requisites', { state });
   }
 
   if (initialLoading) {
@@ -189,7 +166,7 @@ export function WithdrawFiat() {
       </div>
 
       <div className="withdraw-fiat__submit">
-        <Button variant="accent" loading={submitting} onClick={() => void handleConfirm()}>{ru.withdraw.confirmAction}</Button>
+        <Button variant="accent" onClick={handleContinue}>{ru.withdraw.confirmAction}</Button>
       </div>
     </div>
   );

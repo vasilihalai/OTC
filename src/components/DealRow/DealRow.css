@@ -1,18 +1,15 @@
 .deal-row {
-  padding: 14px 4px;
-  margin: 0 -4px;
-  border-radius: 10px;
-  border-bottom: 1px solid var(--border);
+  height: 128px;
+  box-sizing: border-box;
+  padding: 16px;
+  margin: 0 -16px;
+  width: calc(100% + 32px);
   cursor: pointer;
   transition: background-color 0.12s ease;
 }
 
-.deal-row:active {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.deal-row:last-child {
-  border-bottom: none;
+.deal-row--highlight {
+  background: var(--bg-raised);
 }
 
 .deal-row__top {
@@ -26,13 +23,18 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-strong);
 }
 
 .deal-row__date {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-tertiary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-quiet);
+}
+
+.deal-row .key-value-row {
+  padding: 2px 0;
 }

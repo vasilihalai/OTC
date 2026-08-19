@@ -25,6 +25,8 @@ export interface AmountFieldProps {
   error?: string;
   onTransfer?: () => void;
   assetSelect?: ReactNode;
+  /** Fill `--bg-raised` instead of `--bg-page` — used only inside the transfer modal. */
+  transferVariant?: boolean;
 }
 
 export function AmountField({
@@ -38,6 +40,7 @@ export function AmountField({
   error,
   onTransfer,
   assetSelect,
+  transferVariant,
 }: AmountFieldProps) {
   function handleChange(ev: ChangeEvent<HTMLInputElement>) {
     onChange(ev.target.value);
@@ -56,7 +59,7 @@ export function AmountField({
           )}
         </span>
       </div>
-      <div className={e('box')}>
+      <div className={e('box', { transfer: !!transferVariant })}>
         {assetSelect && <div className={e('asset')}>{assetSelect}</div>}
         <input
           className={e('input')}

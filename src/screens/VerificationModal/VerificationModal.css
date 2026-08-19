@@ -1,21 +1,23 @@
 .verification-modal__sent-to {
   margin: 0;
   text-align: center;
-  font-size: 15px;
-  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-muted);
 }
 
 .verification-modal__email {
   margin: -12px 0 4px;
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-muted);
 }
 
 .verification-modal__error {
   margin: -8px 0 0;
   text-align: center;
-  font-size: 13px;
-  color: var(--danger);
+  font-size: 14px;
+  color: var(--accent);
 }

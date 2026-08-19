@@ -1,10 +1,16 @@
 import type { Deal } from '@/api/types.ts';
 import { MOCK_DEALS } from '@/api/mock/fixtures.ts';
+import { isEmptyDealsScenario, isQuoteExpiringScenario } from '@/lib/devSwitches.ts';
 
 // In-memory, mutated by actions.mock.ts so a status change is visible
 // immediately and survives navigation within the session; a reload resets
 // back to the fixtures.
-const deals: Deal[] = MOCK_DEALS.map((deal) => ({ ...deal }));
+const deals: Deal[] = isEmptyDealsScenario() ? [] : MOCK_DEALS.map((deal) => {
+  if (isQuoteExpiringScenario() && deal.status === 'RATE_ACTIVE') {
+    return { ...deal, quoteExpiresAt: new Date(Date.now() + 10_000).toISOString() };
+  }
+  return { ...deal };
+});
 
 export function listDeals(): Deal[] {
   return deals;

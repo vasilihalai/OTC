@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 16px 100px;
+  padding: 8px 16px 16px;
 }
 
 .profile__error {
@@ -12,7 +12,7 @@
   gap: 12px;
   padding: 32px 16px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .profile__identity {
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--brand-red), #8E141B);
+  background: linear-gradient(135deg, var(--accent), #8E141B);
   color: #FFFFFF;
   font-size: 20px;
   font-weight: 700;
@@ -86,7 +86,7 @@
   padding: 0;
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -110,5 +110,5 @@
 }
 
 .profile__action--danger {
-  color: var(--brand-red);
+  color: var(--accent);
 }

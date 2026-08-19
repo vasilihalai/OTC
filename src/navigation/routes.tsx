@@ -9,6 +9,7 @@ import { Deals } from '@/screens/Deals/Deals.tsx';
 import { DealDetail } from '@/screens/DealDetail/DealDetail.tsx';
 import { WithdrawCrypto } from '@/screens/WithdrawCrypto/WithdrawCrypto.tsx';
 import { WithdrawFiat } from '@/screens/WithdrawFiat/WithdrawFiat.tsx';
+import { WithdrawRequisites } from '@/screens/WithdrawRequisites/WithdrawRequisites.tsx';
 import { Profile } from '@/screens/Profile/Profile.tsx';
 import { OtcUnavailable } from '@/screens/OtcUnavailable/OtcUnavailable.tsx';
 
@@ -34,4 +35,5 @@ export const routes: Route[] = [
   { path: '/profile', Component: Profile, tabBar: true, headerVariant: 'home' },
   { path: '/withdraw/crypto', Component: WithdrawCrypto, tabBar: false, headerVariant: 'back' },
   { path: '/withdraw/fiat', Component: WithdrawFiat, tabBar: false, headerVariant: 'back' },
+  { path: '/withdraw/fiat/requisites', Component: WithdrawRequisites, tabBar: false, headerVariant: 'back' },
 ];

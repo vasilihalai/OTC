@@ -1,12 +1,6 @@
 .confirm-dialog__body {
-  font-size: 15px;
-  line-height: 20px;
-  color: var(--text-secondary);
-}
-
-.confirm-dialog__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--text-muted);
 }

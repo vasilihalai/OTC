@@ -1,5 +1,16 @@
-import { StatusChip } from '@/components/StatusChip/StatusChip.tsx';
+import type { ReactNode } from 'react';
 
-export function Badge({ children }: { children: string }) {
-  return <StatusChip tone="badge">{children}</StatusChip>;
+import { bem } from '@/css/bem.ts';
+
+import './Badge.css';
+
+const [b] = bem('badge');
+
+export interface BadgeProps {
+  variant?: 'success' | 'neutral' | 'count';
+  children: ReactNode;
+}
+
+export function Badge({ variant = 'neutral', children }: BadgeProps) {
+  return <span className={b(variant)}>{children}</span>;
 }

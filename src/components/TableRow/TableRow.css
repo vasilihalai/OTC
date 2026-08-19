@@ -1,0 +1,50 @@
+.table-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 64px;
+}
+
+.table-row__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.table-row__ticker {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.table-row__name {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.table-row__amount {
+  font-size: 15px;
+  color: var(--text-body);
+  text-align: right;
+}
+
+.table-row__action {
+  flex-shrink: 0;
+  width: 68px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.table-row__action:active {
+  transform: scale(0.9);
+}

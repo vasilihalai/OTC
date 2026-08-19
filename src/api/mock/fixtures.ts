@@ -9,6 +9,7 @@ import type {
   FiatRequisites,
   FiatWithdrawLimits,
   SavedAddress,
+  SavedRequisite,
   Stats,
   User,
   WithdrawMethod,
@@ -49,6 +50,9 @@ export const MOCK_DEALS: Deal[] = [
     to: '100 954 500 KGS',
     rate: '4 038.18 KGS',
     ticker: 'USDT',
+    ratePerUnit: '4 038.18',
+    rateUnitLabel: 'KGS за 1 USDT',
+    quoteExpiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
   },
   {
     id: 'OTC-1054',
@@ -250,9 +254,24 @@ export const MOCK_WITHDRAW_CRYPTO: {
 } = {
   assets: ['USDT', 'USDC', 'BTC'],
   addresses: [
-    { id: 'addr-1', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976', networks: ['Ethereum (ERC-20)'] },
-    { id: 'addr-2', address: '0x8f2A3bC1d4E6f7A9B0C1d2E3f4A5b6C7d8E9f0A1', networks: ['Ethereum (ERC-20)'] },
-    { id: 'addr-3', address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t', networks: ['TRON (TRC-20)'] },
+    {
+      id: 'addr-1',
+      address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976',
+      networks: ['Ethereum (ERC-20)'],
+      labels: ['Trust Wallet', 'MetaMask', 'Ledger', 'Safe'],
+    },
+    {
+      id: 'addr-2',
+      address: '0x8f2A3bC1d4E6f7A9B0C1d2E3f4A5b6C7d8E9f0A1',
+      networks: ['Ethereum (ERC-20)'],
+      labels: ['Trust Wallet'],
+    },
+    {
+      id: 'addr-3',
+      address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
+      networks: ['TRON (TRC-20)'],
+      labels: ['Trust Wallet'],
+    },
   ],
   networks: {
     USDT: ['TRON (TRC-20)', 'Ethereum (ERC-20)'],
@@ -265,6 +284,29 @@ export const MOCK_WITHDRAW_CRYPTO: {
     BTC: { min: '0.0005', available: '0.42', fee: '0.0002', contractTail: null },
   },
 };
+
+export const MOCK_SAVED_REQUISITES: SavedRequisite[] = [
+  { id: 'req-1', transferType: 'internal', label: 'Свой счёт xRuby · 1234…3456', account: '12345678901234563456' },
+  {
+    id: 'req-2',
+    transferType: 'kg',
+    label: 'Optima Bank · 1234…3456',
+    account: '1234567890123456',
+    bankName: 'ОАО «Optima Bank»',
+    bic: '129001',
+    inn: '01234567891011',
+  },
+  {
+    id: 'req-3',
+    transferType: 'ru',
+    label: 'Т-Банк · 4081…2345',
+    account: '40817810000000012345',
+    bankName: 'АО «Т-Банк»',
+    bic: '044525974',
+    inn: '7710140679',
+    correspondentAccount: '30101810145250000974',
+  },
+];
 
 export function mockDelay(): Promise<void> {
   const ms = 400 + Math.random() * 400;

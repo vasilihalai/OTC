@@ -27,7 +27,7 @@ function Shell() {
   return (
     <div className="app-shell">
       <AppHeader variant={headerVariant} onBack={goBack}/>
-      <main className="app-content">
+      <main className={showTabBar ? 'app-content app-content--with-tab-bar' : 'app-content'}>
         <div key={location.pathname} className="app-content__page">
           <Routes>
             <Route path="/" element={<Entry/>}/>

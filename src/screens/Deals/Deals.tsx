@@ -6,6 +6,7 @@ import { DealRow } from '@/components/DealRow/DealRow.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { FilterChips } from '@/components/FilterChips/FilterChips.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
+import { EmptyState } from '@/components/EmptyState/EmptyState.tsx';
 import { getDeals } from '@/api/index.ts';
 import type { Deal } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
@@ -55,7 +56,7 @@ export function Deals() {
         {error && (
           <div className="deals__error">
             <p>{ru.common.errorGeneric}</p>
-            <Button variant="social" onClick={() => void load()}>{ru.common.retryAction}</Button>
+            <Button variant="secondary" onClick={() => void load()}>{ru.common.retryAction}</Button>
           </div>
         )}
 
@@ -67,10 +68,10 @@ export function Deals() {
           </div>
         )}
 
-        {!error && deals && deals.length === 0 && <p className="deals__empty">{ru.home.noDeals}</p>}
+        {!error && deals && deals.length === 0 && <EmptyState caption={ru.home.noDeals}/>}
         {!error && deals && deals.length > 0 && filteredDeals.length === 0 && (
           <div className="deals__empty-filtered">
-            <p className="deals__empty">{ru.deals.emptyForFilter}</p>
+            <EmptyState caption={ru.deals.emptyForFilter}/>
             <Button type="button" variant="link" onClick={() => setFilter('ALL')}>{ru.deals.showAllAction}</Button>
           </div>
         )}

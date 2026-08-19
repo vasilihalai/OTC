@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { bem } from '@/css/bem.ts';
 import { truncateMiddle } from '@/lib/text.ts';
 import { FeeBadge } from '@/components/FeeBadge/FeeBadge.tsx';
+import { ru } from '@/i18n/ru.ts';
 
 import './Select.css';
 
@@ -16,8 +17,17 @@ export interface SelectOption<T extends string> {
   label: string;
   /** `asset` layout: full name on the right. `method` layout: fee text, e.g. `1.0%`. */
   secondary?: string;
+  /** `address` layout only: wallet labels shown as a second metadata line, e.g. `Trust Wallet, MetaMask +2`. */
+  labels?: string[];
   icon?: ReactNode;
   disabled?: boolean;
+}
+
+/** `["Trust Wallet", "MetaMask", "Ledger"]` → `Метки: Trust Wallet, MetaMask +1`. */
+function formatLabelsLine(labels: string[]): string {
+  const shown = labels.slice(0, 2).join(', ');
+  const rest = labels.length - 2;
+  return rest > 0 ? `${ru.withdraw.addressLabelsPrefix} ${shown} +${rest}` : `${ru.withdraw.addressLabelsPrefix} ${shown}`;
 }
 
 export interface SelectProps<T extends string> {
@@ -33,7 +43,7 @@ export interface SelectProps<T extends string> {
 function CheckIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M3.5 8.5l3 3 6-7" stroke="var(--brand-red)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3.5 8.5l3 3 6-7" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -48,7 +58,7 @@ function ChevronIcon({ open }: { open: boolean }) {
       aria-hidden="true"
       style={{ transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }}
     >
-      <path d="M1 1.5L6 6.5L11 1.5" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M1 1.5L6 6.5L11 1.5" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -77,7 +87,14 @@ function Row<T extends string>({ option, layout }: { option: SelectOption<T>; la
     );
   }
   if (layout === 'address') {
-    return <span className={e('row-address')}>{truncateMiddle(option.label, 8, 6)}</span>;
+    return (
+      <span className={e('row', 'address')}>
+        <span className={e('row-address')}>{truncateMiddle(option.label, 8, 6)}</span>
+        {option.labels && option.labels.length > 0 && (
+          <span className={e('row-meta')}>{formatLabelsLine(option.labels)}</span>
+        )}
+      </span>
+    );
   }
   return <span className={e('row-plain')}>{option.label}</span>;
 }

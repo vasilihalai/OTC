@@ -11,21 +11,21 @@
 }
 
 .balance-block__label {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-quiet);
 }
 
 .balance-block__transfer {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   background: none;
   border: none;
-  color: var(--brand-red);
+  color: var(--accent);
   cursor: pointer;
 }
 
@@ -33,15 +33,20 @@
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 28px;
-  line-height: 32px;
+  font-size: 36px;
+  line-height: 44px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-body);
   user-select: none;
 }
 
 .balance-block__ticker {
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 24px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-body);
+}
+
+.balance-block .key-value-row {
+  padding: 8px 0;
 }

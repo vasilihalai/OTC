@@ -119,7 +119,7 @@ export function SignIn({ variant }: SignInProps) {
         <div className="sign-in__social">
           <Button
             type="button"
-            variant="social"
+            variant="secondary"
             icon={<GoogleIcon/>}
             loading={socialLoading === 'google'}
             disabled={!!socialLoading}
@@ -129,7 +129,7 @@ export function SignIn({ variant }: SignInProps) {
           </Button>
           <Button
             type="button"
-            variant="social"
+            variant="secondary"
             icon={<AppleIcon/>}
             loading={socialLoading === 'apple'}
             disabled={!!socialLoading}

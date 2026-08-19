@@ -5,30 +5,35 @@
 }
 
 .text-field__label {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-body);
+}
+
+.text-field__required {
+  margin-left: 4px;
+  color: var(--required);
 }
 
 .text-field__input {
-  height: 48px;
+  height: 44px;
   padding: 0 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-primary);
-  /* 16px, not the 15px body size, so iOS Safari/WKWebView doesn't auto-zoom on focus. */
+  background: var(--bg-page);
+  color: var(--text-body);
   font-size: 16px;
+  line-height: 24px;
   transition: border-color 0.15s ease;
 }
 
 .text-field__input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-disabled);
 }
 
 .text-field__input:focus {
   outline: none;
-  border-color: var(--text-secondary);
+  border-color: var(--border-strong);
 }
 
 .text-field__input:disabled {
@@ -36,22 +41,22 @@
 }
 
 .text-field--invalid .text-field__input {
-  border-color: var(--danger);
+  border-color: var(--accent);
 }
 
 .text-field__box {
   position: relative;
   display: flex;
   align-items: center;
-  height: 48px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-page);
   transition: border-color 0.15s ease;
 }
 
 .text-field--invalid .text-field__box {
-  border-color: var(--danger);
+  border-color: var(--accent);
 }
 
 .text-field__box .text-field__input {
@@ -70,10 +75,11 @@
 .text-field__suffix {
   flex-shrink: 0;
   padding-right: 12px;
+  color: var(--text-muted);
 }
 
 .text-field__error {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--accent);
 }

@@ -1,14 +1,16 @@
 import { bem } from '@/css/bem.ts';
+import type { DealStatus } from '@/api/index.ts';
 
 import './StatusChip.css';
 
 const [b] = bem('status-chip');
 
 export interface StatusChipProps {
-  tone: 'success' | 'info' | 'amber' | 'danger' | 'violet' | 'neutral' | 'badge';
+  tone: DealStatus | 'success';
+  size?: 'sm' | 'lg';
   children: string;
 }
 
-export function StatusChip({ tone, children }: StatusChipProps) {
-  return <span className={b(tone)}>{children}</span>;
+export function StatusChip({ tone, size = 'sm', children }: StatusChipProps) {
+  return <span className={b(tone, size)}>{children}</span>;
 }

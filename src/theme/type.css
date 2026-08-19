@@ -1,0 +1,86 @@
+/* §2.2's type scale, one class per style — components apply these instead
+   of restating font-size/line-height/weight individually. */
+
+.t-screen-title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.t-screen-title-sm {
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 600;
+}
+
+.t-section-title {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+}
+
+.t-stat {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+.t-deal-id {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 700;
+}
+
+.t-amount-xl {
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 700;
+}
+
+.t-field {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.t-button {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.t-total {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+.t-body {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.t-label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+.t-label-strong {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.t-label-med {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.t-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}

@@ -1,16 +1,35 @@
 .tab-bar {
-  position: fixed;
+  /* `absolute`, not `fixed`: `.app-shell` already establishes a containing
+     block for both (via `position: relative` + `transform`), and `absolute`
+     avoids iOS WebKit's fixed-inside-a-scrolling-ancestor jitter, where a
+     `position: fixed` descendant can visibly lag/shift during momentum
+     scroll of a sibling `overflow-y: auto` container. */
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   /* max() of the device's own safe area and Telegram's reported inset — the
      two overlap rather than stack, so summing them would over-pad. */
-  height: calc(56px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
+  height: calc(88px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
   padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px));
   display: flex;
-  background: var(--bg-panel);
+  background: var(--bg-surface);
   border-top: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .25);
   z-index: 100;
+}
+
+.tab-bar__indicator {
+  position: absolute;
+  left: 50%;
+  bottom: calc(8px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
+  width: 134px;
+  height: 5px;
+  border-radius: 100px;
+  background: #fff;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .tab-bar__tab {
@@ -24,7 +43,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-tertiary);
+  color: var(--text-quiet);
   transition: color 0.15s ease, transform 0.1s ease;
 }
 
@@ -33,7 +52,7 @@
 }
 
 .tab-bar__tab--active {
-  color: var(--brand-red);
+  color: var(--accent);
 }
 
 .tab-bar__label {

@@ -1,4 +1,5 @@
 import { bem } from '@/css/bem.ts';
+import { Badge } from '@/components/Badge/Badge.tsx';
 
 import './SegmentedControl.css';
 
@@ -7,6 +8,7 @@ const [b, e] = bem('segmented-control');
 export interface SegmentedControlOption<T extends string> {
   value: T;
   label: string;
+  count?: number;
 }
 
 export interface SegmentedControlProps<T extends string> {
@@ -26,6 +28,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange }:
           onClick={() => onChange(option.value)}
         >
           {option.label}
+          {option.count !== undefined && <Badge variant="count">{option.count}</Badge>}
         </button>
       ))}
     </div>

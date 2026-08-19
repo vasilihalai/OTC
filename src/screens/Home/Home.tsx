@@ -6,7 +6,8 @@ import { StatCard } from '@/components/StatCard/StatCard.tsx';
 import { CompanyChip } from '@/components/CompanyChip/CompanyChip.tsx';
 import { DealRow } from '@/components/DealRow/DealRow.tsx';
 import { SegmentedControl } from '@/components/SegmentedControl/SegmentedControl.tsx';
-import { AssetRow } from '@/components/AssetRow/AssetRow.tsx';
+import { TableRow } from '@/components/TableRow/TableRow.tsx';
+import { EmptyState } from '@/components/EmptyState/EmptyState.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { getAssets, getDeals, getStats, getUser } from '@/api/index.ts';
 import type { Asset, Deal, Stats, User } from '@/api/index.ts';
@@ -31,6 +32,7 @@ export function Home() {
   const [deals, setDeals] = useState<Deal[]>();
   const [assets, setAssets] = useState<Asset[]>();
   const [assetsLoading, setAssetsLoading] = useState(true);
+  const [assetCounts, setAssetCounts] = useState<{ crypto: number; fiat: number }>();
 
   const load = useCallback(async () => {
     const [userData, statsData, dealsData] = await Promise.all([
@@ -54,6 +56,15 @@ export function Home() {
       setAssetsLoading(false);
     });
   }, [selectedGroup, balancesVersion]);
+
+  useEffect(() => {
+    void Promise.all([getAssets('crypto'), getAssets('fiat')]).then(([crypto, fiat]) => {
+      setAssetCounts({
+        crypto: crypto.filter((a) => Number(a.balance) > 0).length,
+        fiat: fiat.filter((a) => Number(a.balance) > 0).length,
+      });
+    });
+  }, [balancesVersion]);
 
   const positiveAssets = (assets ?? []).filter((a) => Number(a.balance) > 0);
   const hiddenZeroBalance = (assets ?? []).length > positiveAssets.length;
@@ -88,7 +99,7 @@ export function Home() {
             <Skeleton height={72} radius={12}/>
           </div>
         )}
-        {deals && deals.length === 0 && <p className="home__empty">{ru.home.noDeals}</p>}
+        {deals && deals.length === 0 && <EmptyState caption={ru.home.noDeals}/>}
         {deals?.slice(0, 2).map((deal) => (
           <DealRow key={deal.id} deal={deal} onClick={() => navigate(`/deals/${deal.id}`)}/>
         ))}
@@ -97,8 +108,8 @@ export function Home() {
       <Panel heading={ru.home.depositAccountTitle}>
         <SegmentedControl
           options={[
-            { value: 'crypto', label: ru.home.segmentCrypto },
-            { value: 'fiat', label: ru.home.segmentFiat },
+            { value: 'crypto', label: ru.home.segmentCrypto, count: assetCounts?.crypto },
+            { value: 'fiat', label: ru.home.segmentFiat, count: assetCounts?.fiat },
           ]}
           value={selectedGroup}
           onChange={setSelectedGroup}
@@ -114,12 +125,13 @@ export function Home() {
             <p className="home__empty">{ru.home.noPositiveBalance}</p>
           )}
           {!assetsLoading && positiveAssets.map((asset) => (
-            <AssetRow
+            <TableRow
               key={asset.ticker}
               ticker={asset.ticker}
               name={asset.name}
               amount={formatAmount(asset.balance, asset.ticker)}
-              onWithdraw={() => navigate(`/withdraw/${asset.group}?asset=${asset.ticker}`)}
+              actionLabel={`${ru.home.withdrawAction} ${asset.ticker}`}
+              onAction={() => navigate(`/withdraw/${asset.group}?asset=${asset.ticker}`)}
             />
           ))}
         </div>

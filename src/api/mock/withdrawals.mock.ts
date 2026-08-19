@@ -1,4 +1,4 @@
-import type { CryptoNetwork, WithdrawalResult } from '@/api/types.ts';
+import type { CryptoNetwork, RequisitesPayload, WithdrawalResult } from '@/api/types.ts';
 import { mockDelay } from '@/api/mock/fixtures.ts';
 import { getAccountBalance, setAccountBalance } from '@/api/mock/accountsStore.ts';
 
@@ -8,7 +8,7 @@ const seenIdempotencyKeys = new Set<string>();
 export interface CryptoWithdrawalPayload {
   ticker: string;
   network: CryptoNetwork;
-  addressId: string;
+  address: string;
   amount: string;
   idempotencyKey: string;
 }
@@ -27,6 +27,7 @@ export interface FiatWithdrawalPayload {
   ticker: string;
   methodId: string;
   amount: string;
+  requisites: RequisitesPayload;
   idempotencyKey: string;
 }
 

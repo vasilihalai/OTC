@@ -35,26 +35,24 @@
   margin-top: 4px;
   font-size: 13px;
   line-height: 18px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
-.withdraw-crypto__empty-address {
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: var(--bg-card);
+.withdraw-crypto__address-manual .text-field__label {
+  display: none;
 }
 
-.withdraw-crypto__empty-address-title {
-  margin: 0;
-  font-size: 15px;
-  color: var(--text-primary);
-}
-
-.withdraw-crypto__empty-address-caption {
-  margin: 4px 0 0;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-tertiary);
+.withdraw-crypto__qr-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
 }
 
 .withdraw-crypto__submit {
@@ -73,6 +71,6 @@
 
 .withdraw-crypto__success-body {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin: 0 0 16px;
 }

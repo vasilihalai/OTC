@@ -25,6 +25,11 @@ export async function requestNewRate(id: string): Promise<Deal | undefined> {
   return updateDeal(id, { status: 'RATE_PENDING' });
 }
 
+/** Client-driven: the quote card's own countdown hits zero. No delay — this isn't a user action. */
+export function expireQuote(id: string): Deal | undefined {
+  return updateDeal(id, { status: 'RATE_STALE' });
+}
+
 export async function transfer(request: TransferRequest): Promise<void> {
   await mockDelay();
   moveBetweenAccounts(request.from, request.to, request.ticker, Number(request.amount));

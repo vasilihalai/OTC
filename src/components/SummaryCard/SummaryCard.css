@@ -1,5 +1,5 @@
 .summary-card {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border-radius: 14px;
   padding: 14px 16px;
 }
@@ -19,7 +19,7 @@
 .summary-card__label {
   font-size: 15px;
   line-height: 20px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .summary-card__label--total {
@@ -51,12 +51,12 @@
 .summary-card__tail {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .summary-card__caption {
   margin: 4px 0 0;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-tertiary);
+  color: var(--text-quiet);
 }

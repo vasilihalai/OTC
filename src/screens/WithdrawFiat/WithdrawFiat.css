@@ -44,6 +44,6 @@
 
 .withdraw-fiat__success-body {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin: 0 0 16px;
 }

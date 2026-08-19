@@ -34,6 +34,7 @@ export function TabBar() {
           </button>
         );
       })}
+      <div className={e('indicator')} aria-hidden="true"/>
     </nav>
   );
 }

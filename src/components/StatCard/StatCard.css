@@ -1,27 +1,28 @@
 .stat-card {
   flex: 1;
-  background: var(--bg-card);
-  border-radius: 14px;
-  padding: 14px;
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 12px;
 }
 
 .stat-card__value {
-  font-size: 28px;
+  font-size: 24px;
   line-height: 32px;
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--text-body);
 }
 
 .stat-card__unit {
-  font-size: 13px;
-  line-height: 18px;
-  font-weight: 400;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--text-body);
 }
 
 .stat-card__label {
   margin-top: 4px;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-body);
 }

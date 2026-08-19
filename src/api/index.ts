@@ -44,11 +44,13 @@ export const submitFiatWithdrawal = USE_REAL_API
 export const getDeals = mockData.getDeals;
 export const getDealById = mockData.getDealById;
 export const getRequisites = mockData.getRequisites;
+export const getSavedRequisites = mockData.getSavedRequisites;
 export const getStats = mockData.getStats;
 export const getAccounts = mockData.getAccounts;
 export const confirmDeal = mockActions.confirmDeal;
 export const declineDeal = mockActions.declineDeal;
 export const requestNewRate = mockActions.requestNewRate;
+export const expireQuote = mockActions.expireQuote;
 export const transfer = mockActions.transfer;
 export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 
@@ -81,6 +83,9 @@ export type {
   VerifyCodeError,
   CryptoNetwork,
   SavedAddress,
+  FiatTransferType,
+  SavedRequisite,
+  RequisitesPayload,
   CryptoWithdrawLimits,
   CryptoWithdrawOptions,
   WithdrawMethod,

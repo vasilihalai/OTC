@@ -1,31 +1,27 @@
 .modal__scrim {
   position: fixed;
   inset: 0;
-  background: var(--bg-scrim);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--modal-scrim);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
-  /* Anchored near the top (not vertically centered) so the card holds still
-     when the on-screen keyboard shrinks the visible viewport, instead of
-     re-centering into a new position on every keystroke. */
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding: 96px 16px 16px;
+  padding: 16px;
   overflow-y: auto;
   z-index: 1000;
   animation: modal-scrim-in 0.18s ease-out;
 }
 
 .modal__card {
-  width: calc(100% - 32px);
-  max-width: 400px;
-  background: var(--bg-modal);
-  border-radius: 20px;
-  padding: 20px;
+  width: 343px;
+  max-width: calc(100% - 32px);
+  background: var(--bg-page);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
   animation: modal-card-in 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
 }
 
 @keyframes modal-scrim-in {
@@ -38,29 +34,45 @@
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.modal__header {
+.modal__top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 16px 24px;
+  border-radius: 16px 16px 0 0;
 }
 
 .modal__title {
-  font-size: 17px;
-  line-height: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
+  padding-top: 6px;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text-body);
 }
 
 .modal__close {
-  width: 20px;
-  height: 20px;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: none;
+  background: var(--bg-raised);
+  border-radius: 24px;
   border: none;
   cursor: pointer;
-  font-size: 16px;
-  color: var(--text-secondary);
-  padding: 0;
+  color: var(--text-body);
+}
+
+.modal__body {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal__bottom {
+  padding: 16px 24px 24px;
+  border-radius: 0 0 16px 16px;
 }

@@ -3,13 +3,13 @@
 }
 
 .panel--panel {
-  background: var(--bg-panel);
+  background: var(--bg-surface);
   border-radius: 16px;
 }
 
 .panel--card {
-  background: var(--bg-card);
-  border-radius: 14px;
+  background: var(--bg-surface);
+  border-radius: 12px;
 }
 
 .panel__header {
@@ -21,8 +21,8 @@
 
 .panel__heading {
   font-size: 18px;
-  line-height: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text-body);
   margin: 0;
 }

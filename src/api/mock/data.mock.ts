@@ -7,6 +7,7 @@ import type {
   Deal,
   FiatWithdrawOptions,
   Requisites,
+  SavedRequisite,
   Stats,
   User,
 } from '@/api/types.ts';
@@ -14,6 +15,7 @@ import {
   MOCK_ASSETS,
   MOCK_REQUISITES_CRYPTO,
   MOCK_REQUISITES_FIAT,
+  MOCK_SAVED_REQUISITES,
   MOCK_STATS,
   MOCK_USERS,
   MOCK_WITHDRAW_CRYPTO,
@@ -74,6 +76,11 @@ export async function getWithdrawFiatOptions(currency: string): Promise<FiatWith
     methods: MOCK_WITHDRAW_FIAT.methods[currency] ?? [],
     limits: MOCK_WITHDRAW_FIAT.limits[currency] ?? { min: '0', available: '0' },
   };
+}
+
+export async function getSavedRequisites(): Promise<SavedRequisite[]> {
+  await mockDelay();
+  return MOCK_SAVED_REQUISITES;
 }
 
 export async function getWithdrawCryptoOptions(asset: string): Promise<CryptoWithdrawOptions> {

@@ -97,7 +97,19 @@ export function TransferModal() {
   }
 
   return (
-    <Modal open={isOpen} title={ru.transferModal.title} onClose={close}>
+    <Modal
+      open={isOpen}
+      title={ru.transferModal.title}
+      onClose={close}
+      footer={(
+        <div className="button-row">
+          <Button type="button" variant="secondary" onClick={close}>{ru.transferModal.cancelAction}</Button>
+          <Button loading={submitting} disabled={!canConfirm} onClick={() => void handleConfirm()}>
+            {ru.transferModal.confirmAction}
+          </Button>
+        </div>
+      )}
+    >
       <div className="transfer-modal">
         <div className="transfer-modal__accounts">
           <Select label={ru.transferModal.fromLabel} layout="plain" options={ACCOUNT_OPTIONS} value={from} onChange={selectFrom}/>
@@ -115,6 +127,7 @@ export function TransferModal() {
           onChange={setAmount}
           onMax={() => setAmount(available)}
           maxLabel={ru.transferModal.maxAction}
+          transferVariant
           assetSelect={(
             <Select
               label=""
@@ -130,13 +143,6 @@ export function TransferModal() {
             />
           )}
         />
-
-        <div className="button-row">
-          <Button type="button" variant="secondary" onClick={close}>{ru.transferModal.cancelAction}</Button>
-          <Button variant="accent" loading={submitting} disabled={!canConfirm} onClick={() => void handleConfirm()}>
-            {ru.transferModal.confirmAction}
-          </Button>
-        </div>
       </div>
     </Modal>
   );

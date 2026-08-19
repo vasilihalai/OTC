@@ -1,5 +1,5 @@
-import { StatusChip } from '@/components/StatusChip/StatusChip.tsx';
+import { Badge } from '@/components/Badge/Badge.tsx';
 
 export function CompanyChip({ children }: { children: string }) {
-  return <StatusChip tone="success">{children}</StatusChip>;
+  return <Badge variant="success">{children}</Badge>;
 }

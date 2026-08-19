@@ -1,39 +1,54 @@
 :root {
-  --bg-page: #0D0E10;
-  --bg-panel: #16181B;
-  --bg-card: #1E2024;
-  --bg-modal: #141518;
-  --bg-scrim: rgba(0, 0, 0, .62);
-  --border: #26282C;
-  --text-primary: #FFFFFF;
-  --text-secondary: #9BA0A8;
-  --text-tertiary: #6B7078;
-  --text-inverse: #0D0E10;
-  --brand-red: #E5232E;
-  --cta: #FFFFFF;
-  --cta-disabled: #212226;
-  --cta-accent: #C0202B;
-  --cta-accent-pressed: #A81B24;
-  --cta-secondary: #1E2024;
-  --success: #34C77B;
-  --info: #3E9BFF;
-  --warning: #E8B04B;
-  --danger: #E5232E;
+  /* Surfaces */
+  --bg-page: #0C0E12;
+  --bg-surface: #13161B;
+  --bg-raised: #22262F;
+  --border: #373A41;
+  --border-strong: #61656C;
+  --pill-scrim: rgba(65, 63, 64, .4);
+  --modal-scrim: rgba(247, 247, 247, .1);
 
-  --st-success: #34C77B;
-  --st-success-fill: rgba(52, 199, 123, .14);
-  --st-info: #3E9BFF;
-  --st-info-fill: rgba(62, 155, 255, .14);
-  --st-amber: #E8A33D;
-  --st-amber-fill: rgba(232, 163, 61, .14);
-  --st-danger: #F2555F;
-  --st-danger-fill: rgba(229, 35, 46, .14);
-  --st-violet: #9B7BFF;
-  --st-violet-fill: rgba(155, 123, 255, .16);
-  --st-neutral: #9BA0A8;
-  --st-neutral-fill: rgba(255, 255, 255, .06);
+  /* Text */
+  --text-primary: #F7F7F7;
+  --text-strong: #ECECED;
+  --text-body: #CECFD2;
+  --text-muted: #94979C;
+  --text-subtle: #8B8F97;
+  --text-quiet: #85888E;
+  --text-disabled: #61656C;
+  --text-on-accent: #FFFFFF;
+  --text-on-light: #373A41;
 
-  --callout-danger-bg: rgba(229, 35, 46, .12);
-  --callout-danger-border: rgba(229, 35, 46, .32);
-  --callout-neutral-bg: #1E2024;
+  /* Accent and semantic */
+  --accent: #BB0023;
+  --brand-mark: #C51625;
+  --required: #E4002B;
+  --positive: #039855;
+  --badge-success-bg: #022417;
+  --badge-success-text: #027A48;
+  --panel-warning: #301003;
+  --panel-error: #2F0904;
+
+  /* Deal status palette — solid fills */
+  --status-done-fill: #022417;
+  --status-done-text: #027A48;
+  --status-running-fill: #05232F;
+  --status-running-text: #0E6F90;
+  --status-rate-pending-fill: #031332;
+  --status-rate-pending-text: #004EEB;
+  --status-rate-active-fill: #170633;
+  --status-rate-active-text: #6927DA;
+  --status-rate-stale-fill: #13161B;
+  --status-rate-stale-text: #94979C;
+  --status-awaiting-funds-fill: #301003;
+  --status-awaiting-funds-text: #B54708;
+  --status-declined-fill: #2F0904;
+  --status-declined-text: #BB0023;
+
+  /* StatusHero gradient top stops (tinted top half only, flat bottom half) */
+  --hero-top-running: #05232F;
+  --hero-top-done: #022417;
+  --hero-top-declined: #2F0904;
+  --hero-top-stale: #22262F;
+  --hero-top-pending: #031332;
 }

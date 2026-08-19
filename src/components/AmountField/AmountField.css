@@ -12,18 +12,18 @@
 }
 
 .amount-field__label {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-body);
 }
 
 .amount-field__available {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-subtle);
 }
 
 .amount-field__transfer {
@@ -36,23 +36,27 @@
   padding: 0;
   background: none;
   border: none;
-  color: var(--brand-red);
+  color: var(--accent);
   cursor: pointer;
 }
 
 .amount-field__box {
   display: flex;
   align-items: center;
-  height: 48px;
+  height: 44px;
   padding: 0 16px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-page);
   transition: border-color 0.15s ease;
 }
 
+.amount-field__box--transfer {
+  background: var(--bg-raised);
+}
+
 .amount-field--invalid .amount-field__box {
-  border-color: var(--danger);
+  border-color: var(--accent);
 }
 
 .amount-field__asset {
@@ -71,7 +75,7 @@
 }
 
 .amount-field__asset .select__box {
-  height: 48px;
+  height: 44px;
   border: none;
   padding: 0 8px 0 16px;
   background: none;
@@ -83,9 +87,10 @@
   height: 100%;
   border: none;
   background: transparent;
-  color: var(--text-primary);
-  /* 16px, not the 15px body size, so iOS Safari/WKWebView doesn't auto-zoom on focus. */
+  color: var(--text-body);
+  /* 16px, not smaller, so iOS Safari/WKWebView doesn't auto-zoom on focus. */
   font-size: 16px;
+  line-height: 24px;
 }
 
 .amount-field__input:focus {
@@ -93,7 +98,7 @@
 }
 
 .amount-field__input::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-disabled);
 }
 
 .amount-field__max {
@@ -101,14 +106,14 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--brand-red);
+  color: var(--accent);
   cursor: pointer;
 }
 
 .amount-field__error {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--danger);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--accent);
 }

@@ -3,52 +3,60 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
-  border-radius: 14px;
-  padding: 24px 16px;
-  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 16px 16px 16px;
+  background: var(--bg-surface);
   background-repeat: no-repeat;
-  background-size: 100% 120px;
   background-position: top;
 }
 
-.status-hero--success {
-  background-image: linear-gradient(to bottom, rgba(52, 199, 123, .18), transparent);
-}
-
-.status-hero--danger {
-  background-image: linear-gradient(to bottom, rgba(229, 35, 46, .18), transparent);
-}
-
-.status-hero--running {
-  background-image: linear-gradient(to bottom, rgba(62, 155, 255, .10), transparent);
-}
-
-.status-hero--stale {
-  background-image: none;
-}
-
 .status-hero__title {
-  font-size: 17px;
-  line-height: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
+  margin-top: 12px;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--text-strong);
 }
 
 .status-hero__subtitle {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-muted);
 }
 
 .status-hero__subtitle b {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #F0F0F1;
 }
 
 .status-hero__action {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 24px;
+}
+
+.status-hero__action:has(.button--accent) {
+  margin-top: 12px;
+}
+
+.status-hero--success {
+  background-image: linear-gradient(to top, var(--bg-surface) 0%, var(--bg-surface) 51.44%, var(--hero-top-done) 100%);
+}
+
+.status-hero--danger {
+  background-image: linear-gradient(to top, var(--bg-surface) 0%, var(--bg-surface) 51.44%, var(--hero-top-declined) 100%);
+}
+
+.status-hero--running {
+  background-image: linear-gradient(to top, var(--bg-surface) 0%, var(--bg-surface) 51.44%, var(--hero-top-running) 100%);
+}
+
+.status-hero--pending {
+  background-image: linear-gradient(to top, var(--bg-surface) 0%, var(--bg-surface) 51.44%, var(--hero-top-pending) 100%);
+}
+
+.status-hero--stale {
+  background-image: none;
 }
 
 .status-hero__spin {

@@ -7,43 +7,43 @@ import './StatusHero.css';
 const [b, e] = bem('status-hero');
 
 export type StatusHeroIcon = 'spinner' | 'check' | 'cross' | 'hourglass';
-export type StatusHeroTone = 'success' | 'danger' | 'running' | 'stale';
+export type StatusHeroTone = 'success' | 'danger' | 'running' | 'stale' | 'pending';
 
 function SpinnerIcon() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" className={e('spin')} aria-hidden="true">
-      <circle cx="28" cy="28" r="22" stroke="var(--border)" strokeWidth="4"/>
-      <path d="M28 6a22 22 0 0 1 22 22" stroke="var(--brand-red)" strokeWidth="4" strokeLinecap="round"/>
+    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" className={e('spin')} aria-hidden="true">
+      <circle cx="25" cy="25" r="20" stroke="var(--border)" strokeWidth="4"/>
+      <path d="M25 5a20 20 0 0 1 20 20" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round"/>
     </svg>
   );
 }
 
 function CheckIcon() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-      <circle cx="28" cy="28" r="22" fill="var(--st-success-fill)"/>
-      <path d="M19 28.5l6.5 6.5L38 21" stroke="var(--st-success)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
+      <circle cx="25" cy="25" r="20" fill="var(--status-done-fill)"/>
+      <path d="M17 25.5l6 6L34 18" stroke="var(--status-done-text)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
 function CrossIcon() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-      <circle cx="28" cy="28" r="22" fill="var(--st-danger-fill)"/>
-      <path d="M21 21l14 14M35 21L21 35" stroke="var(--st-danger)" strokeWidth="3.4" strokeLinecap="round"/>
+    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
+      <circle cx="25" cy="25" r="20" fill="var(--status-declined-fill)"/>
+      <path d="M19 19l12 12M31 19L19 31" stroke="var(--status-declined-text)" strokeWidth="3.2" strokeLinecap="round"/>
     </svg>
   );
 }
 
 function HourglassIcon() {
   return (
-    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
-      <circle cx="28" cy="28" r="22" fill="var(--st-neutral-fill)"/>
+    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
+      <circle cx="25" cy="25" r="20" fill="var(--status-rate-stale-fill)"/>
       <path
-        d="M20 18h16M20 38h16M21 18c0 5 3.5 8 7 10-3.5 2-7 5-7 10M35 18c0 5-3.5 8-7 10 3.5 2 7 5 7 10"
-        stroke="var(--st-neutral)"
-        strokeWidth="2"
+        d="M18 16h14M18 34h14M19 16c0 4.5 3 7 6 9-3 2-6 4.5-6 9M31 16c0 4.5-3 7-6 9 3 2 6 4.5 6 9"
+        stroke="var(--status-rate-stale-text)"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

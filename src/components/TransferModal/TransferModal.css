@@ -15,17 +15,34 @@
   min-width: 0;
 }
 
+.transfer-modal__accounts .select__box {
+  background: var(--bg-raised);
+  border-color: transparent;
+}
+
 .transfer-modal__swap {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-bottom: 6px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: -4px;
   border-radius: 50%;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
+  background: var(--bg-page);
+  border: none;
   cursor: pointer;
+}
+
+.transfer-modal__swap > svg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 14px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  color: var(--text-primary);
+  box-sizing: border-box;
 }

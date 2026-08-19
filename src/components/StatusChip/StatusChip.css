@@ -1,45 +1,60 @@
 .status-chip {
   display: inline-flex;
   align-items: center;
-  border-radius: 8px;
-  padding: 2px 8px;
   font-size: 12px;
   line-height: 16px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
 }
 
+.status-chip--sm {
+  height: 18px;
+  padding: 0 8px;
+  border-radius: 9px;
+}
+
+.status-chip--lg {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+}
+
+.status-chip--DONE {
+  background: var(--status-done-fill);
+  color: var(--status-done-text);
+}
+
+.status-chip--RUNNING {
+  background: var(--status-running-fill);
+  color: var(--status-running-text);
+}
+
+.status-chip--RATE_PENDING {
+  background: var(--status-rate-pending-fill);
+  color: var(--status-rate-pending-text);
+}
+
+.status-chip--RATE_ACTIVE {
+  background: var(--status-rate-active-fill);
+  color: var(--status-rate-active-text);
+}
+
+.status-chip--RATE_STALE {
+  background: var(--status-rate-stale-fill);
+  color: var(--status-rate-stale-text);
+}
+
+.status-chip--AWAITING_FUNDS {
+  background: var(--status-awaiting-funds-fill);
+  color: var(--status-awaiting-funds-text);
+}
+
+.status-chip--DECLINED {
+  background: var(--status-declined-fill);
+  color: var(--status-declined-text);
+}
+
 .status-chip--success {
-  background: var(--st-success-fill);
-  color: var(--st-success);
-}
-
-.status-chip--info {
-  background: var(--st-info-fill);
-  color: var(--st-info);
-}
-
-.status-chip--amber {
-  background: var(--st-amber-fill);
-  color: var(--st-amber);
-}
-
-.status-chip--danger {
-  background: var(--st-danger-fill);
-  color: var(--st-danger);
-}
-
-.status-chip--violet {
-  background: var(--st-violet-fill);
-  color: var(--st-violet);
-}
-
-.status-chip--neutral {
-  background: var(--st-neutral-fill);
-  color: var(--st-neutral);
-}
-
-.status-chip--badge {
-  background: rgba(255, 255, 255, .06);
-  color: var(--text-secondary);
+  background: var(--badge-success-bg);
+  color: var(--badge-success-text);
 }

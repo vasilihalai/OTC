@@ -15,7 +15,10 @@ export function PasswordField({ label, error, className, ...rest }: Omit<TextFie
 
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
-      <label className={e('label')} htmlFor={id}>{label}</label>
+      <label className={e('label')} htmlFor={id}>
+        {label}
+        <span className={e('required')} aria-hidden="true">*</span>
+      </label>
       <div className={e('box')}>
         <input
           id={id}

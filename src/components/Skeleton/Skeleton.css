@@ -1,6 +1,6 @@
 .skeleton {
   display: inline-block;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   animation: skeleton-pulse 1.2s ease-in-out infinite;
 }
 

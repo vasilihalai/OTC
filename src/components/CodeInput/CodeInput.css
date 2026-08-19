@@ -6,25 +6,26 @@
 
 .code-input__cell {
   width: 44px;
-  height: 52px;
-  border-radius: 10px;
+  height: 44px;
+  border-radius: 8px;
   border: 1px solid transparent;
-  background: var(--bg-card);
+  background: var(--bg-raised);
   color: var(--text-primary);
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 400;
   text-align: center;
   transition: border-color 0.15s ease, transform 0.1s ease;
 }
 
 .code-input__cell::placeholder {
-  color: var(--text-tertiary);
+  color: var(--text-primary);
   font-weight: 400;
 }
 
 .code-input__cell:focus {
   outline: none;
-  border-color: var(--text-secondary);
+  border-color: var(--border-strong);
 }
 
 .code-input__cell:disabled {
@@ -32,7 +33,7 @@
 }
 
 .code-input--invalid .code-input__cell {
-  border-color: var(--danger);
+  border-color: var(--accent);
   animation: code-input-shake 0.3s ease;
 }
 

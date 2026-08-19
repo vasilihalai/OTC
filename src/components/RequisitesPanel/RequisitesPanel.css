@@ -8,7 +8,7 @@
 .requisites-panel__row-label {
   font-size: 13px;
   line-height: 18px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .requisites-panel__row-value {
@@ -36,7 +36,7 @@
   padding: 0;
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -57,7 +57,7 @@
   text-align: center;
   font-size: 12px;
   line-height: 16px;
-  color: var(--text-tertiary);
+  color: var(--text-quiet);
   margin: 4px 0;
 }
 
@@ -80,7 +80,7 @@
   gap: 8px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: var(--bg-card);
+  background: var(--bg-surface);
 }
 
 .requisites-panel__address-text {

@@ -1,4 +1,9 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 @import './theme/tokens.css';
+@import './theme/type.css';
 
 * {
   box-sizing: border-box;
@@ -10,10 +15,10 @@ html, body {
 
 body {
   background: var(--bg-page);
-  color: var(--text-primary);
+  color: var(--text-body);
   padding: 0;
   margin: 0;
-  font-family: -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -41,9 +46,12 @@ button, input, select {
   transform: translateZ(0);
 }
 
-/* Telegram fullscreen (Bot API 8.0): floating Close/menu buttons overlay the
-   top of the screen; contentSafeAreaInset already accounts for their footprint.
-   Defaults to 0px via bindCssVars() outside fullscreen/on unsupported clients. */
+/* AppHeader is a floating pill positioned absolutely over the content (§2.3:
+   "Screen content starts at y 92"), not a normal-flow bar — so the content
+   area itself reserves that space, plus the real device's safe-area inset
+   and, in Telegram fullscreen, the extra footprint of its own floating
+   Close/menu buttons (contentSafeAreaInset). Defaults to 0px via
+   bindCssVars() outside fullscreen/on unsupported clients. */
 .app-content {
   flex: 1;
   min-height: 0;
@@ -51,9 +59,15 @@ button, input, select {
   flex-direction: column;
   overflow-y: auto;
   padding-top: calc(
-    var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
+    92px + var(--tg-viewport-safe-area-inset-top, 0px) + var(--tg-viewport-content-safe-area-inset-top, 0px)
   );
   overscroll-behavior: contain;
+}
+
+/* Keeps the last item of a scrolling tab screen from ending up underneath
+   the floating tab bar, whose own height varies with the device safe area. */
+.app-content--with-tab-bar {
+  padding-bottom: calc(88px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
 }
 
 .app-content__page {

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import {
   confirmDeal,
   declineDeal,
+  expireQuote,
   getAccounts,
   getDealById,
   getRequisites,
@@ -26,9 +27,10 @@ import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { useToastStore } from '@/store/toast.ts';
 import { useTransferModalStore } from '@/store/transferModal.ts';
-import { DEAL_STATUS_META, getDocumentAvailability, isConfirmationStatus } from '@/lib/dealStatus.ts';
+import { DEAL_STATUS_META, getDocumentAvailability, isHoldConfirmationStatus, showsFullDetailsRows } from '@/lib/dealStatus.ts';
 import { computeScenarioBalance, getMinDealAmount, isBalanceScenario, parseAmountValue } from '@/lib/balanceScenario.ts';
 import { formatAmount, parseAmountWithTicker } from '@/lib/money.ts';
+import { formatCountdown, msUntil } from '@/lib/countdown.ts';
 import { renderTemplate } from '@/lib/template.tsx';
 import { openExternalLink } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
@@ -81,12 +83,13 @@ export function DealDetail() {
 
   const meta = deal && DEAL_STATUS_META[deal.status];
   const docs = deal && getDocumentAvailability(deal.status);
+  const showDetails = deal && showsFullDetailsRows(deal.status);
 
   return (
     <div className="deal-detail">
       <div className="deal-detail__header">
         {loading ? <Skeleton width={120} height={26}/> : <h1 className="deal-detail__id">{deal?.id}</h1>}
-        {deal && meta && <StatusChip tone={meta.tone}>{meta.detailLabel}</StatusChip>}
+        {deal && meta && <StatusChip tone={deal.status} size="lg">{meta.detailLabel}</StatusChip>}
       </div>
       {deal && <p className="deal-detail__direction">{DIRECTION_LABEL[deal.direction]}</p>}
 
@@ -96,16 +99,22 @@ export function DealDetail() {
         </Panel>
       )}
 
-      {deal && (isConfirmationStatus(deal.status)
-        ? <ConfirmationBody deal={deal} onUpdate={setDeal}/>
-        : <StatusHeroBody deal={deal} onUpdate={setDeal}/>)}
+      {deal && (
+        deal.status === 'RATE_ACTIVE' ? <QuoteCard deal={deal} onUpdate={setDeal}/>
+          : isHoldConfirmationStatus(deal.status) ? <ConfirmationBody deal={deal} onUpdate={setDeal}/>
+            : <StatusHeroBody deal={deal} onUpdate={setDeal}/>
+      )}
 
       {deal && (
         <Panel heading={ru.dealDetail.detailsTitle}>
-          <KeyValueRow label={ru.dealDetail.createdDateLabel} value={deal.date}/>
-          <KeyValueRow label={ru.dealDetail.directionLabel} value={DIRECTION_LABEL[deal.direction]}/>
-          <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
-          <KeyValueRow label={ru.dealDetail.receiveLabel} value={deal.to ?? ru.common.tbd}/>
+          {showDetails && (
+            <>
+              <KeyValueRow label={ru.dealDetail.createdDateLabel} value={deal.date}/>
+              <KeyValueRow label={ru.dealDetail.directionLabel} value={DIRECTION_LABEL[deal.direction]}/>
+              <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
+              <KeyValueRow label={ru.dealDetail.receiveLabel} value={deal.to ?? ru.common.tbd}/>
+            </>
+          )}
           <KeyValueRow
             label={ru.dealDetail.rateLabel}
             value={deal.status === 'RATE_PENDING' || deal.status === 'RATE_STALE' ? ru.common.tbd : (deal.rate ?? ru.common.tbd)}
@@ -135,6 +144,92 @@ export function DealDetail() {
           />
         </Panel>
       )}
+    </div>
+  );
+}
+
+function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
+  const [remainingMs, setRemainingMs] = useState(() => msUntil(deal.quoteExpiresAt));
+  const [confirming, setConfirming] = useState(false);
+  const [declining, setDeclining] = useState(false);
+  const [declineDialogOpen, setDeclineDialogOpen] = useState(false);
+
+  useEffect(() => {
+    function sync() {
+      setRemainingMs(msUntil(deal.quoteExpiresAt));
+    }
+    sync();
+    const interval = setInterval(sync, 1000);
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('focus', sync);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('focus', sync);
+    };
+  }, [deal.quoteExpiresAt]);
+
+  useEffect(() => {
+    if (remainingMs <= 0) {
+      const updated = expireQuote(deal.id);
+      if (updated) {
+        onUpdate(updated);
+      }
+    }
+  }, [remainingMs, deal.id, onUpdate]);
+
+  async function handleConfirm() {
+    setConfirming(true);
+    try {
+      const updated = await confirmDeal(deal.id, { status: 'RUNNING' });
+      if (updated) {
+        onUpdate(updated);
+      }
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  async function handleDecline() {
+    setDeclineDialogOpen(false);
+    setDeclining(true);
+    try {
+      const updated = await declineDeal(deal.id);
+      if (updated) {
+        onUpdate(updated);
+      }
+    } finally {
+      setDeclining(false);
+    }
+  }
+
+  return (
+    <div className="quote-card">
+      <p className="quote-card__prepared">{ru.dealDetail.quotePreparedByManager}</p>
+      <p className="quote-card__rate-label">{ru.dealDetail.quoteRateForYou}</p>
+      <p className="quote-card__rate">
+        <span className="quote-card__rate-value">{deal.ratePerUnit}</span>
+        {deal.rateUnitLabel && <span className="quote-card__rate-unit"> {deal.rateUnitLabel}</span>}
+      </p>
+      <p className="quote-card__countdown">
+        {ru.dealDetail.quoteFixedLabel} <span className="quote-card__timer">{formatCountdown(remainingMs)} {ru.dealDetail.quoteSecondsSuffix}</span>
+      </p>
+      <div className="quote-card__rows">
+        <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
+        <KeyValueRow label={ru.dealDetail.receiveLabel} value={<span className="quote-card__positive">{deal.to ?? ru.common.tbd}</span>}/>
+      </div>
+      <Button variant="accent" loading={confirming} onClick={() => void handleConfirm()}>
+        {ru.dealDetail.confirmDealAction}
+      </Button>
+      <Button type="button" variant="link" danger loading={declining} onClick={() => setDeclineDialogOpen(true)}>
+        {ru.dealDetail.declineAction}
+      </Button>
+      <ConfirmDialog
+        open={declineDialogOpen}
+        title={ru.dealDetail.declineConfirmTitle}
+        onConfirm={() => void handleDecline()}
+        onCancel={() => setDeclineDialogOpen(false)}
+      />
     </div>
   );
 }
@@ -183,7 +278,7 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
     return <Skeleton height={90} radius={14}/>;
   }
 
-  // §6.8.1's exact order: sufficient, then the ≤1% case, then below-minimum,
+  // §7.3.2's exact order: sufficient, then the ≤1% case, then below-minimum,
   // else short — belowmin can never coincide with short1 by construction.
   let branch: Branch;
   if (balance >= dealAmount) {
@@ -247,12 +342,12 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
 
       {branch === 'sufficient' && <Callout variant="neutral">{ru.dealDetail.calloutSufficient}</Callout>}
       {branch === 'short1' && (
-        <Callout variant="danger">
+        <Callout variant="warning">
           {renderTemplate(ru.dealDetail.calloutShort1, { balance: balanceLabel, recalculated })}
         </Callout>
       )}
       {branch === 'short' && (
-        <Callout variant="danger">
+        <Callout variant="warning">
           {renderTemplate(ru.dealDetail.calloutShort, { balance: balanceLabel })}
         </Callout>
       )}
@@ -267,7 +362,8 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
       </Button>
       <Button
         type="button"
-        variant="danger-link"
+        variant="link"
+        danger
         loading={declining}
         onClick={() => setDeclineDialogOpen(true)}
       >
@@ -322,13 +418,14 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
         <>
           <StatusHero
             icon="spinner"
-            tone="running"
+            tone="pending"
             title={ru.dealDetail.heroRatePendingTitle}
             subtitle={ru.dealDetail.heroRatePendingSubtitle}
             action={(
               <Button
                 type="button"
-                variant="danger-link"
+                variant="link"
+                danger
                 loading={busy}
                 onClick={() => setCancelDialogOpen(true)}
               >

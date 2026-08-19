@@ -1,24 +1,26 @@
 .callout {
   border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 13px;
-  line-height: 18px;
+  padding: 12px;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--text-muted);
 }
 
-.callout--danger {
-  background: var(--callout-danger-bg);
-  border: 1px solid var(--callout-danger-border);
-  color: rgba(255, 255, 255, .9);
-}
-
-.callout--danger b,
-.callout--danger strong {
+.callout b,
+.callout strong {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text-muted);
 }
 
 .callout--neutral {
-  background: var(--callout-neutral-bg);
-  color: var(--text-secondary);
+  background: var(--bg-surface);
   text-align: center;
+}
+
+.callout--warning {
+  background: var(--panel-warning);
+}
+
+.callout--danger {
+  background: var(--panel-error);
 }

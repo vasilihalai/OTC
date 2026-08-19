@@ -92,7 +92,23 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
   const locked = lockoutCountdown > 0 || verifying;
 
   return (
-    <Modal open={open} title={ru.verification.title} onClose={onClose}>
+    <Modal
+      open={open}
+      title={ru.verification.title}
+      onClose={onClose}
+      footer={(
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={resendCountdown > 0}
+          onClick={() => void handleResend()}
+        >
+          {resendCountdown > 0
+            ? `${ru.verification.resendAction} ${formatCountdown(resendCountdown)}`
+            : ru.verification.resendAction}
+        </Button>
+      )}
+    >
       <p className="verification-modal__sent-to">{ru.verification.sentTo}</p>
       <p className="verification-modal__email">{maskEmail(email)}</p>
 
@@ -104,17 +120,6 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
         disabled={locked}
       />
       {error && <p className="verification-modal__error">{error}</p>}
-
-      <Button
-        type="button"
-        variant="primary"
-        disabled={resendCountdown > 0}
-        onClick={() => void handleResend()}
-      >
-        {resendCountdown > 0
-          ? `${ru.verification.resendAction} ${formatCountdown(resendCountdown)}`
-          : ru.verification.resendAction}
-      </Button>
     </Modal>
   );
 }
