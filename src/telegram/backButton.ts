@@ -19,7 +19,14 @@ export function useAppBackButton(): void {
 
   useEffect(() => {
     const route = routes.find((r) => matchPath(r.path, location.pathname));
-    const showsBack = isModalOpen || route?.headerVariant === 'back' || route?.headerVariant === 'close';
+    // Only 'back' routes get the native BackButton — it's a chevron with
+    // "go to the previous screen" semantics. 'close' routes (login,
+    // otc-unavailable: entry points with nothing to go back to, even right
+    // after signing out) must leave it hidden so Telegram's own default
+    // close affordance shows instead; showing our back button there was a
+    // real bug; it let a signed-out user "go back" into the app they just
+    // left.
+    const showsBack = isModalOpen || route?.headerVariant === 'back';
 
     if (!showsBack) {
       backButton.hide.ifAvailable();
