@@ -9,19 +9,26 @@
   box-sizing: border-box;
 }
 
-/* `position: fixed` (not just `overflow: hidden`) is the only thing that
-   reliably stops iOS Safari's rubber-band bounce on the document itself —
-   `overflow: hidden` alone still lets the page rubber-band on a touch drag
-   that starts outside `.app-content`'s own scroll area (e.g. on the tab
-   bar), which visibly dragged the "fixed" tab bar along with it since it's
-   only pinned relative to `.app-shell`, not the viewport. */
+/* `overscroll-behavior: none` (not `position: fixed`) is what stops the
+   document itself from rubber-banding on a touch drag that starts outside
+   `.app-content`'s own scroll area (e.g. on the tab bar), which used to
+   visibly drag the "fixed" tab bar along with it since it's only pinned
+   relative to `.app-shell`, not the viewport. An earlier version of this
+   fix used `position: fixed` on html/body as a belt-and-braces measure —
+   that's the older workaround from before `overscroll-behavior` had good
+   WebView support, and it caused a real regression: pinning the document
+   out of normal flow fights the OS's own keyboard-avoidance scrolling, so
+   focusing a text field made the page (and the field/cursor with it) jump
+   or drift as the keyboard opened. `overscroll-behavior: none` alone
+   already stops the bounce in the WebViews this app ships to, without
+   taking over the document's layout. `.tab-bar` and `.app-header` also
+   carry it directly as defense in depth, since they're the elements a
+   drag can actually start on outside `.app-content`. */
 html, body {
   height: 100%;
   width: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  position: fixed;
-  inset: 0;
 }
 
 body {
