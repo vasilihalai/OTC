@@ -87,10 +87,13 @@
   color: var(--text-on-accent);
 }
 
+/* A flat, bordered "ghost" fill instead of a dimmed (opacity) copy of the
+   enabled --bg-raised — a translucent version of the same color still read
+   as basically the same button, just faint, rather than clearly disabled. */
 .button--secondary:disabled {
-  background: var(--bg-raised);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   color: var(--text-disabled);
-  opacity: .6;
 }
 
 /* Compact size — §3: 36 high, radius 18, `button-sm` label. */

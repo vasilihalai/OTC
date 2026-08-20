@@ -32,6 +32,7 @@ import { computeScenarioBalance, getMinDealAmount, isBalanceScenario, parseAmoun
 import { formatAmount, parseAmountWithTicker } from '@/lib/money.ts';
 import { formatCountdown, msUntil } from '@/lib/countdown.ts';
 import { renderTemplate } from '@/lib/template.tsx';
+import { SAMPLE_DOCUMENT_URL } from '@/lib/sampleDocument.ts';
 import { openExternalLink } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -42,9 +43,6 @@ const DIRECTION_LABEL: Record<Deal['direction'], string> = {
   SELL: ru.deals.directionSell,
   EXCHANGE: ru.deals.directionExchange,
 };
-
-// openLink (Telegram SDK) requires an absolute URL — BASE_URL alone is root-relative.
-const SAMPLE_DOCUMENT_URL = new URL(`${import.meta.env.BASE_URL}documents/sample.pdf`, window.location.origin).toString();
 
 function openDocument() {
   openExternalLink(SAMPLE_DOCUMENT_URL);

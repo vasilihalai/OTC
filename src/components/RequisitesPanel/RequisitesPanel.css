@@ -70,6 +70,7 @@
 }
 
 .requisites-panel__qr-plate {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,6 +80,34 @@
   padding: 8px;
   background: #FFFFFF;
   border-radius: 12px;
+}
+
+/* The brand mark knocked out at the QR's centre — the code is generated at
+   error-correction level H specifically so this stays scannable. */
+.requisites-panel__qr-mark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 3px solid #FFFFFF;
+  background: var(--brand-mark);
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.requisites-panel__select .select__box {
+  background: var(--bg-raised);
+}
+
+.requisites-panel__select--network .select__box {
+  background: var(--bg-page);
 }
 
 .requisites-panel__address-row {

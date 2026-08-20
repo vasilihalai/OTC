@@ -102,18 +102,6 @@
   white-space: nowrap;
 }
 
-.profile__security--low .profile__detail-text {
-  color: var(--warning-text);
-}
-
-.profile__security--medium .profile__detail-text {
-  color: var(--text-body);
-}
-
-.profile__security--high .profile__detail-text {
-  color: var(--badge-success-text);
-}
-
 .profile__copy {
   flex-shrink: 0;
   display: flex;

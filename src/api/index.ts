@@ -11,7 +11,6 @@ import * as mockActions from '@/api/mock/actions.mock.ts';
 import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
-import * as mockDocuments from '@/api/mock/documents.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
 import * as realTransfers from '@/api/real/transfers.ts';
 import { verifyInitData } from '@/api/real/initdata.ts';
@@ -41,8 +40,6 @@ export const submitCryptoWithdrawal = USE_REAL_API
 export const submitFiatWithdrawal = USE_REAL_API
   ? realWithdrawals.submitFiatWithdrawal
   : mockWithdrawals.submitFiatWithdrawal;
-
-export const getAccountCertificate = mockDocuments.getAccountCertificate;
 
 export const getStats = USE_REAL_API ? realProfile.getStats : mockData.getStats;
 export const getAccounts = USE_REAL_API ? realProfile.getAccounts : mockData.getAccounts;

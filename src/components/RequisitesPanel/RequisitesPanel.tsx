@@ -76,7 +76,12 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
 
   useEffect(() => {
     let cancelled = false;
-    void QRCode.toDataURL(requisites.address, { margin: 1, width: 160, color: { dark: '#0D0E10', light: '#FFFFFF' } })
+    void QRCode.toDataURL(requisites.address, {
+      margin: 1,
+      width: 160,
+      errorCorrectionLevel: 'H',
+      color: { dark: '#0D0E10', light: '#FFFFFF' },
+    })
       .then((url) => { if (!cancelled) setQr(url); });
     return () => { cancelled = true; };
   }, [requisites.address]);
@@ -84,28 +89,33 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
   return (
     <Panel fill="surface" radius="16px">
       <h2 className={e('heading')}>{ru.dealDetail.requisitesTitle}</h2>
-      <Select
-        label={ru.dealDetail.requisitesAssetLabel}
-        layout="asset"
-        options={[{
-          value: requisites.asset,
-          label: requisites.asset,
-          secondary: requisites.assetName,
-          icon: <CurrencyIcon ticker={requisites.asset} size={24}/>,
-        }]}
-        value={requisites.asset}
-        onChange={() => {}}
-      />
-      <Select
-        label={ru.dealDetail.requisitesNetworkLabel}
-        layout="plain"
-        options={[{ value: requisites.network, label: requisites.network }]}
-        value={requisites.network}
-        onChange={() => {}}
-      />
+      <div className={e('select')}>
+        <Select
+          label={ru.dealDetail.requisitesAssetLabel}
+          layout="asset"
+          options={[{
+            value: requisites.asset,
+            label: requisites.asset,
+            secondary: requisites.assetName,
+            icon: <CurrencyIcon ticker={requisites.asset} size={24}/>,
+          }]}
+          value={requisites.asset}
+          onChange={() => {}}
+        />
+      </div>
+      <div className={e('select', 'network')}>
+        <Select
+          label={ru.dealDetail.requisitesNetworkLabel}
+          layout="plain"
+          options={[{ value: requisites.network, label: requisites.network }]}
+          value={requisites.network}
+          onChange={() => {}}
+        />
+      </div>
       <p className={e('qr-caption')}>{ru.dealDetail.requisitesScanQr}</p>
       <div className={e('qr-plate')}>
         {qr && <img src={qr} width={160} height={160} alt=""/>}
+        <span className={e('qr-mark')} aria-hidden="true">X</span>
       </div>
       <p className={e('qr-caption')}>{ru.dealDetail.requisitesOrCopy}</p>
       <div className={e('address-row')}>

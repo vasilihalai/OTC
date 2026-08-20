@@ -144,7 +144,6 @@ export function TransferModal() {
       title={ru.transferModal.title}
       onClose={close}
       width={343}
-      closeVariant="bare"
       footer={(
         <div className="button-row transfer-modal__footer">
           <Button type="button" variant="secondary" onClick={close}>{ru.transferModal.cancelAction}</Button>

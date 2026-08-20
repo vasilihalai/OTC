@@ -49,47 +49,37 @@
   color: var(--text-body);
 }
 
+/* No fill, no border — just the glyph — but the tap target stays a full
+   44px, pulled back with a negative margin so the larger hit area doesn't
+   visually push the glyph away from the card edge. */
 .modal__close {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-raised);
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  color: var(--text-body);
-}
-
-.modal__close svg {
-  width: 11px;
-  height: 11px;
-}
-
-.modal__close--bare {
   width: 44px;
   height: 44px;
   margin: -12px -12px -12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
+  border: none;
   border-radius: 0;
+  cursor: pointer;
   color: var(--text-quiet);
 }
 
-.modal__close--bare svg {
-  width: 20px;
-  height: 20px;
+.modal__close svg {
+  width: 22px;
+  height: 22px;
 }
 
 .modal__body {
-  padding: 0 24px;
+  padding: 0 24px 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .modal__bottom {
-  padding: 16px 24px 24px;
+  padding: 20px 24px 24px;
   border-radius: 0 0 16px 16px;
 }

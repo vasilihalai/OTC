@@ -7,15 +7,15 @@ import { SettingRow } from '@/components/SettingRow/SettingRow.tsx';
 import { PickerModal } from '@/components/PickerModal/PickerModal.tsx';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
-import { getAccountCertificate, getUser } from '@/api/index.ts';
-import type { SecurityLevel, User } from '@/api/index.ts';
+import { getUser } from '@/api/index.ts';
+import type { User } from '@/api/index.ts';
 import { useRequireSession, useSessionStore } from '@/store/session.ts';
 import { useSettingsStore } from '@/store/settings.ts';
 import { useCopy } from '@/lib/useCopy.ts';
 import { groupOf4 } from '@/lib/text.ts';
 import { maskEmail } from '@/lib/mask.ts';
-import { openExternalLink, notifyError } from '@/telegram/adapter.ts';
-import { useToastStore } from '@/store/toast.ts';
+import { SAMPLE_DOCUMENT_URL } from '@/lib/sampleDocument.ts';
+import { openExternalLink } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './Profile.css';
@@ -96,16 +96,6 @@ const THEME_OPTIONS = [
   { value: 'light' as const, label: ru.profile.themeLight },
 ];
 
-function securityLabel(level: SecurityLevel): string {
-  if (level === 'HIGH') {
-    return ru.profile.securityHigh;
-  }
-  if (level === 'MEDIUM') {
-    return ru.profile.securityMedium;
-  }
-  return ru.profile.securityLow;
-}
-
 function DetailRow({ label, value, display, copyValue }: { label: string; value: string; display?: string; copyValue?: string }) {
   const copy = useCopy();
   return (
@@ -127,7 +117,6 @@ export function Profile() {
   const session = useRequireSession();
   const navigate = useNavigate();
   const clearSession = useSessionStore((s) => s.clearSession);
-  const showToast = useToastStore((s) => s.show);
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
   const theme = useSettingsStore((s) => s.theme);
@@ -135,7 +124,6 @@ export function Profile() {
   const [user, setUser] = useState<User>();
   const [error, setError] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
-  const [certLoading, setCertLoading] = useState(false);
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [themeModalOpen, setThemeModalOpen] = useState(false);
 
@@ -162,20 +150,8 @@ export function Profile() {
     navigate('/login', { replace: true });
   }
 
-  async function handleCertificate() {
-    if (certLoading) {
-      return;
-    }
-    setCertLoading(true);
-    try {
-      const { url } = await getAccountCertificate();
-      openExternalLink(url);
-    } catch {
-      notifyError();
-      showToast(ru.profile.certificateError);
-    } finally {
-      setCertLoading(false);
-    }
+  function handleCertificate() {
+    openExternalLink(SAMPLE_DOCUMENT_URL);
   }
 
   if (error) {
@@ -218,16 +194,10 @@ export function Profile() {
         <div className="profile__details-card">
           <DetailRow label={ru.profile.emailRow} value={user.email} display={maskEmail(user.email)} copyValue={user.email}/>
           <DetailRow label={ru.profile.userIdRow} value={user.userId} display={groupOf4(user.userId)} copyValue={user.userId}/>
-          <div className="profile__detail-row">
-            <span className="profile__detail-label">{ru.profile.securityRow}</span>
-            <span className={`profile__detail-value profile__security--${user.securityLevel.toLowerCase()}`}>
-              <span className="profile__detail-text">{securityLabel(user.securityLevel)}</span>
-            </span>
-          </div>
           <DetailRow label={ru.profile.phoneRow} value={user.phone}/>
         </div>
 
-        <Button variant="secondary" size="compact" loading={certLoading} onClick={() => void handleCertificate()}>
+        <Button variant="secondary" size="compact" onClick={handleCertificate}>
           {ru.profile.certificateAction}
         </Button>
       </div>

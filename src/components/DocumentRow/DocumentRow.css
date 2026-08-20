@@ -29,6 +29,15 @@
   cursor: default;
 }
 
+/* Locked explicitly, not left to the <svg>'s own width/height attributes —
+   disabled and enabled rows otherwise rendered the glyph at different
+   sizes on some platforms. */
+.document-row__main svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
 .document-row__caption {
   font-size: 14px;
   line-height: 20px;
