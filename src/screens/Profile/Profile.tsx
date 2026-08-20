@@ -227,11 +227,6 @@ export function Profile() {
           <DetailRow label={ru.profile.phoneRow} value={user.phone}/>
         </div>
 
-        <div className="profile__desk-hours">
-          <h2 className="profile__desk-hours-title">{ru.profile.deskHoursTitle}</h2>
-          <p className="profile__desk-hours-text">{ru.profile.deskHoursText}</p>
-        </div>
-
         <Button variant="secondary" size="compact" loading={certLoading} onClick={() => void handleCertificate()}>
           {ru.profile.certificateAction}
         </Button>

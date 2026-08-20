@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { TextField } from '@/components/TextField/TextField.tsx';
 import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Logo } from '@/components/Logo/Logo.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
 import { MockSignInError, completeSignIn, getUser, sendVerificationCode, signInSocial } from '@/api/index.ts';
 import type { ClientType } from '@/api/index.ts';
@@ -86,7 +87,7 @@ export function SignIn({ variant }: SignInProps) {
   return (
     <>
       <form className="sign-in" onSubmit={(e) => void handleSubmit(e)}>
-        <div className="sign-in__logo">xRuby</div>
+        <Logo/>
         <h1 className="sign-in__title">
           {variant === 'personal' ? ru.signIn.titlePersonal : ru.signIn.titleBusiness}
         </h1>

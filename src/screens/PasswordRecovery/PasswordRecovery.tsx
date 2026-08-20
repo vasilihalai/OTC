@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { TextField } from '@/components/TextField/TextField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Logo } from '@/components/Logo/Logo.tsx';
 import { VerificationModal } from '@/screens/VerificationModal/VerificationModal.tsx';
 import { MockSignInError, sendVerificationCode } from '@/api/index.ts';
 import { isValidEmail } from '@/lib/validate.ts';
@@ -54,7 +55,7 @@ export function PasswordRecovery() {
   return (
     <>
       <form className="password-recovery" onSubmit={(e) => void handleSubmit(e)}>
-        <div className="password-recovery__logo">xRuby</div>
+        <Logo/>
         <h1 className="password-recovery__title">{ru.recovery.title}</h1>
         <p className="password-recovery__body">{ru.recovery.body}</p>
 

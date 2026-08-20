@@ -21,7 +21,6 @@ export function TextField({ label, error, suffix, className, ...rest }: TextFiel
     <div className={classNames(b({ invalid: !!error }), className)}>
       <label className={e('label')} htmlFor={id}>
         {label}
-        <span className={e('required')} aria-hidden="true">*</span>
       </label>
       {suffix ? (
         <div className={e('box')}>

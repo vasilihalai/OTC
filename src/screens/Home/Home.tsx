@@ -97,7 +97,7 @@ export function Home() {
         ))}
       </Panel>
 
-      <Panel radius="24px" padding="20px 0">
+      <Panel radius="24px 24px 0 0" padding="20px 0">
         <h2 className="home__panel-heading">{ru.home.depositAccountTitle}</h2>
         <div className="home__segment">
           <SegmentedControl
