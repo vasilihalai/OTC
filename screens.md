@@ -130,7 +130,7 @@ This is the thing most likely to regress, so it's stated first. A panel on Home,
 | Path | Screen | Tab bar | Header |
 |---|---|---|---|
 | `/login` | SignIn (business) — **default** | no | close |
-| `/login/personal` | SignIn (personal) | no | back |
+| `/login/personal` | SignIn (personal) | no | close |
 | `/login/business` | redirect → `/login` | — | — |
 | `/forgot` | PasswordRecovery | no | back |
 | `/reset-password` | NewPassword | no | back |
@@ -144,6 +144,8 @@ This is the thing most likely to regress, so it's stated first. A panel on Home,
 | `/withdraw/fiat/requisites` | WithdrawRequisites | no | back |
 
 `/login` (business) is the default sign-in route, `/login/personal` the alternate — a deliberate, standing deviation from generic nav conventions, made explicitly at the user's request; do not "fix" this back to a personal default.
+
+**Both are `headerVariant: 'close'`, never `'back'`.** `/login/personal` used to be `'back'`, so toggling personal ↔ business made the header (and the native BackButton) flicker between close and back depending on which variant you landed on — wrong regardless of direction, since business and personal are two faces of one entry screen, not a parent/child pair with real navigation depth between them. Combined with the `replace`-navigation above, the two variants now behave as one screen for every purpose that matters (header, native back button, history) even though they're still two route paths internally.
 
 **The personal/business switch links navigate with `{ replace: true }`, not a push.** They previously pushed a new history entry each time, so toggling personal → business → personal a few times left a long chain of login-variant entries in the browser/Telegram back-stack — pressing back would step through login variants instead of leaving the auth flow. Any "switch between sibling views of the same screen" link (as opposed to "go deeper") should follow this pattern: `replace`, not `push`.
 
