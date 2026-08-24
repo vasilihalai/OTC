@@ -12,6 +12,12 @@
   gap: 20px;
 }
 
+.home__hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .home__hero .badge {
   align-self: flex-start;
 }

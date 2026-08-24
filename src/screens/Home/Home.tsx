@@ -63,9 +63,11 @@ export function Home() {
     <div className="home">
       <Panel radius="0 0 24px 24px" padding="8px 16px 20px">
         <div className="home__hero">
-          <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
-          <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>
-          <p className="home__desk-hours">{ru.home.deskHours}</p>
+          <div className="home__hero-text">
+            <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
+            <p className="home__hero-subtitle">{ru.home.heroSubtitle}</p>
+            <p className="home__desk-hours">{ru.home.deskHours}</p>
+          </div>
           {user ? <CompanyChip>{user.clientName}</CompanyChip> : <Skeleton width={140} height={22} radius={8}/>}
           <div className="home__stats">
             {stats ? (
