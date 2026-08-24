@@ -3,14 +3,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
 import { Select } from '@/components/Select/Select.tsx';
-import { SegmentedControl } from '@/components/SegmentedControl/SegmentedControl.tsx';
 import { TextField } from '@/components/TextField/TextField.tsx';
 import { Checkbox } from '@/components/Checkbox/Checkbox.tsx';
 import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
 import { getSavedRequisites, getUser, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
-import type { FiatTransferType, FiatWithdrawOptions, SavedRequisite } from '@/api/index.ts';
+import type { FiatWithdrawOptions, SavedRequisite } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { formatAmount } from '@/lib/money.ts';
@@ -36,7 +35,6 @@ export function WithdrawRequisites() {
 
   const [saved, setSaved] = useState<SavedRequisite[]>([]);
   const [choice, setChoice] = useState<string>(NEW_OPTION);
-  const [transferType, setTransferType] = useState<FiatTransferType>('internal');
   const [account, setAccount] = useState('');
   const [bic, setBic] = useState('');
   const [recipientBic, setRecipientBic] = useState('');
@@ -75,20 +73,51 @@ export function WithdrawRequisites() {
     }
   }, [routeState]);
 
+  // The requisites field set is decided by the withdrawal method chosen on
+  // the previous screen — it's not a separate choice made here.
+  const transferType = options?.methods.find((m) => m.id === routeState?.methodId)?.transferType ?? 'internal';
+  // Only requisites saved for this same field set make sense to offer —
+  // picking one that doesn't match would populate fields the current
+  // method doesn't even show.
+  const compatibleSaved = saved.filter((r) => r.transferType === transferType);
+  const isNew = choice === NEW_OPTION;
+  const selected = compatibleSaved.find((r) => r.id === choice);
+
+  // Fields never disappear — picking a saved requisite fills them in
+  // (read-only) instead of hiding the form; picking "new" clears them for
+  // manual entry.
+  useEffect(() => {
+    if (selected) {
+      setAccount(selected.account);
+      setBankName(selected.bankName ?? '');
+      setInn(selected.inn ?? '');
+      setCorrAccount(selected.correspondentAccount ?? '');
+      setBic(selected.bic ?? '');
+      setRecipientBic(selected.bic ?? '');
+      setSaveForLater(false);
+    } else {
+      setAccount('');
+      setBankName('');
+      setInn('');
+      setCorrAccount('');
+      setBic('');
+      setRecipientBic('');
+    }
+    setAccountError(undefined);
+  }, [choice, selected]);
+
   if (!routeState) {
     return null;
   }
 
   const { ticker, amount, methodId } = routeState;
-  const isNew = choice === NEW_OPTION;
-  const selected = saved.find((r) => r.id === choice);
   const feePercent = options?.methods.find((m) => m.id === methodId)?.feePct;
   const fee = feePercent ? (Number(amount) * Number(feePercent)) / 100 : 0;
   const totalDebit = Number(amount) + fee;
 
   function handleConfirm() {
     setAccountError(undefined);
-    if (isNew && !account.trim()) {
+    if (!account.trim()) {
       setAccountError(ru.withdraw.errorAccountRequired);
       notifyError();
       return;
@@ -104,25 +133,15 @@ export function WithdrawRequisites() {
         ticker,
         methodId,
         amount,
-        requisites: isNew
-          ? {
-            transferType,
-            account,
-            bankName: transferType !== 'internal' ? bankName : undefined,
-            bic: transferType === 'ru' ? recipientBic : (transferType === 'kg' ? bic : undefined),
-            inn: transferType !== 'internal' ? inn : undefined,
-            correspondentAccount: transferType === 'ru' ? corrAccount : undefined,
-            saveForLater,
-          }
-          : {
-            transferType: selected?.transferType ?? 'internal',
-            account: selected?.account ?? '',
-            bankName: selected?.bankName,
-            bic: selected?.bic,
-            inn: selected?.inn,
-            correspondentAccount: selected?.correspondentAccount,
-            saveForLater: false,
-          },
+        requisites: {
+          transferType,
+          account,
+          bankName: transferType !== 'internal' ? bankName : undefined,
+          bic: transferType === 'ru' ? recipientBic : (transferType === 'kg' ? bic : undefined),
+          inn: transferType !== 'internal' ? inn : undefined,
+          correspondentAccount: transferType === 'ru' ? corrAccount : undefined,
+          saveForLater: isNew && saveForLater,
+        },
         idempotencyKey: idempotencyKey.current,
       });
       bumpBalancesVersion();
@@ -149,57 +168,48 @@ export function WithdrawRequisites() {
     <div className="withdraw-requisites">
       <h1 className="withdraw-requisites__title">{ru.withdraw.requisitesTitle}</h1>
 
-      <Select
-        label={ru.withdraw.savedRequisiteLabel}
-        layout="plain"
-        options={[
-          ...saved.map((r) => ({ value: r.id, label: r.label })),
-          { value: NEW_OPTION, label: ru.withdraw.newRequisiteOption },
-        ]}
-        value={choice}
-        onChange={setChoice}
+      {compatibleSaved.length > 0 && (
+        <Select
+          label={ru.withdraw.savedRequisiteLabel}
+          layout="plain"
+          options={[
+            ...compatibleSaved.map((r) => ({ value: r.id, label: r.label })),
+            { value: NEW_OPTION, label: ru.withdraw.newRequisiteOption },
+          ]}
+          value={choice}
+          onChange={setChoice}
+        />
+      )}
+
+      {transferType === 'ru' && (
+        <TextField label={ru.withdraw.recipientBicLabel} placeholder={ru.withdraw.bicPlaceholder} value={recipientBic} disabled={!isNew} onChange={(e) => setRecipientBic(e.target.value)}/>
+      )}
+      {transferType !== 'internal' && (
+        <TextField label={ru.withdraw.innLabel} placeholder={ru.withdraw.innPlaceholder} value={inn} disabled={!isNew} onChange={(e) => setInn(e.target.value)}/>
+      )}
+      {transferType !== 'internal' && (
+        <TextField label={ru.withdraw.bankNameLabel} placeholder={ru.withdraw.bankNamePlaceholder} value={bankName} disabled={!isNew} onChange={(e) => setBankName(e.target.value)}/>
+      )}
+      {transferType === 'kg' && (
+        <TextField label={ru.withdraw.bicLabel} placeholder={ru.withdraw.bicPlaceholder} value={bic} disabled={!isNew} onChange={(e) => setBic(e.target.value)}/>
+      )}
+      {transferType === 'ru' && (
+        <TextField label={ru.withdraw.bankBicLabel} placeholder={ru.withdraw.bicPlaceholder} value={bic} disabled={!isNew} onChange={(e) => setBic(e.target.value)}/>
+      )}
+      {transferType === 'ru' && (
+        <TextField label={ru.withdraw.correspondentAccountLabel} placeholder={ru.withdraw.correspondentAccountPlaceholder} value={corrAccount} disabled={!isNew} onChange={(e) => setCorrAccount(e.target.value)}/>
+      )}
+      <TextField
+        label={ru.withdraw.recipientAccountLabel}
+        placeholder={ru.withdraw.recipientAccountPlaceholder}
+        value={account}
+        error={accountError}
+        disabled={!isNew}
+        onChange={(e) => setAccount(e.target.value)}
       />
 
       {isNew && (
-        <>
-          <SegmentedControl
-            options={[
-              { value: 'internal' as const, label: ru.withdraw.transferTypeInternal },
-              { value: 'kg' as const, label: ru.withdraw.transferTypeKg },
-              { value: 'ru' as const, label: ru.withdraw.transferTypeRu },
-            ]}
-            value={transferType}
-            onChange={setTransferType}
-          />
-
-          {transferType === 'ru' && (
-            <TextField label={ru.withdraw.recipientBicLabel} placeholder={ru.withdraw.bicPlaceholder} value={recipientBic} onChange={(e) => setRecipientBic(e.target.value)}/>
-          )}
-          {transferType !== 'internal' && (
-            <TextField label={ru.withdraw.innLabel} placeholder={ru.withdraw.innPlaceholder} value={inn} onChange={(e) => setInn(e.target.value)}/>
-          )}
-          {transferType !== 'internal' && (
-            <TextField label={ru.withdraw.bankNameLabel} placeholder={ru.withdraw.bankNamePlaceholder} value={bankName} onChange={(e) => setBankName(e.target.value)}/>
-          )}
-          {transferType === 'kg' && (
-            <TextField label={ru.withdraw.bicLabel} placeholder={ru.withdraw.bicPlaceholder} value={bic} onChange={(e) => setBic(e.target.value)}/>
-          )}
-          {transferType === 'ru' && (
-            <TextField label={ru.withdraw.bankBicLabel} placeholder={ru.withdraw.bicPlaceholder} value={bic} onChange={(e) => setBic(e.target.value)}/>
-          )}
-          {transferType === 'ru' && (
-            <TextField label={ru.withdraw.correspondentAccountLabel} placeholder={ru.withdraw.correspondentAccountPlaceholder} value={corrAccount} onChange={(e) => setCorrAccount(e.target.value)}/>
-          )}
-          <TextField
-            label={ru.withdraw.recipientAccountLabel}
-            placeholder={ru.withdraw.recipientAccountPlaceholder}
-            value={account}
-            error={accountError}
-            onChange={(e) => setAccount(e.target.value)}
-          />
-
-          <Checkbox checked={saveForLater} onChange={setSaveForLater} label={ru.withdraw.saveRequisiteLabel}/>
-        </>
+        <Checkbox checked={saveForLater} onChange={setSaveForLater} label={ru.withdraw.saveRequisiteLabel}/>
       )}
 
       {options && (

@@ -129,6 +129,8 @@ export interface WithdrawMethod {
   id: string;
   name: string;
   feePct: string;
+  /** Which requisites field set the method needs — set once here, not re-picked on the requisites screen. */
+  transferType: FiatTransferType;
 }
 
 export interface FiatWithdrawLimits {

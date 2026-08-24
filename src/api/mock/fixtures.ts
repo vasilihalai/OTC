@@ -240,11 +240,11 @@ export const MOCK_WITHDRAW_FIAT: {
   currencies: ['KGS', 'RUB', 'USD'],
   methods: {
     KGS: [
-      { id: 'bakai', name: 'Бакай Банк', feePct: '1.0' },
-      { id: 'other_kg', name: 'Другой Банк Кыргызстана', feePct: '1.5' },
+      { id: 'bakai', name: 'Бакай Банк', feePct: '1.0', transferType: 'internal' },
+      { id: 'other_kg', name: 'Другой Банк Кыргызстана', feePct: '1.5', transferType: 'kg' },
     ],
-    RUB: [{ id: 'other_ru', name: 'Межбанковский перевод RU', feePct: '1.5' }],
-    USD: [{ id: 'swift', name: 'SWIFT-перевод', feePct: '2.0' }],
+    RUB: [{ id: 'other_ru', name: 'Межбанковский перевод RU', feePct: '1.5', transferType: 'ru' }],
+    USD: [{ id: 'swift', name: 'SWIFT-перевод', feePct: '2.0', transferType: 'ru' }],
   },
   limits: {
     KGS: { min: '100000', available: '15000000' },

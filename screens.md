@@ -206,7 +206,9 @@ Submit: validate address + amount → `TwoFactorGate` → `submitCryptoWithdrawa
 Currency + method `Select`s, amount field, summary (min/limit/entered amount/fee/total debit). No submission here — "Продолжить" navigates to `WithdrawRequisites` carrying `{ ticker, methodId, amount }` via route state.
 
 ### 6.8 WithdrawRequisites (`/withdraw/fiat/requisites`)
-Reached only via WithdrawFiat's route state (redirects back to `/withdraw/fiat` if missing). Saved-requisite `Select` + "Новые реквизиты" option. New-entry path: `SegmentedControl` for transfer type (Внутренний / Межбанк KG / Межбанк RU) with the field set keyed per type, "Сохранить реквизиты" checkbox, summary, paired cancel/confirm buttons.
+Reached only via WithdrawFiat's route state (redirects back to `/withdraw/fiat` if missing).
+
+**The transfer-type tabs are gone.** They used to re-ask "what kind of transfer is this" via a `SegmentedControl` (Внутренний / Межбанк KG / Межбанк RU) — redundant, since the withdrawal method already picked on the previous screen (WithdrawFiat) determines that: `WithdrawMethod` now carries its own `transferType: FiatTransferType` (set in the mock fixtures — `bakai` → `internal`, `other_kg` → `kg`, `other_ru`/`swift` → `ru`), and this screen just looks it up (`options.methods.find(m => m.id === methodId)`). The tabs were also the thing sliding out of alignment on smaller screens — removing them removed the bug along with the redundant question. The field set below is keyed off that looked-up type, unconditionally:
 
 | Transfer type | Fields shown |
 |---|---|
@@ -214,7 +216,9 @@ Reached only via WithdrawFiat's route state (redirects back to `/withdraw/fiat` 
 | kg | account, ИНН, bank name, БИК банка получателя |
 | ru | account, БИК получателя, ИНН, bank name, БИК банка получателя, корр. счёт |
 
-Submit: validate account (new entries) → `TwoFactorGate` → `submitFiatWithdrawal`.
+**Fields never disappear.** The saved-requisite `Select` (only rendered at all when there's at least one saved requisite matching this method's transfer type — filtered, since a saved entry for a different field shape wouldn't populate sensibly) sits above the field set; picking a saved entry fills the fields in and disables them (still visible, not hidden) instead of swapping the form out from under the user, picking "Новые реквизиты" clears them back to blank and editable. "Сохранить реквизиты" only shows for a fresh entry — saving an already-saved one doesn't mean anything.
+
+Submit: validate account → `TwoFactorGate` → `submitFiatWithdrawal`.
 
 ### 6.9 Profile (`/profile`)
 Two full-bleed panels, bg-raised frame, 16px seam (see §2.3). `User` now carries `verified: boolean`, `securityLevel: 'LOW'|'MEDIUM'|'HIGH'`, `phone`, `faqUrl`, `aboutUrl` — the old `verificationLevel: 1|2` model was dropped entirely, it's a different concept (verification vs. account-security posture) and the new model matches the SVG mockup this was rebuilt against.
