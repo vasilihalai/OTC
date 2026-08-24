@@ -182,6 +182,7 @@ export const ru = {
     feeLabel: 'Комиссия',
     enteredAmountLabel: 'Сумма вывода',
     payoutLabel: 'Сумма вывода',
+    payoutCaption: 'За вычетом комиссии сети',
     totalDebitLabel: 'Сумма к списанию',
     contractAddressLabel: 'Адрес контракта в блокчейне',
     contractTailPrefixText: 'Заканчивается на',

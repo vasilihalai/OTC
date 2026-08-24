@@ -6,6 +6,10 @@
   background: var(--panel-warning);
 }
 
+.warning-panel > svg {
+  flex-shrink: 0;
+}
+
 .warning-panel__text {
   display: flex;
   flex-direction: column;

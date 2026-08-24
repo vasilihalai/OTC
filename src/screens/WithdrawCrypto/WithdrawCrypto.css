@@ -23,7 +23,7 @@
 .withdraw-crypto__section-title {
   font-size: 18px;
   line-height: 24px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 8px 0 0;
 }
@@ -58,7 +58,7 @@
 .withdraw-crypto__submit {
   position: sticky;
   bottom: 0;
-  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(to top, var(--bg-page) 65%, transparent);
 }
 

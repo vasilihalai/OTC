@@ -23,7 +23,7 @@
   padding: 8px 12px;
   border-radius: 12px;
   border: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-raised);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s ease;

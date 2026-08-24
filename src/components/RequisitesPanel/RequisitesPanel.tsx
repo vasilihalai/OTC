@@ -17,8 +17,8 @@ const [, e] = bem('requisites-panel');
 function CopyIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M5.5 13.5H12a1.5 1.5 0 0 0 1.5-1.5V5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -131,7 +131,7 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
         {qr && <img src={qr} width={160} height={160} alt=""/>}
         <span className={e('qr-mark')} aria-hidden="true">X</span>
       </div>
-      <p className={e('qr-caption')}>{ru.dealDetail.requisitesOrCopy}</p>
+      <p className={e('qr-caption', 'divider')}>{ru.dealDetail.requisitesOrCopy}</p>
       <div className={e('address-row')}>
         <span className={e('address-text')}>{truncateMiddle(requisites.address, 10, 8)}</span>
         <button type="button" className={e('copy')} aria-label={ru.common.copyAction} onClick={() => copy(requisites.address)}>

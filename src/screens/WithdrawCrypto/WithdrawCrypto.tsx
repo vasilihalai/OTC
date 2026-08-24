@@ -8,7 +8,6 @@ import { AmountField } from '@/components/AmountField/AmountField.tsx';
 import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 import { WarningPanel } from '@/components/WarningPanel/WarningPanel.tsx';
-import { HelpTip } from '@/components/HelpTip/HelpTip.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
@@ -190,7 +189,6 @@ export function WithdrawCrypto() {
   if (initialLoading) {
     return (
       <div className="withdraw-crypto">
-        <h1 className="withdraw-crypto__title">{ru.withdraw.cryptoTitle}</h1>
         <Skeleton height={48} radius={12}/>
         <Skeleton height={48} radius={12}/>
         <Panel fill="surface" radius="12px">
@@ -203,8 +201,6 @@ export function WithdrawCrypto() {
   return (
     <div className="withdraw-crypto">
       <div className="withdraw-crypto__scroll">
-        <h1 className="withdraw-crypto__title">{ru.withdraw.cryptoTitle}</h1>
-
         <h2 className="withdraw-crypto__section-title">{ru.withdraw.chooseAssetTitle}</h2>
         <Select
           label={ru.withdraw.assetLabel}
@@ -224,14 +220,13 @@ export function WithdrawCrypto() {
         </h2>
         <div className="withdraw-crypto__address-label">
           <span>{ru.withdraw.addressLabel}</span>
-          <HelpTip text={ru.withdraw.addressHelpText}/>
         </div>
         {options && options.addresses.length > 0 && (
           <Select
             label=""
             layout="address"
             options={[
-              ...options.addresses.map((a) => ({ value: a.id, label: a.address, labels: a.labels })),
+              ...options.addresses.map((a) => ({ value: a.id, label: a.address })),
               { value: NEW_ADDRESS_OPTION, label: ru.withdraw.newAddressOption },
             ]}
             value={addressChoice}
@@ -273,7 +268,7 @@ export function WithdrawCrypto() {
         <AmountField
           label={ru.withdraw.sendLabel}
           availableLabel={ru.withdraw.balanceLabel}
-          available={`${formatAmount(available, ticker)} ${ticker}`}
+          available={formatAmount(available, ticker)}
           value={amount}
           onChange={handleAmountChange}
           onMax={handleMax}
@@ -299,6 +294,7 @@ export function WithdrawCrypto() {
             ]}
             totalLabel={ru.withdraw.payoutLabel}
             totalValue={`${formatAmount(amount || '0', ticker)} ${ticker}`}
+            caption={ru.withdraw.payoutCaption}
           />
         )}
 

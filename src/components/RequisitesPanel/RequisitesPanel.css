@@ -69,6 +69,21 @@
   margin: 4px 0;
 }
 
+.requisites-panel__qr-caption--divider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.requisites-panel__qr-caption--divider::before,
+.requisites-panel__qr-caption--divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 .requisites-panel__qr-plate {
   position: relative;
   display: flex;
@@ -122,6 +137,7 @@
 
 .requisites-panel__address-text {
   font-size: 14px;
+  font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
