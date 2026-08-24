@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { type ReactNode, useId, useState } from 'react';
 
 import { classNames } from '@/css/classnames.ts';
 import { bem } from '@/css/bem.ts';
@@ -9,7 +9,12 @@ import './PasswordField.css';
 
 const [b, e] = bem('password-field');
 
-export function PasswordField({ label, error, className, value, ...rest }: Omit<TextFieldProps, 'type'>) {
+export interface PasswordFieldProps extends Omit<TextFieldProps, 'type'> {
+  /** Rendered inline after the label — the field's help-tip glyph, e.g. */
+  labelHint?: ReactNode;
+}
+
+export function PasswordField({ label, error, className, value, labelHint, ...rest }: PasswordFieldProps) {
   const id = useId();
   const [visible, setVisible] = useState(false);
   // Only the native masked dots need the smaller font — an empty field
@@ -20,7 +25,10 @@ export function PasswordField({ label, error, className, value, ...rest }: Omit<
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
       <label className={e('label')} htmlFor={id}>
-        {label}
+        <span className={e('label-row')}>
+          {label}
+          {labelHint}
+        </span>
       </label>
       <div className={e('box')}>
         <input
