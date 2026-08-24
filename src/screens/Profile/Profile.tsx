@@ -5,7 +5,6 @@ import { Panel } from '@/components/Panel/Panel.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { SettingRow } from '@/components/SettingRow/SettingRow.tsx';
 import { PickerModal } from '@/components/PickerModal/PickerModal.tsx';
-import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { getUser } from '@/api/index.ts';
 import type { User } from '@/api/index.ts';
@@ -123,7 +122,6 @@ export function Profile() {
   const setTheme = useSettingsStore((s) => s.setTheme);
   const [user, setUser] = useState<User>();
   const [error, setError] = useState(false);
-  const [signOutOpen, setSignOutOpen] = useState(false);
   const [languageModalOpen, setLanguageModalOpen] = useState(false);
   const [themeModalOpen, setThemeModalOpen] = useState(false);
 
@@ -145,7 +143,6 @@ export function Profile() {
   }, [load]);
 
   function handleSignOut() {
-    setSignOutOpen(false);
     clearSession();
     navigate('/login', { replace: true });
   }
@@ -219,15 +216,8 @@ export function Profile() {
         <SettingRow icon={<FaqIcon/>} label={ru.profile.faqRow} onClick={() => openExternalLink(user.faqUrl)}/>
         <SettingRow icon={<AboutIcon/>} label={ru.profile.aboutRow} onClick={() => openExternalLink(user.aboutUrl)}/>
         <div className="profile__spacer"/>
-        <SettingRow icon={<LogoutIcon/>} label={ru.profile.signOutAction} danger onClick={() => setSignOutOpen(true)}/>
+        <SettingRow icon={<LogoutIcon/>} label={ru.profile.signOutAction} danger onClick={handleSignOut}/>
       </div>
-
-      <ConfirmDialog
-        open={signOutOpen}
-        title={ru.profile.signOutConfirmTitle}
-        onConfirm={handleSignOut}
-        onCancel={() => setSignOutOpen(false)}
-      />
 
       <PickerModal
         open={languageModalOpen}

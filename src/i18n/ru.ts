@@ -224,7 +224,6 @@ export const ru = {
     faqRow: 'FAQ',
     aboutRow: 'О нас',
     signOutAction: 'Выход',
-    signOutConfirmTitle: 'Выйти из аккаунта?',
     errorTitle: 'Не удалось загрузить профиль',
     retryAction: 'Повторить',
   },
