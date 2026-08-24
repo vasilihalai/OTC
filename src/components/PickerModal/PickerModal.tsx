@@ -1,17 +1,8 @@
-import { Modal } from '@/components/Modal/Modal.tsx';
 import { bem } from '@/css/bem.ts';
 
 import './PickerModal.css';
 
-const [b, e] = bem('picker-modal');
-
-function CheckIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M3.5 8.5l3 3 6-7" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  );
-}
+const [b, e] = bem('picker-sheet');
 
 export interface PickerModalOption<T extends string> {
   value: T;
@@ -28,21 +19,28 @@ export interface PickerModalProps<T extends string> {
 }
 
 export function PickerModal<T extends string>({ open, title, options, value, onSelect, onClose }: PickerModalProps<T>) {
+  if (!open) {
+    return null;
+  }
+
   return (
-    <Modal open={open} title={title} onClose={onClose}>
-      <div className={b()}>
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={e('row', { selected: option.value === value })}
-            onClick={() => { onSelect(option.value); onClose(); }}
-          >
-            <span className={e('label')}>{option.label}</span>
-            {option.value === value && <CheckIcon/>}
-          </button>
-        ))}
+    <div className={e('scrim')} onClick={onClose}>
+      <div className={b()} onClick={(ev) => ev.stopPropagation()}>
+        <div className={e('handle')}/>
+        <span className={e('title')}>{title}</span>
+        <div className={e('list')}>
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={e('row', { selected: option.value === value })}
+              onClick={() => { onSelect(option.value); onClose(); }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 }

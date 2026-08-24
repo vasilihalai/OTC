@@ -4,5 +4,5 @@ export function maskEmail(email: string): string {
     return email;
   }
   const visible = local.length <= 3 ? local : local.slice(0, 3);
-  return `${visible}*@${domain}`;
+  return `${visible}***@${domain}`;
 }

@@ -107,6 +107,14 @@
   line-height: 20px;
 }
 
+/* Lighter than the standard --bg-raised secondary fill — this size is only
+   ever used for the profile certificate button, sitting directly on the
+   --bg-page details card below it, where the regular secondary fill read as
+   too close to the background per a Figma annotation. */
+.button--compact.button--secondary {
+  background: var(--border);
+}
+
 /* Link — text only, centred, no fill. */
 .button--link {
   background: transparent;

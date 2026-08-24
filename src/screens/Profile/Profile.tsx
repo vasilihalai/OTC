@@ -22,8 +22,8 @@ import './Profile.css';
 function CopyIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="2.5" y="2.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M5.5 13.5H12a1.5 1.5 0 0 0 1.5-1.5V5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   );
 }
@@ -32,7 +32,8 @@ function VerifiedIcon() {
   return (
     <span className="profile__verified-icon" aria-hidden="true">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+        <circle cx="8" cy="8" r="8" fill="currentColor"/>
+        <path d="M4.8 8.2l2.1 2.1 4.3-4.6" stroke="var(--bg-page)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     </span>
   );
@@ -41,8 +42,13 @@ function VerifiedIcon() {
 function GlobeIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" fill="currentColor" fillOpacity="0.16"/>
+      <path
+        d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.3 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.3-3.8-8.5S9.5 5.8 12 3.5z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
       <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M3.5 12h17M12 3.5c2.5 2.3 3.8 5.3 3.8 8.5s-1.3 6.2-3.8 8.5c-2.5-2.3-3.8-5.3-3.8-8.5S9.5 5.8 12 3.5z" stroke="currentColor" strokeWidth="1.5"/>
     </svg>
   );
 }
@@ -50,8 +56,10 @@ function GlobeIcon() {
 function ThemeIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path
+        d="M12 3.5a8.5 8.5 0 1 0 8.2 10.7c.15-.55-.45-.98-.94-.7a6 6 0 0 1-7.76-8.66c.34-.46.03-1.13-.54-1.3A8.5 8.5 0 0 0 12 3.5Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }

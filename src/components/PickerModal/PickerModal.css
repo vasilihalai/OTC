@@ -1,34 +1,84 @@
-.picker-modal {
+.picker-sheet__scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-scrim);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  animation: picker-sheet-scrim-in 0.18s ease-out;
+}
+
+@keyframes picker-sheet-scrim-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.picker-sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--bg-page);
+  border-radius: 24px 24px 0 0;
+  padding: 8px 8px calc(16px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  padding-bottom: 8px;
+  animation: picker-sheet-in 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-.picker-modal__row {
+@keyframes picker-sheet-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.picker-sheet__handle {
+  flex-shrink: 0;
+  width: 36px;
+  height: 4px;
+  border-radius: 100px;
+  background: var(--border-strong);
+  margin: 4px auto 16px;
+}
+
+.picker-sheet__title {
+  padding: 0 12px;
+  margin-bottom: 8px;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.picker-sheet__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-sheet__row {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  height: 44px;
-  padding: 0;
   background: none;
   border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: opacity 0.12s ease;
-}
-
-.picker-modal__row:active {
-  opacity: 0.7;
-}
-
-.picker-modal__label {
+  border-radius: 12px;
   font-size: 16px;
   line-height: 24px;
   color: var(--text-body);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.12s ease, opacity 0.12s ease;
 }
 
-.picker-modal__row--selected .picker-modal__label {
+.picker-sheet__row:active {
+  opacity: 0.7;
+}
+
+.picker-sheet__row--selected {
+  background: var(--bg-raised);
   color: var(--text-primary);
   font-weight: 600;
 }
