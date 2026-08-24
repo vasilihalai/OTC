@@ -25,7 +25,6 @@ import {
 import type { Deal, Requisites } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
-import { useToastStore } from '@/store/toast.ts';
 import { useTransferModalStore } from '@/store/transferModal.ts';
 import { DEAL_STATUS_META, getDocumentAvailability, isHoldConfirmationStatus, showsFullDetailsRows } from '@/lib/dealStatus.ts';
 import { computeScenarioBalance, getMinDealAmount, isBalanceScenario, parseAmountValue } from '@/lib/balanceScenario.ts';
@@ -383,7 +382,6 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
 }
 
 function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
-  const show = useToastStore((s) => s.show);
   const [busy, setBusy] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -466,7 +464,6 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
           tone="success"
           title={ru.dealDetail.heroDoneTitle}
           subtitle={renderTemplate(ru.dealDetail.heroDoneSubtitle, { amount: deal.to ?? deal.from })}
-          action={<Button type="button" variant="link" onClick={() => show(ru.stub.inDevelopment)}>{ru.dealDetail.historyAction}</Button>}
         />
       );
     case 'DECLINED':

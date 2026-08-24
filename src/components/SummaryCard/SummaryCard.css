@@ -1,7 +1,7 @@
 .summary-card {
   background: var(--bg-surface);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 16px;
 }
 
 .summary-card__row {

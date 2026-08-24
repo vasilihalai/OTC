@@ -13,7 +13,10 @@ const LONG_PRESS_MS = 600;
 function TransferIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M7 8h10m0 0l-3.5-3.5M17 8l-3.5 3.5M17 16H7m0 0l3.5-3.5M7 16l3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4.5 12a7.5 7.5 0 0 1 12.7-5.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M17.2 3.2v3.9h-3.9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M19.5 12a7.5 7.5 0 0 1-12.7 5.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+      <path d="M6.8 20.8v-3.9h3.9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }

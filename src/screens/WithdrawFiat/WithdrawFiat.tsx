@@ -20,6 +20,20 @@ import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawFiat.css';
 
+function MethodIcon() {
+  return (
+    <div className="withdraw-fiat__method-icon" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1.5 14 5H2l6-3.5Z" fill="currentColor"/>
+        <rect x="2" y="6.5" width="2" height="6" fill="currentColor"/>
+        <rect x="7" y="6.5" width="2" height="6" fill="currentColor"/>
+        <rect x="12" y="6.5" width="2" height="6" fill="currentColor"/>
+        <rect x="1.5" y="13" width="13" height="1.5" rx="0.5" fill="currentColor"/>
+      </svg>
+    </div>
+  );
+}
+
 export function WithdrawFiat() {
   useRequireSession();
   const navigate = useNavigate();
@@ -105,7 +119,6 @@ export function WithdrawFiat() {
   if (initialLoading) {
     return (
       <div className="withdraw-fiat">
-        <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
         <Skeleton height={48} radius={12}/>
         <Skeleton height={48} radius={12}/>
         <Panel fill="surface" radius="12px">
@@ -118,8 +131,6 @@ export function WithdrawFiat() {
   return (
     <div className="withdraw-fiat">
       <div className="withdraw-fiat__scroll">
-        <h1 className="withdraw-fiat__title">{ru.withdraw.fiatTitle}</h1>
-
         <h2 className="withdraw-fiat__section-title">{ru.withdraw.chooseCurrencyMethodTitle}</h2>
         <Select
           label={ru.withdraw.currencyLabel}
@@ -137,7 +148,7 @@ export function WithdrawFiat() {
           <Select
             label={ru.withdraw.methodLabel}
             layout="method"
-            options={options.methods.map((m) => ({ value: m.id, label: m.name, secondary: `${m.feePct}%` }))}
+            options={options.methods.map((m) => ({ value: m.id, label: m.name, secondary: `${m.feePct}%`, icon: <MethodIcon/> }))}
             value={methodId}
             onChange={setMethodId}
           />
@@ -147,7 +158,7 @@ export function WithdrawFiat() {
         <AmountField
           label={ru.withdraw.sendLabel}
           availableLabel={ru.withdraw.balanceLabel}
-          available={`${formatAmount(available, currency)} ${currency}`}
+          available={formatAmount(available, currency)}
           value={amount}
           onChange={handleAmountChange}
           onMax={handleMax}

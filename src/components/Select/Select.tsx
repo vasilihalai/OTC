@@ -83,8 +83,8 @@ function Row<T extends string>({ option, layout }: { option: SelectOption<T>; la
         <span className={e('row-left')}>
           {option.icon}
           <span className={e('row-name')}>{option.label}</span>
+          {option.secondary && <FeeBadge>{option.secondary}</FeeBadge>}
         </span>
-        {option.secondary && <FeeBadge>{option.secondary}</FeeBadge>}
       </span>
     );
   }

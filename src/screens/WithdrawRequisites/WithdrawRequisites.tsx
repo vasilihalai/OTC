@@ -166,6 +166,7 @@ export function WithdrawRequisites() {
 
   return (
     <div className="withdraw-requisites">
+      <div className="withdraw-requisites__scroll">
       <h1 className="withdraw-requisites__title">{ru.withdraw.requisitesTitle}</h1>
 
       {compatibleSaved.length > 0 && (
@@ -224,10 +225,11 @@ export function WithdrawRequisites() {
           totalValue={`${formatAmount(String(totalDebit), ticker)} ${ticker}`}
         />
       )}
+      </div>
 
-      <div className="button-row">
+      <div className="withdraw-requisites__submit button-row">
         <Button type="button" variant="secondary" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
-        <Button disabled={submitting} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
+        <Button disabled={submitting || !account.trim()} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
       </div>
 
       <TwoFactorGate

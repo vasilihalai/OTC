@@ -56,6 +56,7 @@ export const ru = {
   authenticator: {
     title: 'Введите код из Google Authenticator',
     body: 'Проверьте своё приложение Google Authenticator.\nВведите код, указанный в приложении',
+    syncHelpAction: 'Возникли проблемы с синхронизацией?',
   },
   home: {
     heroTitle: 'OTC',
@@ -174,7 +175,7 @@ export const ru = {
     qrScannerPermissionDenied: 'Нет доступа к камере. Разрешите доступ в настройках или введите адрес вручную.',
     qrScannerRetryAction: 'Повторить',
     networkLabel: 'Сеть',
-    sendLabel: 'Отправить',
+    sendLabel: 'Вывести',
     maxAction: 'Макс',
     balanceLabel: 'Баланс',
     minAmountLabel: 'Минимальная сумма',
@@ -199,7 +200,7 @@ export const ru = {
     doneAction: 'Готово',
     requisitesTitle: 'Заполнение реквизитов',
     savedRequisiteLabel: 'Реквизиты',
-    newRequisiteOption: 'Новые реквизиты',
+    newRequisiteOption: 'Выберите реквизиты',
     recipientAccountLabel: 'Расчётный счёт получателя',
     recipientAccountPlaceholder: 'Введите 20-значный номер счёта',
     recipientBicLabel: 'БИК получателя',

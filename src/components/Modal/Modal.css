@@ -64,22 +64,22 @@
   border: none;
   border-radius: 0;
   cursor: pointer;
-  color: var(--text-quiet);
+  color: var(--text-primary);
 }
 
 .modal__close svg {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
 }
 
 .modal__body {
-  padding: 0 24px 8px;
+  padding: 0 24px 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .modal__bottom {
-  padding: 20px 24px 24px;
+  padding: 28px 24px 24px;
   border-radius: 0 0 16px 16px;
 }
