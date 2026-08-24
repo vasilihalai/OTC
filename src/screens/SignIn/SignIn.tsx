@@ -6,8 +6,18 @@ import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Logo } from '@/components/Logo/Logo.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
-import { MockSignInError, completeSignIn, getUser, sendVerificationCode, signInSocial } from '@/api/index.ts';
-import type { ClientType } from '@/api/index.ts';
+import { LoginConfirmModal } from '@/screens/LoginConfirmModal/LoginConfirmModal.tsx';
+import {
+  MockSignInError,
+  SessionError,
+  USE_REAL_API,
+  completeSignIn,
+  getUser,
+  sendVerificationCode,
+  sessionLogin,
+  signInSocial,
+} from '@/api/index.ts';
+import type { ClientType, Session } from '@/api/index.ts';
 import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { notifyError } from '@/telegram/adapter.ts';
@@ -41,6 +51,8 @@ export function SignIn({ variant }: SignInProps) {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple'>();
   const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
+  // Real-mode only — step 1's response, needed to open LoginConfirmModal.
+  const [loginTx, setLoginTx] = useState<{ loginTransactionId: string; twoFA: boolean }>();
 
   const clientType = CLIENT_TYPE[variant];
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
@@ -53,13 +65,24 @@ export function SignIn({ variant }: SignInProps) {
     setEmailError(undefined);
     setLoading(true);
     try {
-      await sendVerificationCode(email, password);
-      const user = await getUser(clientType);
-      setAuthenticatorEnabled(user.authenticatorEnabled);
-      openModal();
+      if (USE_REAL_API) {
+        // miniapp-auth-integration-spec.md §7 /login — only ever reached
+        // after a BINDING_REQUIRED sessionStart, so there's no existing
+        // binding/session to preserve here.
+        const tx = await sessionLogin(clientType, email, password);
+        setLoginTx(tx);
+        openModal();
+      } else {
+        await sendVerificationCode(email, password);
+        const user = await getUser(clientType);
+        setAuthenticatorEnabled(user.authenticatorEnabled);
+        openModal();
+      }
     } catch (err) {
       if (err instanceof MockSignInError) {
         setEmailError(ru.signIn.errorEmailInvalid);
+      } else if (err instanceof SessionError && err.code === 'INVALID_CREDENTIALS') {
+        setEmailError(ru.signIn.errorCredentialsInvalid);
       }
       notifyError();
     } finally {
@@ -81,6 +104,12 @@ export function SignIn({ variant }: SignInProps) {
   function handleVerified() {
     closeModal();
     setSession(completeSignIn(email, clientType));
+    navigate('/home', { replace: true });
+  }
+
+  function handleRealVerified(session: Session) {
+    closeModal();
+    setSession(session);
     navigate('/home', { replace: true });
   }
 
@@ -166,13 +195,28 @@ export function SignIn({ variant }: SignInProps) {
         )}
       </form>
 
-      <TwoFactorGate
-        open={modalOpen}
-        authenticatorEnabled={authenticatorEnabled}
-        email={email}
-        onClose={closeModal}
-        onVerified={handleVerified}
-      />
+      {USE_REAL_API ? (
+        loginTx && (
+          <LoginConfirmModal
+            open={modalOpen}
+            email={email}
+            clientType={clientType}
+            loginTransactionId={loginTx.loginTransactionId}
+            twoFA={loginTx.twoFA}
+            onClose={closeModal}
+            onVerified={handleRealVerified}
+            onResend={() => sessionLogin(clientType, email, password)}
+          />
+        )
+      ) : (
+        <TwoFactorGate
+          open={modalOpen}
+          authenticatorEnabled={authenticatorEnabled}
+          email={email}
+          onClose={closeModal}
+          onVerified={handleVerified}
+        />
+      )}
     </>
   );
 }

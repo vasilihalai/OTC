@@ -22,6 +22,7 @@ export const ru = {
     businessAccountLink: 'Войти в бизнес-аккаунт',
     personalAccountLink: 'Войти в личный аккаунт',
     errorEmailInvalid: 'Введите корректный email',
+    errorCredentialsInvalid: 'Неверный email или пароль',
   },
   verification: {
     title: 'Введите код из письма',
@@ -258,6 +259,17 @@ export const ru = {
     notEligibleTitle: 'ОТС недоступен для вашего аккаунта',
     notEligibleBody: 'Свяжитесь с менеджером, чтобы подключить ОТС-сделки.',
     notEligibleAction: 'Написать в поддержку',
+  },
+  authError: {
+    invalidInitDataTitle: 'Не удалось подтвердить сессию',
+    invalidInitDataBody: 'Перезапустите приложение через Telegram.',
+    unavailableTitle: 'Приложение временно недоступно',
+    unavailableBody: 'Ведутся технические работы. Попробуйте зайти позже.',
+    conflictTitle: 'Этот Telegram-аккаунт уже привязан',
+    conflictBody: 'Он привязан к другому аккаунту платформы. Обратитесь в поддержку, чтобы разобраться.',
+    unknownTitle: 'Что-то пошло не так',
+    unknownBody: 'Попробуйте обновить приложение.',
+    reloadAction: 'Обновить',
   },
   transferModal: {
     title: 'Трансфер между аккаунтами',

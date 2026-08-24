@@ -13,9 +13,9 @@ import * as realBalances from '@/api/real/balances.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
 import * as realTransfers from '@/api/real/transfers.ts';
-import { verifyInitData } from '@/api/real/initdata.ts';
+import * as realSession from '@/api/real/session.ts';
 
-const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === 'true';
+export const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === 'true';
 
 export const sendVerificationCode = USE_REAL_API ? realAuth.sendVerificationCode : mockAuth.sendVerificationCode;
 export const verifyCode = USE_REAL_API ? realAuth.verifyCode : mockAuth.verifyCode;
@@ -58,15 +58,18 @@ export const requestNewRate = mockActions.requestNewRate;
 export const expireQuote = mockActions.expireQuote;
 export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 
-// Called once from index.tsx's bootstrap, ahead of everything else above;
-// a no-op unless VITE_USE_REAL_API is on (VITE_SKIP_INITDATA skips just the
-// network call within that, per mini-app-v1.md §4.5).
-export async function verifyTelegramInitData(): Promise<void> {
-  if (!USE_REAL_API) {
-    return;
-  }
-  await verifyInitData();
-}
+// Telegram-binding session flow (miniapp-auth-integration-spec.md §7) —
+// real-API-only, no mock counterpart. Called from index.tsx's bootstrap
+// (sessionStart, every launch) and SignIn's real-mode branch
+// (sessionLogin/sessionConfirm, only after a BINDING_REQUIRED start). The
+// mock path keeps using sendVerificationCode/verifyCode/completeSignIn
+// above for its own (unrelated, always-shown) login screen.
+export const sessionStart = realSession.start;
+export const sessionLogin = realSession.login;
+export const sessionConfirm = realSession.confirm;
+export const sessionLogout = realSession.logout;
+export { SessionError } from '@/api/real/session.ts';
+export type { SessionErrorCode, SessionResult, LoginResult, ConfirmParams } from '@/api/real/session.ts';
 
 export type { CryptoWithdrawalPayload, FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
 export type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';

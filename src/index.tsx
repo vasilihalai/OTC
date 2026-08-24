@@ -9,7 +9,8 @@ import { Root } from '@/components/Root.tsx';
 import { EnvUnsupported } from '@/components/EnvUnsupported.tsx';
 import { init } from '@/init.ts';
 import { ensureTelegramEnvironment } from '@/telegram/environment.ts';
-import { verifyTelegramInitData } from '@/api/index.ts';
+import { USE_REAL_API } from '@/api/index.ts';
+import { bootRealSession } from '@/store/session.ts';
 
 import './index.css';
 
@@ -36,14 +37,13 @@ void (async () => {
       mockForMacOS: platform === 'macos',
     });
 
-    // A no-op unless VITE_USE_REAL_API is on. Validation failure means no
-    // session is issued (mini-app-v1.md §4.1) — not a reason to block the
-    // whole app, so it's swallowed here rather than falling into the
-    // EnvUnsupported catch below.
-    try {
-      await verifyTelegramInitData();
-    } catch (err) {
-      console.warn('initData validation failed:', err);
+    // A no-op unless VITE_USE_REAL_API is on. Establishes a silent session
+    // when a Telegram↔account binding already exists, or marks the store so
+    // Shell can show the login screen (BINDING_REQUIRED) or an error state
+    // (miniapp-auth-integration-spec.md §6) — never throws itself, so a
+    // failure here isn't a reason to fall into the EnvUnsupported catch below.
+    if (USE_REAL_API) {
+      await bootRealSession();
     }
 
     root.render(
