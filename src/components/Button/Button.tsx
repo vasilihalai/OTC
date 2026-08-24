@@ -7,6 +7,14 @@ import './Button.css';
 
 const [b, e] = bem('button');
 
+function ArrowIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'accent' | 'secondary' | 'link' | 'footer-link';
   /** 36-high, radius 18, `button-sm` label — used only by the profile certificate button. */
@@ -30,7 +38,7 @@ export function Button({ variant = 'primary', size = 'regular', danger, loading,
         <>
           {icon && <span className={e('icon')}>{icon}</span>}
           <span className={e('label')}>{children}</span>
-          {variant === 'footer-link' && <span className={e('chevron')} aria-hidden="true">›</span>}
+          {variant === 'footer-link' && <span className={e('chevron')} aria-hidden="true"><ArrowIcon/></span>}
         </>
       )}
     </button>
