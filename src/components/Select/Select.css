@@ -7,7 +7,7 @@
 .select__label {
   font-size: 13px;
   line-height: 18px;
-  color: var(--text-muted);
+  color: var(--text-body);
 }
 
 .select__wrap {
@@ -30,8 +30,15 @@
 }
 
 .select__box--readonly {
-  border-color: transparent;
   cursor: default;
+}
+
+.select__trailing {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-quiet);
 }
 
 .select__box--open {

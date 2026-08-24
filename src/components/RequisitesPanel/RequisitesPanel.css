@@ -106,8 +106,8 @@
   background: var(--bg-raised);
 }
 
-.requisites-panel__select--network .select__box {
-  background: var(--bg-page);
+.requisites-panel__select--network {
+  margin-top: 16px;
 }
 
 .requisites-panel__address-row {

@@ -38,8 +38,6 @@ export function Deals() {
 
   return (
     <div className="deals">
-      <h1 className="deals__title">{ru.deals.title}</h1>
-
       <FilterChips
         options={[
           { value: 'ALL' as const, label: ru.deals.filterAll },

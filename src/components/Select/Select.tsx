@@ -38,6 +38,8 @@ export interface SelectProps<T extends string> {
   layout?: SelectLayout;
   /** Shown instead of the box when `options` is empty. */
   emptyState?: ReactNode;
+  /** Decorative-only content shown at the box's trailing edge when readonly (the chevron already covers the interactive case). */
+  trailingIcon?: ReactNode;
 }
 
 function CheckIcon() {
@@ -99,7 +101,7 @@ function Row<T extends string>({ option, layout }: { option: SelectOption<T>; la
   return <span className={e('row-plain')}>{option.label}</span>;
 }
 
-export function Select<T extends string>({ label, options, value, onChange, layout = 'plain', emptyState }: SelectProps<T>) {
+export function Select<T extends string>({ label, options, value, onChange, layout = 'plain', emptyState, trailingIcon }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const selected = options.find((option) => option.value === value);
@@ -142,6 +144,7 @@ export function Select<T extends string>({ label, options, value, onChange, layo
           >
             {selected ? <Row option={selected} layout={layout}/> : <span className={e('row-plain')}>—</span>}
             {!readOnly && <ChevronIcon open={open}/>}
+            {readOnly && trailingIcon && <span className={e('trailing')}>{trailingIcon}</span>}
           </button>
 
           {open && !readOnly && (

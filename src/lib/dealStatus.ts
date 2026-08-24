@@ -48,7 +48,7 @@ export function getDocumentAvailability(status: DealStatus): DocumentAvailabilit
     return { accept: true, payment: true, certificate: true, showCaption: false };
   }
   if (status === 'DECLINED') {
-    return { accept: false, payment: false, certificate: false, showCaption: false };
+    return { accept: false, payment: false, certificate: false, showCaption: true };
   }
   if (status === 'RATE_PENDING' || status === 'RATE_ACTIVE' || status === 'RATE_STALE') {
     return { accept: false, payment: false, certificate: false, showCaption: true };
@@ -62,7 +62,7 @@ export function isHoldConfirmationStatus(status: DealStatus): boolean {
   return status === 'AWAITING_FUNDS';
 }
 
-/** §4's `Детали` row visibility — RATE_PENDING/RATE_ACTIVE/RATE_STALE show only `Курс`. */
-export function showsFullDetailsRows(status: DealStatus): boolean {
-  return status !== 'RATE_PENDING' && status !== 'RATE_ACTIVE' && status !== 'RATE_STALE';
+/** `Детали` always shows the full row set now — every status, including the rate-in-flight ones, carries Дата создания/Направление alongside Курс. */
+export function showsFullDetailsRows(_status: DealStatus): boolean {
+  return true;
 }

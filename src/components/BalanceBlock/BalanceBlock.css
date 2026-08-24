@@ -20,8 +20,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   background: none;
   border: none;
@@ -29,20 +29,25 @@
   cursor: pointer;
 }
 
+.balance-block__transfer svg {
+  width: 26px;
+  height: 26px;
+}
+
 .balance-block__amount {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  font-size: 36px;
-  line-height: 44px;
+  font-size: 28px;
+  line-height: 36px;
   font-weight: 600;
   color: var(--text-body);
   user-select: none;
 }
 
 .balance-block__ticker {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
   color: var(--text-body);
 }

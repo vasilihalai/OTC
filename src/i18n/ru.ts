@@ -130,7 +130,7 @@ export const ru = {
     requestNewRateAction: 'Запросить новый курс',
     historyAction: 'История операций',
     heroRatePendingTitle: 'Оператор готовит курс',
-    heroRatePendingSubtitle: 'В рабочее время (пн–пт 10:00–18:00 мск)',
+    heroRatePendingSubtitle: 'В рабочее время\n(пн–пт 10:00–18:00 мск)',
     heroRateStaleTitle: 'Курс неактуален',
     heroRunningTitle: 'Сделка исполняется',
     heroRunningSubtitle: 'Сумма {amount} заморожена на депозитном аккаунте',

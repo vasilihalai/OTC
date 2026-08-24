@@ -1,7 +1,7 @@
 .document-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   min-height: 36px;
   justify-content: center;
 }

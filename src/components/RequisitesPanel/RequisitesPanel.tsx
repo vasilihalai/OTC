@@ -23,6 +23,19 @@ function CopyIcon() {
   );
 }
 
+function NetworkTrailingIcons() {
+  return (
+    <>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+      </svg>
+      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+        <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </>
+  );
+}
+
 function FiatRow({ label, value, copy }: { label: string; value: string; copy: () => void }) {
   return (
     <div className={e('row')}>
@@ -110,6 +123,7 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
           options={[{ value: requisites.network, label: requisites.network }]}
           value={requisites.network}
           onChange={() => {}}
+          trailingIcon={<NetworkTrailingIcons/>}
         />
       </div>
       <p className={e('qr-caption')}>{ru.dealDetail.requisitesScanQr}</p>

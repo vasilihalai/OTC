@@ -11,9 +11,9 @@
 }
 
 .status-hero__title {
-  margin-top: 12px;
-  font-size: 20px;
-  line-height: 28px;
+  margin-top: 8px;
+  font-size: 18px;
+  line-height: 24px;
   font-weight: 600;
   color: var(--text-strong);
 }
@@ -23,6 +23,7 @@
   font-size: 14px;
   line-height: 20px;
   color: var(--text-muted);
+  white-space: pre-line;
 }
 
 .status-hero__subtitle b {
@@ -32,11 +33,11 @@
 
 .status-hero__action {
   width: 100%;
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .status-hero__action:has(.button--accent) {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .status-hero--success {
@@ -56,7 +57,7 @@
 }
 
 .status-hero--stale {
-  background-image: none;
+  background-image: linear-gradient(to top, var(--bg-surface) 0%, var(--bg-surface) 51.44%, var(--hero-top-stale) 100%);
 }
 
 .status-hero__spin {

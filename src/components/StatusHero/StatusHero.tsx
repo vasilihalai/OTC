@@ -11,43 +11,57 @@ export type StatusHeroTone = 'success' | 'danger' | 'running' | 'stale' | 'pendi
 
 function SpinnerIcon() {
   return (
-    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" className={e('spin')} aria-hidden="true">
-      <circle cx="25" cy="25" r="20" stroke="var(--border)" strokeWidth="4"/>
-      <path d="M25 5a20 20 0 0 1 20 20" stroke="var(--accent)" strokeWidth="4" strokeLinecap="round"/>
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className={e('spin')} aria-hidden="true">
+      <circle cx="20" cy="20" r="16" stroke="var(--border)" strokeWidth="3"/>
+      <path d="M20 4a16 16 0 0 1 16 16" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/** Shared "medallion" backing for the terminal-state icons: a light metallic disc, not a flat status-color fill. */
+function Medallion({ gradientId, children }: { gradientId: string; children: ReactNode }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <defs>
+        <radialGradient id={gradientId} cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stopColor="#75787E"/>
+          <stop offset="100%" stopColor="#35373C"/>
+        </radialGradient>
+      </defs>
+      <circle cx="20" cy="20" r="16" fill={`url(#${gradientId})`}/>
+      <circle cx="20" cy="20" r="15.25" fill="none" stroke="#8A8D93" strokeWidth="0.5" strokeOpacity="0.5"/>
+      {children}
     </svg>
   );
 }
 
 function CheckIcon() {
   return (
-    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-      <circle cx="25" cy="25" r="20" fill="var(--status-done-fill)"/>
-      <path d="M17 25.5l6 6L34 18" stroke="var(--status-done-text)" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
+    <Medallion gradientId="status-hero-medal-check">
+      <path d="M13.5 20.5l4.5 4.5L27 15" stroke="var(--status-done-text)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </Medallion>
   );
 }
 
 function CrossIcon() {
   return (
-    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-      <circle cx="25" cy="25" r="20" fill="var(--status-declined-fill)"/>
-      <path d="M19 19l12 12M31 19L19 31" stroke="var(--status-declined-text)" strokeWidth="3.2" strokeLinecap="round"/>
-    </svg>
+    <Medallion gradientId="status-hero-medal-cross">
+      <path d="M15 15l10 10M25 15L15 25" stroke="var(--status-declined-text)" strokeWidth="2.6" strokeLinecap="round"/>
+    </Medallion>
   );
 }
 
 function HourglassIcon() {
   return (
-    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" aria-hidden="true">
-      <circle cx="25" cy="25" r="20" fill="var(--status-rate-stale-fill)"/>
+    <Medallion gradientId="status-hero-medal-hourglass">
       <path
-        d="M18 16h14M18 34h14M19 16c0 4.5 3 7 6 9-3 2-6 4.5-6 9M31 16c0 4.5-3 7-6 9 3 2 6 4.5 6 9"
+        d="M14.5 13h11M14.5 27h11M15.3 13c0 3.6 2.4 5.6 4.8 7.2-2.4 1.6-4.8 3.6-4.8 7.2M24.7 13c0 3.6-2.4 5.6-4.8 7.2 2.4 1.6 4.8 3.6 4.8 7.2"
         stroke="var(--status-rate-stale-text)"
-        strokeWidth="1.8"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
+    </Medallion>
   );
 }
 

@@ -8,14 +8,6 @@
   background: var(--bg-page);
 }
 
-.deals__title {
-  padding: 0 16px;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-
 .deals__list {
   display: flex;
   flex-direction: column;

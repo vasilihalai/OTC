@@ -1,6 +1,6 @@
 .filter-chips {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 0 16px;
@@ -24,7 +24,7 @@
 }
 
 .filter-chips__item--active {
-  background: var(--bg-raised);
-  color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--text-on-light);
   font-weight: 600;
 }
