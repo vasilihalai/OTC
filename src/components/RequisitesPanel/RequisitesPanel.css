@@ -128,7 +128,6 @@
 .requisites-panel__address-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   padding: 12px 16px;
   border-radius: 12px;
@@ -136,8 +135,11 @@
 }
 
 .requisites-panel__address-text {
+  flex: 1;
+  min-width: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  word-break: break-all;
 }

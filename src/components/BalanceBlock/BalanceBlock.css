@@ -29,11 +29,6 @@
   cursor: pointer;
 }
 
-.balance-block__transfer svg {
-  width: 26px;
-  height: 26px;
-}
-
 .balance-block__amount {
   display: flex;
   align-items: baseline;

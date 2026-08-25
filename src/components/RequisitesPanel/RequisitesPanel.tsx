@@ -6,7 +6,6 @@ import { Select } from '@/components/Select/Select.tsx';
 import { CurrencyIcon } from '@/components/CurrencyIcon/CurrencyIcon.tsx';
 import { bem } from '@/css/bem.ts';
 import { useCopy } from '@/lib/useCopy.ts';
-import { truncateMiddle } from '@/lib/text.ts';
 import type { CryptoRequisites, FiatRequisites } from '@/api/index.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -133,7 +132,7 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
       </div>
       <p className={e('qr-caption', 'divider')}>{ru.dealDetail.requisitesOrCopy}</p>
       <div className={e('address-row')}>
-        <span className={e('address-text')}>{truncateMiddle(requisites.address, 10, 8)}</span>
+        <span className={e('address-text')}>{requisites.address}</span>
         <button type="button" className={e('copy')} aria-label={ru.common.copyAction} onClick={() => copy(requisites.address)}>
           <CopyIcon/>
         </button>
