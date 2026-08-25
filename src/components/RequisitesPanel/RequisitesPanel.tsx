@@ -22,19 +22,6 @@ function CopyIcon() {
   );
 }
 
-function NetworkTrailingIcons() {
-  return (
-    <>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-      </svg>
-      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true">
-        <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </>
-  );
-}
-
 function FiatRow({ label, value, copy }: { label: string; value: string; copy: () => void }) {
   return (
     <div className={e('row')}>
@@ -85,10 +72,16 @@ export function RequisitesPanel({ requisites }: { requisites: FiatRequisites | C
 function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) {
   const copy = useCopy();
   const [qr, setQr] = useState<string>();
+  // Falls back to the single network/address pair when the backend hasn't
+  // sent alternatives — the picker then has exactly one option and Select's
+  // own readOnly behavior (options.length <= 1) takes over automatically.
+  const networks = requisites.networks ?? [{ network: requisites.network, address: requisites.address }];
+  const [selectedNetwork, setSelectedNetwork] = useState(requisites.network);
+  const current = networks.find((n) => n.network === selectedNetwork) ?? networks[0];
 
   useEffect(() => {
     let cancelled = false;
-    void QRCode.toDataURL(requisites.address, {
+    void QRCode.toDataURL(current.address, {
       margin: 1,
       width: 160,
       errorCorrectionLevel: 'H',
@@ -96,7 +89,7 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
     })
       .then((url) => { if (!cancelled) setQr(url); });
     return () => { cancelled = true; };
-  }, [requisites.address]);
+  }, [current.address]);
 
   return (
     <Panel fill="surface" radius="16px">
@@ -119,10 +112,9 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
         <Select
           label={ru.dealDetail.requisitesNetworkLabel}
           layout="plain"
-          options={[{ value: requisites.network, label: requisites.network }]}
-          value={requisites.network}
-          onChange={() => {}}
-          trailingIcon={<NetworkTrailingIcons/>}
+          options={networks.map((n) => ({ value: n.network, label: n.network }))}
+          value={selectedNetwork}
+          onChange={setSelectedNetwork}
         />
       </div>
       <p className={e('qr-caption')}>{ru.dealDetail.requisitesScanQr}</p>
@@ -132,8 +124,8 @@ function CryptoRequisitesBody({ requisites }: { requisites: CryptoRequisites }) 
       </div>
       <p className={e('qr-caption', 'divider')}>{ru.dealDetail.requisitesOrCopy}</p>
       <div className={e('address-row')}>
-        <span className={e('address-text')}>{requisites.address}</span>
-        <button type="button" className={e('copy')} aria-label={ru.common.copyAction} onClick={() => copy(requisites.address)}>
+        <span className={e('address-text')}>{current.address}</span>
+        <button type="button" className={e('copy')} aria-label={ru.common.copyAction} onClick={() => copy(current.address)}>
           <CopyIcon/>
         </button>
       </div>

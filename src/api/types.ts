@@ -181,6 +181,8 @@ export interface CryptoRequisites {
   assetName: string;
   network: string;
   address: string;
+  /** Other networks this asset can also be deposited over, each with its own address. When present (>1 entry), the network field becomes a real picker instead of a fixed display. */
+  networks?: { network: string; address: string }[];
 }
 
 export type Requisites = FiatRequisites | CryptoRequisites;

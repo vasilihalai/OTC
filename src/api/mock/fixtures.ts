@@ -215,6 +215,10 @@ export const MOCK_REQUISITES_CRYPTO: CryptoRequisites = {
   assetName: 'Tether',
   network: 'TRON (TRC-20)',
   address: 'bnb1mrzq7fenlfxx59usn2fn8aygdyfrsku4jz8k9r',
+  networks: [
+    { network: 'TRON (TRC-20)', address: 'bnb1mrzq7fenlfxx59usn2fn8aygdyfrsku4jz8k9r' },
+    { network: 'Ethereum (ERC-20)', address: '0x71C7656EC7ab88b098defB7501B1f9A5C2b3E4d' },
+  ],
 };
 
 export const MOCK_ASSETS: Asset[] = [
