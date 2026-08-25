@@ -111,7 +111,7 @@
    --bg-page details card below it, where the regular secondary fill read as
    too close to the background per a Figma annotation. */
 .button--compact.button--secondary {
-  background: var(--border);
+  background: var(--bg-elevated);
 }
 
 /* Link — text only, centred, no fill. */

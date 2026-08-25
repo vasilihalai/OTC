@@ -24,7 +24,7 @@
 }
 
 .filter-chips__item--active {
-  background: var(--text-primary);
-  color: var(--text-on-light);
+  background: var(--bg-elevated);
+  color: var(--text-strong);
   font-weight: 600;
 }
