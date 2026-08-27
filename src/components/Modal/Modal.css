@@ -64,7 +64,7 @@
   border: none;
   border-radius: 0;
   cursor: pointer;
-  color: var(--text-primary);
+  color: var(--text-muted);
 }
 
 .modal__close svg {

@@ -60,7 +60,12 @@ export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorM
         disabled={verifying}
       />
       {error && <p className="authenticator-modal__error">{error}</p>}
-      <Button type="button" variant="link" onClick={() => show(ru.stub.inDevelopment)}>
+      <Button
+        type="button"
+        variant="link"
+        className="authenticator-modal__sync-link"
+        onClick={() => show(ru.stub.inDevelopment)}
+      >
         {ru.authenticator.syncHelpAction}
       </Button>
     </Modal>
