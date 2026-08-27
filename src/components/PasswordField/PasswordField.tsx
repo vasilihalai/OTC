@@ -17,10 +17,6 @@ export interface PasswordFieldProps extends Omit<TextFieldProps, 'type'> {
 export function PasswordField({ label, error, className, value, labelHint, ...rest }: PasswordFieldProps) {
   const id = useId();
   const [visible, setVisible] = useState(false);
-  // Only the native masked dots need the smaller font — an empty field
-  // shows the placeholder, which must stay at the same size as every other
-  // field's placeholder (e.g. Email's "Введите почту").
-  const masked = !visible && !!value;
 
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
@@ -33,7 +29,7 @@ export function PasswordField({ label, error, className, value, labelHint, ...re
       <div className={e('box')}>
         <input
           id={id}
-          className={e('input', { masked })}
+          className={e('input')}
           type={visible ? 'text' : 'password'}
           autoComplete="off"
           value={value}

@@ -117,10 +117,6 @@
   font-weight: 800;
 }
 
-.requisites-panel__select .select__box {
-  background: var(--bg-raised);
-}
-
 .requisites-panel__select--network {
   margin-top: 16px;
 }

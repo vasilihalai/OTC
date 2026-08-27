@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 
 import { bem } from '@/css/bem.ts';
-import { truncateMiddle } from '@/lib/text.ts';
 import { FeeBadge } from '@/components/FeeBadge/FeeBadge.tsx';
 import { ru } from '@/i18n/ru.ts';
 
@@ -89,7 +88,7 @@ function Row<T extends string>({ option, layout }: { option: SelectOption<T>; la
   if (layout === 'address') {
     return (
       <span className={e('row', 'address')}>
-        <span className={e('row-address')}>{truncateMiddle(option.label, 8, 6)}</span>
+        <span className={e('row-address')}>{option.label}</span>
         {option.labels && option.labels.length > 0 && (
           <span className={e('row-meta')}>{formatLabelsLine(option.labels)}</span>
         )}

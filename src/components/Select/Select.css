@@ -127,9 +127,12 @@
 
 .select__row-address {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   font-size: 15px;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  word-break: break-all;
 }
 
 .select__row-meta {

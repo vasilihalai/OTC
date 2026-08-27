@@ -21,18 +21,6 @@
   overscroll-behavior: none;
 }
 
-.tab-bar__indicator {
-  position: absolute;
-  left: 50%;
-  bottom: calc(8px + max(env(safe-area-inset-bottom, 0px), var(--tg-viewport-safe-area-inset-bottom, 0px)));
-  width: 134px;
-  height: 5px;
-  border-radius: 100px;
-  background: #fff;
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
 .tab-bar__tab {
   flex: 1;
   display: flex;

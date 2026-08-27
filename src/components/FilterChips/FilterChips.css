@@ -1,6 +1,6 @@
 .filter-chips {
   display: flex;
-  gap: 12px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   padding: 0 16px;

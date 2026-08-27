@@ -123,6 +123,8 @@ export interface CryptoWithdrawOptions {
   addresses: SavedAddress[];
   networks: CryptoNetwork[];
   limits: CryptoWithdrawLimits;
+  /** Merchant-level setting: pick a saved address from a list, or always type one in — never both. */
+  addressEntryMode: 'dropdown' | 'manual';
 }
 
 export interface WithdrawMethod {

@@ -83,14 +83,19 @@ export function WithdrawCrypto() {
     }
     void getWithdrawCryptoOptions(ticker).then((data) => {
       setOptions(data);
-      setAddressChoice(data.addresses[0]?.id ?? NEW_ADDRESS_OPTION);
+      // Manual mode never shows the saved-address Select, so there's
+      // nothing to default-select — force NEW_ADDRESS_OPTION regardless of
+      // whether addresses happen to exist, or `address` below would
+      // silently resolve to a hidden saved entry instead of the typed one.
+      setAddressChoice(data.addressEntryMode === 'manual' ? NEW_ADDRESS_OPTION : (data.addresses[0]?.id ?? NEW_ADDRESS_OPTION));
       setManualAddress('');
     });
   }, [ticker]);
 
   const asset = assets.find((a) => a.ticker === ticker);
   const available = asset?.balance ?? '0';
-  const selectedSavedAddress = options?.addresses.find((a) => a.id === addressChoice);
+  const addressMode = options?.addressEntryMode ?? 'dropdown';
+  const selectedSavedAddress = addressMode === 'dropdown' ? options?.addresses.find((a) => a.id === addressChoice) : undefined;
   const isManualAddress = !selectedSavedAddress;
   const address = isManualAddress ? manualAddress.trim() : selectedSavedAddress.address;
   // Every network the asset supports is always selectable here — the network
@@ -221,7 +226,7 @@ export function WithdrawCrypto() {
         <div className="withdraw-crypto__address-label">
           <span>{ru.withdraw.addressLabel}</span>
         </div>
-        {options && options.addresses.length > 0 && (
+        {addressMode === 'dropdown' && options && options.addresses.length > 0 && (
           <Select
             label=""
             layout="address"
@@ -233,7 +238,7 @@ export function WithdrawCrypto() {
             onChange={setAddressChoice}
           />
         )}
-        {isManualAddress && (
+        {(addressMode === 'manual' || isManualAddress) && (
           <div className="withdraw-crypto__address-manual">
             <TextField
               label=""

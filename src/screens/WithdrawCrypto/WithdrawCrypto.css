@@ -12,13 +12,6 @@
   padding: 8px 16px 16px;
 }
 
-/* Unlike WithdrawFiat/WithdrawRequisites, this screen's fields keep a
-   visible grey fill — a Figma reference showed bordered/filled boxes here
-   specifically, while the fiat withdrawal fields are meant to stay flat. */
-.withdraw-crypto .select__box {
-  background: var(--bg-raised);
-}
-
 .withdraw-crypto__title {
   font-size: 20px;
   line-height: 26px;
