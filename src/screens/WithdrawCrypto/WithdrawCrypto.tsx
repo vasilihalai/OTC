@@ -303,7 +303,7 @@ export function WithdrawCrypto() {
           />
         )}
 
-        <WarningPanel title={ru.withdraw.warningTitle} body={ru.withdraw.cryptoWarning}/>
+        <WarningPanel body={ru.withdraw.cryptoWarning}/>
       </div>
 
       <div className="withdraw-crypto__submit">

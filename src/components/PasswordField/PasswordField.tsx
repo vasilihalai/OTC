@@ -1,4 +1,4 @@
-import { type ReactNode, useId, useState } from 'react';
+import { useId, useState } from 'react';
 
 import { classNames } from '@/css/classnames.ts';
 import { bem } from '@/css/bem.ts';
@@ -9,23 +9,15 @@ import './PasswordField.css';
 
 const [b, e] = bem('password-field');
 
-export interface PasswordFieldProps extends Omit<TextFieldProps, 'type'> {
-  /** Rendered inline after the label — the field's help-tip glyph, e.g. */
-  labelHint?: ReactNode;
-}
+export type PasswordFieldProps = Omit<TextFieldProps, 'type'>;
 
-export function PasswordField({ label, error, className, value, labelHint, ...rest }: PasswordFieldProps) {
+export function PasswordField({ label, error, className, value, ...rest }: PasswordFieldProps) {
   const id = useId();
   const [visible, setVisible] = useState(false);
 
   return (
     <div className={classNames(b({ invalid: !!error }), className)}>
-      <label className={e('label')} htmlFor={id}>
-        <span className={e('label-row')}>
-          {label}
-          {labelHint}
-        </span>
-      </label>
+      <label className={e('label')} htmlFor={id}>{label}</label>
       <div className={e('box')}>
         <input
           id={id}

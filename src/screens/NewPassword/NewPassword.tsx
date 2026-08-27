@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Logo } from '@/components/Logo/Logo.tsx';
 import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
-import { HelpTip } from '@/components/HelpTip/HelpTip.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { resetPassword } from '@/api/index.ts';
 import { useToastStore } from '@/store/toast.ts';
@@ -89,7 +88,6 @@ export function NewPassword() {
 
       <PasswordField
         label={ru.newPassword.newPasswordLabel}
-        labelHint={<HelpTip text={ru.newPassword.newPasswordHelp}/>}
         placeholder={ru.newPassword.newPasswordPlaceholder}
         value={password}
         error={tooShort ? ru.newPassword.newPasswordHint : undefined}
