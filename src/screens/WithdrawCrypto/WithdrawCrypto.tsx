@@ -23,8 +23,6 @@ import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawCrypto.css';
 
-const NEW_ADDRESS_OPTION = '__new__';
-
 function QrIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -48,7 +46,6 @@ export function WithdrawCrypto() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [ticker, setTicker] = useState(preselected ?? '');
   const [options, setOptions] = useState<CryptoWithdrawOptions>();
-  const [addressChoice, setAddressChoice] = useState(NEW_ADDRESS_OPTION);
   const [manualAddress, setManualAddress] = useState('');
   const [addressError, setAddressError] = useState<string>();
   const [qrOpen, setQrOpen] = useState(false);
@@ -83,21 +80,13 @@ export function WithdrawCrypto() {
     }
     void getWithdrawCryptoOptions(ticker).then((data) => {
       setOptions(data);
-      // Manual mode never shows the saved-address Select, so there's
-      // nothing to default-select — force NEW_ADDRESS_OPTION regardless of
-      // whether addresses happen to exist, or `address` below would
-      // silently resolve to a hidden saved entry instead of the typed one.
-      setAddressChoice(data.addressEntryMode === 'manual' ? NEW_ADDRESS_OPTION : (data.addresses[0]?.id ?? NEW_ADDRESS_OPTION));
       setManualAddress('');
     });
   }, [ticker]);
 
   const asset = assets.find((a) => a.ticker === ticker);
   const available = asset?.balance ?? '0';
-  const addressMode = options?.addressEntryMode ?? 'dropdown';
-  const selectedSavedAddress = addressMode === 'dropdown' ? options?.addresses.find((a) => a.id === addressChoice) : undefined;
-  const isManualAddress = !selectedSavedAddress;
-  const address = isManualAddress ? manualAddress.trim() : selectedSavedAddress.address;
+  const address = manualAddress.trim();
   // Every network the asset supports is always selectable here — the network
   // is independent of which saved address is picked (filtering it down to
   // only the networks the selected address happens to support was hiding
@@ -126,7 +115,6 @@ export function WithdrawCrypto() {
 
   function handleTickerChange(value: string) {
     setTicker(value);
-    setAddressChoice(NEW_ADDRESS_OPTION);
     setManualAddress('');
     setNetwork('');
   }
@@ -226,39 +214,25 @@ export function WithdrawCrypto() {
         <div className="withdraw-crypto__address-label">
           <span>{ru.withdraw.addressLabel}</span>
         </div>
-        {addressMode === 'dropdown' && options && options.addresses.length > 0 && (
-          <Select
+        <div className="withdraw-crypto__address-manual">
+          <TextField
             label=""
-            layout="address"
-            options={[
-              ...options.addresses.map((a) => ({ value: a.id, label: a.address })),
-              { value: NEW_ADDRESS_OPTION, label: ru.withdraw.newAddressOption },
-            ]}
-            value={addressChoice}
-            onChange={setAddressChoice}
+            placeholder={ru.withdraw.addressPlaceholder}
+            value={manualAddress}
+            error={addressError}
+            onChange={(ev) => { setManualAddress(ev.target.value); setAddressError(undefined); }}
+            suffix={(
+              <button
+                type="button"
+                className="withdraw-crypto__qr-button"
+                onClick={() => setQrOpen(true)}
+                aria-label={ru.withdraw.qrScannerTitle}
+              >
+                <QrIcon/>
+              </button>
+            )}
           />
-        )}
-        {(addressMode === 'manual' || isManualAddress) && (
-          <div className="withdraw-crypto__address-manual">
-            <TextField
-              label=""
-              placeholder={ru.withdraw.addressPlaceholder}
-              value={manualAddress}
-              error={addressError}
-              onChange={(ev) => { setManualAddress(ev.target.value); setAddressError(undefined); }}
-              suffix={(
-                <button
-                  type="button"
-                  className="withdraw-crypto__qr-button"
-                  onClick={() => setQrOpen(true)}
-                  aria-label={ru.withdraw.qrScannerTitle}
-                >
-                  <QrIcon/>
-                </button>
-              )}
-            />
-          </div>
-        )}
+        </div>
         {!isBtc && compatibleNetworks.length > 0 && (
           <Select
             label={ru.withdraw.networkLabel}

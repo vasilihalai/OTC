@@ -89,7 +89,6 @@ export type {
   SignInError,
   VerifyCodeError,
   CryptoNetwork,
-  SavedAddress,
   FiatTransferType,
   SavedRequisite,
   RequisitesPayload,

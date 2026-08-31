@@ -72,6 +72,15 @@
   height: 28px;
 }
 
+.modal__close--compact {
+  margin: -20px -12px -12px 0;
+}
+
+.modal__close--compact svg {
+  width: 20px;
+  height: 20px;
+}
+
 .modal__body {
   padding: 0 24px 16px;
   display: flex;

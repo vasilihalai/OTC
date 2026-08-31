@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
-import { Button } from '@/components/Button/Button.tsx';
 import { MockVerifyCodeError, verifyCode } from '@/api/index.ts';
-import { useToastStore } from '@/store/toast.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -18,7 +16,6 @@ export interface AuthenticatorModalProps {
 }
 
 export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorModalProps) {
-  const show = useToastStore((s) => s.show);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [verifying, setVerifying] = useState(false);
@@ -50,7 +47,7 @@ export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorM
   }
 
   return (
-    <Modal open={open} title={ru.authenticator.title} onClose={onClose}>
+    <Modal open={open} title={ru.authenticator.title} onClose={onClose} compactClose>
       <p className="authenticator-modal__body">{ru.authenticator.body}</p>
       <CodeInput
         value={code}
@@ -60,14 +57,6 @@ export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorM
         disabled={verifying}
       />
       {error && <p className="authenticator-modal__error">{error}</p>}
-      <Button
-        type="button"
-        variant="link"
-        className="authenticator-modal__sync-link"
-        onClick={() => show(ru.stub.inDevelopment)}
-      >
-        {ru.authenticator.syncHelpAction}
-      </Button>
     </Modal>
   );
 }

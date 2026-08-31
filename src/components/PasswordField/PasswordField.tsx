@@ -21,7 +21,7 @@ export function PasswordField({ label, error, className, value, ...rest }: Passw
       <div className={e('box')}>
         <input
           id={id}
-          className={e('input')}
+          className={e('input', { masked: !visible })}
           type={visible ? 'text' : 'password'}
           autoComplete="off"
           value={value}

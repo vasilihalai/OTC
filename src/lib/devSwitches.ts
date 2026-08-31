@@ -34,9 +34,3 @@ export function isQuoteExpiringScenario(): boolean {
 export function isEmptyDealsScenario(): boolean {
   return readHashParam('scenario') === 'empty_deals';
 }
-
-/** `?addressMode=manual` — forces WithdrawCrypto's address field to manual-entry-only, as if the merchant had that setting on, regardless of saved addresses. */
-export function addressEntryModeOverride(): 'dropdown' | 'manual' | undefined {
-  const value = readHashParam('addressMode');
-  return value === 'manual' || value === 'dropdown' ? value : undefined;
-}

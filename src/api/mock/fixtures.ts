@@ -8,7 +8,6 @@ import type {
   Deal,
   FiatRequisites,
   FiatWithdrawLimits,
-  SavedAddress,
   SavedRequisite,
   Stats,
   User,
@@ -257,36 +256,12 @@ export const MOCK_WITHDRAW_FIAT: {
   },
 };
 
-// No saved address supports the 'Bitcoin' network on purpose — this is how the
-// empty-saved-address-list state (§7's scenario switch) is reached without a
-// separate dev toggle: just pick BTC.
 export const MOCK_WITHDRAW_CRYPTO: {
   assets: string[];
-  addresses: SavedAddress[];
   networks: Record<string, CryptoNetwork[]>;
   limits: Record<string, CryptoWithdrawLimits>;
 } = {
   assets: ['USDT', 'USDC', 'BTC'],
-  addresses: [
-    {
-      id: 'addr-1',
-      address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976',
-      networks: ['Ethereum (ERC-20)'],
-      labels: ['Trust Wallet', 'MetaMask', 'Ledger', 'Safe'],
-    },
-    {
-      id: 'addr-2',
-      address: '0x8f2A3bC1d4E6f7A9B0C1d2E3f4A5b6C7d8E9f0A1',
-      networks: ['Ethereum (ERC-20)'],
-      labels: ['Trust Wallet'],
-    },
-    {
-      id: 'addr-3',
-      address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-      networks: ['TRON (TRC-20)'],
-      labels: ['Trust Wallet'],
-    },
-  ],
   networks: {
     USDT: ['TRON (TRC-20)', 'Ethereum (ERC-20)'],
     USDC: ['Ethereum (ERC-20)'],

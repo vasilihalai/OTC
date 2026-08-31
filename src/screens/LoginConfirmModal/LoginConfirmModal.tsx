@@ -138,6 +138,7 @@ export function LoginConfirmModal({
       open={open}
       title={ru.verification.title}
       onClose={onClose}
+      compactClose
       footer={(
         <Button
           type="button"

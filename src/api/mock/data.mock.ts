@@ -25,7 +25,7 @@ import {
 import { findDeal, listDeals } from '@/api/mock/store.ts';
 import { getAccountBalance, getAccountsSnapshot } from '@/api/mock/accountsStore.ts';
 import { isFiatTicker } from '@/lib/money.ts';
-import { addressEntryModeOverride, otcAccessOverride } from '@/lib/devSwitches.ts';
+import { otcAccessOverride } from '@/lib/devSwitches.ts';
 
 export async function getUser(clientType: ClientType): Promise<User> {
   await mockDelay();
@@ -85,14 +85,8 @@ export async function getSavedRequisites(): Promise<SavedRequisite[]> {
 
 export async function getWithdrawCryptoOptions(asset: string): Promise<CryptoWithdrawOptions> {
   await mockDelay();
-  const assetNetworks = MOCK_WITHDRAW_CRYPTO.networks[asset] ?? [];
-  const addresses = MOCK_WITHDRAW_CRYPTO.addresses.filter(
-    (address) => address.networks.some((network) => assetNetworks.includes(network)),
-  );
   return {
-    addresses,
-    networks: assetNetworks,
+    networks: MOCK_WITHDRAW_CRYPTO.networks[asset] ?? [],
     limits: MOCK_WITHDRAW_CRYPTO.limits[asset] ?? { min: '0', available: '0', fee: '0', contractTail: null },
-    addressEntryMode: addressEntryModeOverride() ?? 'dropdown',
   };
 }

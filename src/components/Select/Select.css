@@ -119,28 +119,6 @@
   color: var(--text-muted);
 }
 
-.select__row--address {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-
-.select__row-address {
-  flex: 1;
-  min-width: 0;
-  width: 100%;
-  font-size: 15px;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-  word-break: break-all;
-}
-
-.select__row-meta {
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-quiet);
-}
-
 .select__row-plain {
   flex: 1;
   font-size: 15px;

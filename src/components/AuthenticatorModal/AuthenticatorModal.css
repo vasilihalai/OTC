@@ -12,8 +12,3 @@
   font-size: 14px;
   color: var(--accent);
 }
-
-.authenticator-modal__sync-link {
-  justify-content: flex-start;
-  text-align: left;
-}

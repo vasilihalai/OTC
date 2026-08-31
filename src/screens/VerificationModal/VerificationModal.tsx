@@ -96,6 +96,7 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
       open={open}
       title={ru.verification.title}
       onClose={onClose}
+      compactClose
       footer={(
         <Button
           type="button"

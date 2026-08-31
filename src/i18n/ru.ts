@@ -57,7 +57,6 @@ export const ru = {
   authenticator: {
     title: 'Введите код из Google Authenticator',
     body: 'Проверьте своё приложение Google Authenticator.\nВведите код, указанный в приложении',
-    syncHelpAction: 'Возникли проблемы с синхронизацией?',
   },
   home: {
     heroTitle: 'OTC',
@@ -167,9 +166,6 @@ export const ru = {
     currencyLabel: 'Валюта',
     methodLabel: 'Способ вывода',
     addressLabel: 'Адрес кошелька',
-    addressHelpText: 'Выберите сохранённый адрес или введите новый.',
-    addressLabelsPrefix: 'Метки:',
-    newAddressOption: 'Новый адрес',
     addressPlaceholder: 'Введите адрес кошелька',
     errorAddressRequired: 'Укажите адрес кошелька',
     qrScannerTitle: 'Сканирование QR-кода',

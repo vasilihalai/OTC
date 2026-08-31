@@ -3,30 +3,20 @@ import { useEffect, useRef, useState } from 'react';
 
 import { bem } from '@/css/bem.ts';
 import { FeeBadge } from '@/components/FeeBadge/FeeBadge.tsx';
-import { ru } from '@/i18n/ru.ts';
 
 import './Select.css';
 
 const [b, e] = bem('select');
 
-export type SelectLayout = 'asset' | 'method' | 'address' | 'plain';
+export type SelectLayout = 'asset' | 'method' | 'plain';
 
 export interface SelectOption<T extends string> {
   value: T;
   label: string;
   /** `asset` layout: full name on the right. `method` layout: fee text, e.g. `1.0%`. */
   secondary?: string;
-  /** `address` layout only: wallet labels shown as a second metadata line, e.g. `Trust Wallet, MetaMask +2`. */
-  labels?: string[];
   icon?: ReactNode;
   disabled?: boolean;
-}
-
-/** `["Trust Wallet", "MetaMask", "Ledger"]` → `Метки: Trust Wallet, MetaMask +1`. */
-function formatLabelsLine(labels: string[]): string {
-  const shown = labels.slice(0, 2).join(', ');
-  const rest = labels.length - 2;
-  return rest > 0 ? `${ru.withdraw.addressLabelsPrefix} ${shown} +${rest}` : `${ru.withdraw.addressLabelsPrefix} ${shown}`;
 }
 
 export interface SelectProps<T extends string> {
@@ -82,16 +72,6 @@ function Row<T extends string>({ option, layout }: { option: SelectOption<T>; la
           <span className={e('row-name')}>{option.label}</span>
           {option.secondary && <FeeBadge>{option.secondary}</FeeBadge>}
         </span>
-      </span>
-    );
-  }
-  if (layout === 'address') {
-    return (
-      <span className={e('row', 'address')}>
-        <span className={e('row-address')}>{option.label}</span>
-        {option.labels && option.labels.length > 0 && (
-          <span className={e('row-meta')}>{formatLabelsLine(option.labels)}</span>
-        )}
       </span>
     );
   }

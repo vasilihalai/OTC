@@ -80,15 +80,6 @@ export type VerifyCodeError = 'CODE_INVALID' | 'RATE_LIMIT';
 /** Display string, e.g. `TRON (TRC-20)` — the fixture set defines the whole vocabulary, not an enum. */
 export type CryptoNetwork = string;
 
-export interface SavedAddress {
-  id: string;
-  address: string;
-  /** Chains this address can receive on — an address is asset-agnostic, a network is not. */
-  networks: CryptoNetwork[];
-  /** Wallet labels shown as the dropdown row's second metadata line, e.g. `Trust Wallet, MetaMask +2`. */
-  labels: string[];
-}
-
 export type FiatTransferType = 'internal' | 'kg' | 'ru';
 
 export interface SavedRequisite {
@@ -120,11 +111,8 @@ export interface CryptoWithdrawLimits {
 }
 
 export interface CryptoWithdrawOptions {
-  addresses: SavedAddress[];
   networks: CryptoNetwork[];
   limits: CryptoWithdrawLimits;
-  /** Merchant-level setting: pick a saved address from a list, or always type one in — never both. */
-  addressEntryMode: 'dropdown' | 'manual';
 }
 
 export interface WithdrawMethod {
