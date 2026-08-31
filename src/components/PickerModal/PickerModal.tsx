@@ -1,8 +1,10 @@
 import { bem } from '@/css/bem.ts';
+import { useDelayedUnmount } from '@/lib/useDelayedUnmount.ts';
 
 import './PickerModal.css';
 
 const [b, e] = bem('picker-sheet');
+const EXIT_DURATION_MS = 160;
 
 export interface PickerModalOption<T extends string> {
   value: T;
@@ -19,13 +21,14 @@ export interface PickerModalProps<T extends string> {
 }
 
 export function PickerModal<T extends string>({ open, title, options, value, onSelect, onClose }: PickerModalProps<T>) {
-  if (!open) {
+  const rendered = useDelayedUnmount(open, EXIT_DURATION_MS);
+  if (!rendered) {
     return null;
   }
 
   return (
-    <div className={e('scrim')} onClick={onClose}>
-      <div className={b()} onClick={(ev) => ev.stopPropagation()}>
+    <div className={e('scrim', { closing: !open })} onClick={onClose}>
+      <div className={b({ closing: !open })} onClick={(ev) => ev.stopPropagation()}>
         <div className={e('handle')}/>
         <span className={e('title')}>{title}</span>
         <div className={e('list')}>

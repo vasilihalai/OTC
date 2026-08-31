@@ -229,7 +229,7 @@ export function WithdrawRequisites() {
 
       <div className="withdraw-requisites__submit button-row">
         <Button type="button" variant="secondary" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
-        <Button disabled={submitting || !account.trim()} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
+        <Button loading={submitting} disabled={!account.trim()} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
       </div>
 
       <TwoFactorGate

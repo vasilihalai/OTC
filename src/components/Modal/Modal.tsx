@@ -1,8 +1,11 @@
 import type { PropsWithChildren, ReactNode } from 'react';
 
 import { bem } from '@/css/bem.ts';
+import { useDelayedUnmount } from '@/lib/useDelayedUnmount.ts';
 
 import './Modal.css';
+
+const EXIT_DURATION_MS = 160;
 
 const [, e] = bem('modal');
 
@@ -26,13 +29,14 @@ export interface ModalProps extends PropsWithChildren {
 }
 
 export function Modal({ open, title, onClose, footer, children, width = 400, compactClose }: ModalProps) {
-  if (!open) {
+  const rendered = useDelayedUnmount(open, EXIT_DURATION_MS);
+  if (!rendered) {
     return null;
   }
 
   return (
-    <div className={e('scrim')} onClick={onClose}>
-      <div className={e('card')} style={{ width }} onClick={(ev) => ev.stopPropagation()}>
+    <div className={e('scrim', { closing: !open })} onClick={onClose}>
+      <div className={e('card', { closing: !open })} style={{ width }} onClick={(ev) => ev.stopPropagation()}>
         <div className={e('top')}>
           <span className={e('title')}>{title}</span>
           <button type="button" className={e('close', { compact: compactClose })} aria-label="Close" onClick={onClose}>

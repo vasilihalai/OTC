@@ -31,6 +31,7 @@ export const ru = {
     resendCountdown: 'Отправить ещё раз',
     errorCodeInvalid: 'Неверный код',
     errorRateLimit: 'Слишком много попыток, попробуйте позже',
+    verifyingLabel: 'Проверяем код…',
   },
   recovery: {
     title: 'Забыли пароль?',

@@ -34,19 +34,6 @@
   height: 24px;
 }
 
-.button__spinner {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid currentColor;
-  border-top-color: transparent;
-  animation: button-spin 0.7s linear infinite;
-}
-
-@keyframes button-spin {
-  to { transform: rotate(360deg); }
-}
-
 /* Primary, accent, secondary share the same geometry — §3. */
 .button--primary,
 .button--accent,

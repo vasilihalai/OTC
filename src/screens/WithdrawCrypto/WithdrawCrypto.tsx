@@ -281,7 +281,7 @@ export function WithdrawCrypto() {
       </div>
 
       <div className="withdraw-crypto__submit">
-        <Button variant="accent" disabled={!canConfirm || submitting} onClick={handleConfirm}>
+        <Button variant="accent" loading={submitting} disabled={!canConfirm} onClick={handleConfirm}>
           {ru.withdraw.confirmAction}
         </Button>
       </div>

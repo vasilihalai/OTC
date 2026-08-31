@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Spinner } from '@/components/Spinner/Spinner.tsx';
 import { SessionError, sessionConfirm } from '@/api/index.ts';
 import type { ClientType, Session } from '@/api/types.ts';
 import { useSessionStore } from '@/store/session.ts';
@@ -170,6 +171,9 @@ export function LoginConfirmModal({
         </>
       )}
 
+      {verifying && (
+        <p className="login-confirm-modal__status"><Spinner size={16}/>{ru.verification.verifyingLabel}</p>
+      )}
       {error && <p className="login-confirm-modal__error">{error}</p>}
     </Modal>
   );

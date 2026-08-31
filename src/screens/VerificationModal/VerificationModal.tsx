@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Button } from '@/components/Button/Button.tsx';
+import { Spinner } from '@/components/Spinner/Spinner.tsx';
 import { MockVerifyCodeError, sendVerificationCode, verifyCode } from '@/api/index.ts';
 import { maskEmail } from '@/lib/mask.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
@@ -120,6 +121,9 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
         error={!!error}
         disabled={locked}
       />
+      {verifying && (
+        <p className="verification-modal__status"><Spinner size={16}/>{ru.verification.verifyingLabel}</p>
+      )}
       {error && <p className="verification-modal__error">{error}</p>}
     </Modal>
   );

@@ -2,6 +2,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 import { bem } from '@/css/bem.ts';
 import { classNames } from '@/css/classnames.ts';
+import { Spinner } from '@/components/Spinner/Spinner.tsx';
 
 import './Button.css';
 
@@ -33,7 +34,7 @@ export function Button({ variant = 'primary', size = 'regular', danger, loading,
       {...rest}
     >
       {loading ? (
-        <span className={e('spinner')} aria-hidden="true"/>
+        <Spinner size={20}/>
       ) : (
         <>
           {icon && <span className={e('icon')}>{icon}</span>}
