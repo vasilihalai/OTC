@@ -83,6 +83,8 @@ export function SignIn({ variant }: SignInProps) {
         setEmailError(ru.signIn.errorEmailInvalid);
       } else if (err instanceof SessionError && err.code === 'INVALID_CREDENTIALS') {
         setEmailError(ru.signIn.errorCredentialsInvalid);
+      } else if (err instanceof SessionError && err.code === 'TOO_MANY_ATTEMPTS') {
+        setEmailError(ru.signIn.errorTooManyAttempts);
       }
       notifyError();
     } finally {

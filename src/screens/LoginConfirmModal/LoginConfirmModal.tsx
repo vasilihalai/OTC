@@ -125,13 +125,24 @@ export function LoginConfirmModal({
   }
 
   async function handleResend() {
-    const next = await onResend();
-    setTxId(next.loginTransactionId);
-    setRequiresTwoFa(next.twoFA);
-    setOtp('');
-    setTwoFaCode('');
     setError(undefined);
-    setResendCountdown(RESEND_SECONDS);
+    try {
+      // Re-runs step 1 (`/session/login`) — the same email/password submit
+      // as the initial attempt, so it can realistically hit the same
+      // TOO_MANY_ATTEMPTS rate limit a repeatedly-tapped resend button would
+      // trigger (miniapp-auth-integration-spec.md §7 `/session/login` 429).
+      const next = await onResend();
+      setTxId(next.loginTransactionId);
+      setRequiresTwoFa(next.twoFA);
+      setOtp('');
+      setTwoFaCode('');
+      setResendCountdown(RESEND_SECONDS);
+    } catch (err) {
+      notifyError();
+      setError(err instanceof SessionError && err.code === 'TOO_MANY_ATTEMPTS'
+        ? ru.signIn.errorTooManyAttempts
+        : ru.verification.errorCodeInvalid);
+    }
   }
 
   return (

@@ -7,10 +7,16 @@ export interface RealSessionConfig {
 
 /**
  * Personal (FL) and business (UL) accounts authenticate against two
- * different backends (xruby.kg vs business.xruby.kg) — per
- * miniapp-auth-integration-spec.md §3.1, each side is its own public OAuth
- * client on its own auth-service deployment, so the base URL and the Mini
- * App's own clientId are both a function of ClientType, not a constant.
+ * different backends (xruby.kg vs business.xruby.kg), each its own public
+ * OAuth client on its own Mini App Service/auth-service deployment — so the
+ * base URL and the Mini App's own clientId are both a function of
+ * ClientType, not a constant. This split is a standing product decision,
+ * confirmed explicitly and reconfirmed against v2.0 of
+ * miniapp-auth-integration-spec.md — the spec document itself describes a
+ * single-merchant architecture throughout (§0/§3) and never mentions this
+ * split, since it's written from one merchant's point of view; xRuby just
+ * happens to run two merchant registrations side by side, one per account
+ * type, each independently conforming to the spec's contract (§7).
  */
 const CONFIG: Record<ClientType, RealSessionConfig> = {
   FL: {

@@ -16,7 +16,8 @@ export class ApiError extends Error {
 
 // A stale/expired Mini App access token surfaces as a 401 from any real
 // endpoint. Since there's no refresh token (miniapp-auth-integration-spec.md
-// §3.3/§6.3), recovery is a silent sessionStart() replay, never a redirect
+// §5/§7 — the Session schema is explicit that only an access token is ever
+// issued), recovery is a silent sessionStart() replay, never a redirect
 // to /login — a binding already exists at this point, so it's expected to
 // succeed unnoticed. One in-flight retry is shared across concurrent 401s
 // (queued behind the same promise) instead of each firing its own.

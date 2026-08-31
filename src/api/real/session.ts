@@ -2,12 +2,13 @@ import type { ClientType } from '@/api/types.ts';
 import { getRealSessionConfig } from '@/api/real/config.ts';
 
 /**
- * Telegram-binding session contract — miniapp-auth-integration-spec.md §7.
- * One function per method of that spec's OpenAPI block, implemented against
- * `{baseUrl}/session/*` directly (§7: "Контракт... одинаков для обоих
- * путей — фронт пишется один раз", so this is written against the contract
- * itself, not a specific backend path). `baseUrl`/`clientId` are resolved
- * per ClientType — see `real/config.ts` for why.
+ * Telegram-binding session contract — miniapp-auth-integration-spec.md §7
+ * (reconciled against v2.0; §7's OpenAPI block is otherwise unchanged from
+ * v1.2, the only delta being `TOO_MANY_ATTEMPTS` as a documented `/session/login`
+ * response). One function per method of that spec's OpenAPI block, implemented
+ * against `{baseUrl}/session/*` directly. `baseUrl`/`clientId` are resolved
+ * per ClientType — see `real/config.ts` for why (a project decision that sits
+ * on top of this spec, which itself assumes a single merchant/backend).
  */
 
 export type SessionErrorCode =
@@ -17,6 +18,7 @@ export type SessionErrorCode =
   | 'INVALID_OTP'
   | 'BINDING_CONFLICT'
   | 'MINI_APP_UNAVAILABLE'
+  | 'TOO_MANY_ATTEMPTS'
   | 'UNKNOWN';
 
 export class SessionError extends Error {
@@ -89,7 +91,7 @@ async function postSession<T>(
 function codeOr(bodyCode: string | undefined, fallback: SessionErrorCode): SessionErrorCode {
   const known: SessionErrorCode[] = [
     'INVALID_INIT_DATA', 'BINDING_REQUIRED', 'INVALID_CREDENTIALS',
-    'INVALID_OTP', 'BINDING_CONFLICT', 'MINI_APP_UNAVAILABLE',
+    'INVALID_OTP', 'BINDING_CONFLICT', 'MINI_APP_UNAVAILABLE', 'TOO_MANY_ATTEMPTS',
   ];
   return known.includes(bodyCode as SessionErrorCode) ? (bodyCode as SessionErrorCode) : fallback;
 }
@@ -105,8 +107,11 @@ export function start(clientType: ClientType, initData: string): Promise<Session
 
 /** Step 1 of first-time binding — only ever called after BINDING_REQUIRED. */
 export function login(clientType: ClientType, email: string, password: string): Promise<LoginResult> {
-  return postSession<LoginResult>(clientType, '/session/login', { email, password }, (status, bodyCode) =>
-    codeOr(bodyCode, status === 401 ? 'INVALID_CREDENTIALS' : 'UNKNOWN'));
+  return postSession<LoginResult>(clientType, '/session/login', { email, password }, (status, bodyCode) => {
+    if (status === 401) return codeOr(bodyCode, 'INVALID_CREDENTIALS');
+    if (status === 429) return codeOr(bodyCode, 'TOO_MANY_ATTEMPTS');
+    return codeOr(bodyCode, 'UNKNOWN');
+  });
 }
 
 export interface ConfirmParams {

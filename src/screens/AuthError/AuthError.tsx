@@ -8,11 +8,14 @@ const COPY: Record<SessionErrorCode, { title: string; body: string }> = {
   MINI_APP_UNAVAILABLE: { title: ru.authError.unavailableTitle, body: ru.authError.unavailableBody },
   BINDING_CONFLICT: { title: ru.authError.conflictTitle, body: ru.authError.conflictBody },
   // BINDING_REQUIRED never reaches this screen (it routes to /login instead);
-  // INVALID_CREDENTIALS/INVALID_OTP are shown inline on the login/code forms,
-  // not here. Both fall back to the generic copy below defensively.
+  // INVALID_CREDENTIALS/INVALID_OTP/TOO_MANY_ATTEMPTS are shown inline on the
+  // login/code forms (SignIn's emailError), not here — all three are things
+  // the user fixes by retrying the same form, not a reason to block the
+  // whole app. All three fall back to the generic copy below defensively.
   BINDING_REQUIRED: { title: ru.authError.unknownTitle, body: ru.authError.unknownBody },
   INVALID_CREDENTIALS: { title: ru.authError.unknownTitle, body: ru.authError.unknownBody },
   INVALID_OTP: { title: ru.authError.unknownTitle, body: ru.authError.unknownBody },
+  TOO_MANY_ATTEMPTS: { title: ru.authError.unknownTitle, body: ru.authError.unknownBody },
   UNKNOWN: { title: ru.authError.unknownTitle, body: ru.authError.unknownBody },
 };
 
