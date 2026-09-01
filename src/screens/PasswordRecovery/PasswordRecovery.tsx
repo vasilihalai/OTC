@@ -4,8 +4,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { TextField } from '@/components/TextField/TextField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Logo } from '@/components/Logo/Logo.tsx';
-import { VerificationModal } from '@/screens/VerificationModal/VerificationModal.tsx';
-import { MockSignInError, sendVerificationCode } from '@/api/index.ts';
+import { OtpConfirmModal } from '@/screens/OtpConfirmModal/OtpConfirmModal.tsx';
+import { ApiError, MockSignInError, MockVerifyCodeError, mapApiError, recoveryConfirmOtp, recoveryRequestOtp } from '@/api/index.ts';
+import type { ClientType } from '@/api/index.ts';
 import { isValidEmail } from '@/lib/validate.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { notifyError } from '@/telegram/adapter.ts';
@@ -20,10 +21,14 @@ export function PasswordRecovery() {
   const openModal = useModalStore((s) => s.openVerificationModal);
   const closeModal = useModalStore((s) => s.closeVerificationModal);
 
-  const prefill = (location.state as { email?: string } | null)?.email ?? '';
-  const [email, setEmail] = useState(prefill);
+  const routeState = location.state as { email?: string; clientType?: ClientType } | null;
+  const [email, setEmail] = useState(routeState?.email ?? '');
+  // The sign-in screen a user came from is the only source for this — falls
+  // back to business (today's `/login` default) if reached some other way.
+  const clientType: ClientType = routeState?.clientType ?? 'UL';
   const [emailError, setEmailError] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const [otpState, setOtpState] = useState<{ transactionId: string; twoFA: boolean }>();
 
   const canSubmit = isValidEmail(email);
 
@@ -35,11 +40,14 @@ export function PasswordRecovery() {
     setEmailError(undefined);
     setLoading(true);
     try {
-      await sendVerificationCode(email);
+      const tx = await recoveryRequestOtp(email, clientType);
+      setOtpState(tx);
       openModal();
     } catch (err) {
       if (err instanceof MockSignInError) {
         setEmailError(ru.signIn.errorEmailInvalid);
+      } else if (err instanceof ApiError) {
+        setEmailError(mapApiError(err));
       }
       notifyError();
     } finally {
@@ -47,9 +55,40 @@ export function PasswordRecovery() {
     }
   }
 
-  function handleVerified() {
+  // §2.3 — confirm-otp returns a *new* transactionId; that's the one
+  // `/reset-password` must carry forward to the final `complete` call, not
+  // the one this screen started with.
+  const [completedTransactionId, setCompletedTransactionId] = useState<string>();
+
+  async function handleOtpSubmit(params: { transactionId: string; otp: string }) {
+    try {
+      const next = await recoveryConfirmOtp(params.transactionId, params.otp);
+      setCompletedTransactionId(next.transactionId);
+    } catch (err) {
+      if (err instanceof MockVerifyCodeError) {
+        throw new Error(ru.verification.errorCodeInvalid);
+      }
+      if (err instanceof ApiError) {
+        throw new Error(mapApiError(err));
+      }
+      throw err;
+    }
+  }
+
+  async function handleOtpResend() {
+    try {
+      return await recoveryRequestOtp(email, clientType);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw new Error(mapApiError(err));
+      }
+      throw err;
+    }
+  }
+
+  function handleOtpVerified() {
     closeModal();
-    navigate('/reset-password', { state: { email }, replace: true });
+    navigate('/reset-password', { state: { email, transactionId: completedTransactionId }, replace: true });
   }
 
   return (
@@ -73,12 +112,18 @@ export function PasswordRecovery() {
         </Button>
       </form>
 
-      <VerificationModal
-        open={modalOpen}
-        email={email}
-        onClose={closeModal}
-        onVerified={handleVerified}
-      />
+      {otpState && (
+        <OtpConfirmModal
+          open={modalOpen}
+          email={email}
+          transactionId={otpState.transactionId}
+          twoFA={otpState.twoFA}
+          onClose={closeModal}
+          onSubmit={handleOtpSubmit}
+          onResend={handleOtpResend}
+          onVerified={handleOtpVerified}
+        />
+      )}
     </>
   );
 }

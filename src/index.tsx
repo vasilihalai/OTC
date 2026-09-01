@@ -9,12 +9,35 @@ import { Root } from '@/components/Root.tsx';
 import { EnvUnsupported } from '@/components/EnvUnsupported.tsx';
 import { init } from '@/init.ts';
 import { ensureTelegramEnvironment } from '@/telegram/environment.ts';
-import { USE_REAL_API } from '@/api/index.ts';
-import { bootRealSession } from '@/store/session.ts';
+import { USE_REAL_API, exchangeSocialCode } from '@/api/index.ts';
+import { hydrateTokensFromStorage } from '@/api/real/http/tokenStore.ts';
+import { useSessionStore } from '@/store/session.ts';
+import type { ClientType } from '@/api/types.ts';
 
 import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
+
+async function tryCompleteSocialSignIn(): Promise<void> {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  const clientType = params.get('ct') as ClientType | null;
+  if (!code || !state || !clientType) {
+    return;
+  }
+  try {
+    const result = await exchangeSocialCode(code, state);
+    useSessionStore.getState().setSession({ email: result.email, clientType });
+  } catch {
+    // Provider/exchange failure — the user still has email+password (§2.2).
+  } finally {
+    // Strip the OAuth params either way so a refresh doesn't re-run this.
+    const clean = new URL(window.location.href);
+    clean.search = '';
+    window.history.replaceState(null, '', clean.toString());
+  }
+}
 
 // No top-level await: some Telegram clients' embedded webview engines (notably
 // older Telegram Desktop builds) fail to parse a module using it at all, which
@@ -37,13 +60,19 @@ void (async () => {
       mockForMacOS: platform === 'macos',
     });
 
-    // A no-op unless VITE_USE_REAL_API is on. Establishes a silent session
-    // when a Telegram↔account binding already exists, or marks the store so
-    // Shell can show the login screen (BINDING_REQUIRED) or an error state
-    // (miniapp-auth-integration-spec.md §6) — never throws itself, so a
-    // failure here isn't a reason to fall into the EnvUnsupported catch below.
+    // Restores whatever access/refresh token survived a relaunch
+    // (api-integration.md §1.4) into `tokenStore`'s in-memory cache and
+    // arms its proactive-refresh timer. Synchronous, no network round trip —
+    // unlike the old Telegram-binding flow, sign-in here is always an
+    // explicit email+password+OTP form, never a silent boot-time call, so
+    // there's nothing to await before rendering.
     if (USE_REAL_API) {
-      await bootRealSession();
+      hydrateTokensFromStorage();
+      // Best-effort completion of Google/Apple sign-in (§2.2, question B3) —
+      // only relevant if this relaunch happens to carry the OAuth
+      // provider's redirect params; on every other boot this is a no-op
+      // `URLSearchParams` read, not a network call.
+      await tryCompleteSocialSignIn();
     }
 
     root.render(

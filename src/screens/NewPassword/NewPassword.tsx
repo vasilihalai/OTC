@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/Logo/Logo.tsx';
 import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
-import { resetPassword } from '@/api/index.ts';
+import { ApiError, mapApiError, recoveryComplete } from '@/api/index.ts';
 import { useToastStore } from '@/store/toast.ts';
 import { copyToClipboard, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
@@ -43,7 +43,9 @@ export function NewPassword() {
   const location = useLocation();
   const showToast = useToastStore((s) => s.show);
 
-  const email = (location.state as { email?: string } | null)?.email ?? '';
+  const routeState = location.state as { email?: string; transactionId?: string } | null;
+  const email = routeState?.email ?? '';
+  const transactionId = routeState?.transactionId ?? '';
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,9 +75,11 @@ export function NewPassword() {
     }
     setLoading(true);
     try {
-      await resetPassword(email, password);
+      await recoveryComplete(transactionId, password);
       showToast(ru.newPassword.successToast);
       navigate('/login', { state: { email }, replace: true });
+    } catch (err) {
+      showToast(err instanceof ApiError ? mapApiError(err) : ru.newPassword.errorGeneric);
     } finally {
       setLoading(false);
     }

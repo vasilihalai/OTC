@@ -5,21 +5,22 @@ import { TextField } from '@/components/TextField/TextField.tsx';
 import { PasswordField } from '@/components/PasswordField/PasswordField.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Logo } from '@/components/Logo/Logo.tsx';
-import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
-import { LoginConfirmModal } from '@/screens/LoginConfirmModal/LoginConfirmModal.tsx';
+import { OtpConfirmModal } from '@/screens/OtpConfirmModal/OtpConfirmModal.tsx';
 import {
+  ApiError,
   MockSignInError,
-  SessionError,
+  MockVerifyCodeError,
   USE_REAL_API,
-  completeSignIn,
-  getUser,
-  sendVerificationCode,
-  sessionLogin,
+  mapApiError,
+  signInConfirmOtp,
+  signInRequestOtp,
   signInSocial,
+  startSocialSignIn,
 } from '@/api/index.ts';
-import type { ClientType, Session } from '@/api/index.ts';
+import type { ClientType } from '@/api/index.ts';
 import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
+import { markInitDataBindPending } from '@/api/http.ts';
 import { notifyError } from '@/telegram/adapter.ts';
 import { AppleIcon, GoogleIcon } from '@/components/SocialIcons/SocialIcons.tsx';
 import { BuildingIcon, PersonIcon } from '@/screens/SignIn/icons.tsx';
@@ -50,13 +51,14 @@ export function SignIn({ variant }: SignInProps) {
   const [emailError, setEmailError] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple'>();
-  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
-  // Real-mode only — step 1's response, needed to open LoginConfirmModal.
-  const [loginTx, setLoginTx] = useState<{ loginTransactionId: string; twoFA: boolean }>();
+  const [otpState, setOtpState] = useState<{ transactionId: string; twoFA: boolean }>();
 
   const clientType = CLIENT_TYPE[variant];
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
+  // api-integration.md §2.1 — one shape for both modes now: issue OTP,
+  // `twoFA` in that response picks whether OtpConfirmModal also asks for an
+  // authenticator code, confirm exchanges the code(s) for a session.
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!canSubmit || loading) {
@@ -65,26 +67,16 @@ export function SignIn({ variant }: SignInProps) {
     setEmailError(undefined);
     setLoading(true);
     try {
-      if (USE_REAL_API) {
-        // miniapp-auth-integration-spec.md §7 /login — only ever reached
-        // after a BINDING_REQUIRED sessionStart, so there's no existing
-        // binding/session to preserve here.
-        const tx = await sessionLogin(clientType, email, password);
-        setLoginTx(tx);
-        openModal();
-      } else {
-        await sendVerificationCode(email, password);
-        const user = await getUser(clientType);
-        setAuthenticatorEnabled(user.authenticatorEnabled);
-        openModal();
-      }
+      const tx = await signInRequestOtp(email, password, clientType);
+      setOtpState(tx);
+      openModal();
     } catch (err) {
       if (err instanceof MockSignInError) {
         setEmailError(ru.signIn.errorEmailInvalid);
-      } else if (err instanceof SessionError && err.code === 'INVALID_CREDENTIALS') {
-        setEmailError(ru.signIn.errorCredentialsInvalid);
-      } else if (err instanceof SessionError && err.code === 'TOO_MANY_ATTEMPTS') {
-        setEmailError(ru.signIn.errorTooManyAttempts);
+      } else if (err instanceof ApiError) {
+        setEmailError(err.httpStatus === 401 ? ru.signIn.errorCredentialsInvalid
+          : err.httpStatus === 429 ? ru.signIn.errorTooManyAttempts
+          : mapApiError(err));
       }
       notifyError();
     } finally {
@@ -92,27 +84,55 @@ export function SignIn({ variant }: SignInProps) {
     }
   }
 
-  async function handleSocial(provider: 'google' | 'apple') {
-    setSocialLoading(provider);
+  async function handleOtpSubmit(params: { transactionId: string; otp: string; twoFaCode?: string }) {
     try {
-      const session = await signInSocial(provider, clientType);
+      const session = await signInConfirmOtp({ ...params, email, clientType });
       setSession(session);
-      navigate('/home', { replace: true });
-    } finally {
-      setSocialLoading(undefined);
+      // §2.4 — one shot, sent on the first authenticated request after this.
+      markInitDataBindPending();
+    } catch (err) {
+      if (err instanceof MockVerifyCodeError) {
+        throw new Error(err.code === 'RATE_LIMIT' ? ru.verification.errorRateLimit : ru.verification.errorCodeInvalid);
+      }
+      if (err instanceof ApiError) {
+        throw new Error(mapApiError(err));
+      }
+      throw err;
     }
   }
 
-  function handleVerified() {
+  async function handleOtpResend() {
+    try {
+      return await signInRequestOtp(email, password, clientType);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw new Error(err.httpStatus === 429 ? ru.signIn.errorTooManyAttempts : mapApiError(err));
+      }
+      throw err;
+    }
+  }
+
+  function handleOtpVerified() {
     closeModal();
-    setSession(completeSignIn(email, clientType));
     navigate('/home', { replace: true });
   }
 
-  function handleRealVerified(session: Session) {
-    closeModal();
-    setSession(session);
-    navigate('/home', { replace: true });
+  async function handleSocial(provider: 'google' | 'apple') {
+    setSocialLoading(provider);
+    try {
+      if (USE_REAL_API) {
+        // Opens an external browser; completion (if the redirect back into
+        // the mini app is captured at all) happens on relaunch — §2.2,
+        // best-effort for MVP, question B3.
+        await startSocialSignIn(provider, clientType);
+      } else {
+        const session = await signInSocial(provider, clientType);
+        setSession(session);
+        navigate('/home', { replace: true });
+      }
+    } finally {
+      setSocialLoading(undefined);
+    }
   }
 
   return (
@@ -142,7 +162,7 @@ export function SignIn({ variant }: SignInProps) {
         <button
           type="button"
           className="sign-in__forgot"
-          onClick={() => navigate('/forgot', { state: { email } })}
+          onClick={() => navigate('/forgot', { state: { email, clientType } })}
         >
           {ru.signIn.forgotPassword}
         </button>
@@ -197,26 +217,16 @@ export function SignIn({ variant }: SignInProps) {
         )}
       </form>
 
-      {USE_REAL_API ? (
-        loginTx && (
-          <LoginConfirmModal
-            open={modalOpen}
-            email={email}
-            clientType={clientType}
-            loginTransactionId={loginTx.loginTransactionId}
-            twoFA={loginTx.twoFA}
-            onClose={closeModal}
-            onVerified={handleRealVerified}
-            onResend={() => sessionLogin(clientType, email, password)}
-          />
-        )
-      ) : (
-        <TwoFactorGate
+      {otpState && (
+        <OtpConfirmModal
           open={modalOpen}
-          authenticatorEnabled={authenticatorEnabled}
           email={email}
+          transactionId={otpState.transactionId}
+          twoFA={otpState.twoFA}
           onClose={closeModal}
-          onVerified={handleVerified}
+          onSubmit={handleOtpSubmit}
+          onResend={handleOtpResend}
+          onVerified={handleOtpVerified}
         />
       )}
     </>

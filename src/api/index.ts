@@ -13,17 +13,42 @@ import * as realBalances from '@/api/real/balances.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
 import * as realTransfers from '@/api/real/transfers.ts';
-import * as realSession from '@/api/real/session.ts';
 
 export const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === 'true';
 
+// Generic OTP verification — withdrawal-confirmation 2FA only now (see
+// real/auth.ts's own comment). Sign-in and password recovery each have
+// their own dedicated pair below, matching api-integration.md §2's three
+// genuinely different contracts.
 export const sendVerificationCode = USE_REAL_API ? realAuth.sendVerificationCode : mockAuth.sendVerificationCode;
 export const verifyCode = USE_REAL_API ? realAuth.verifyCode : mockAuth.verifyCode;
-export const completeSignIn = USE_REAL_API ? realAuth.completeSignIn : mockAuth.completeSignIn;
-export const signInSocial = USE_REAL_API ? realAuth.signInSocial : mockAuth.signInSocial;
-export const resetPassword = USE_REAL_API ? realAuth.resetPassword : mockAuth.resetPassword;
 export const MockSignInError = mockAuth.MockSignInError;
 export const MockVerifyCodeError = mockAuth.MockVerifyCodeError;
+
+// Sign-in — api-integration.md §2.1. Same two-step OTP shape in both modes
+// now, so screens no longer branch on USE_REAL_API for this.
+export const signInRequestOtp = USE_REAL_API ? realAuth.signInRequestOtp : mockAuth.signInRequestOtp;
+export const signInConfirmOtp = USE_REAL_API ? realAuth.signInConfirmOtp : mockAuth.signInConfirmOtp;
+
+// Google / Apple — §2.2. Mock stays an instant fake session; real opens an
+// external browser and completes (if at all) on relaunch — genuinely
+// different flows, so SignIn.tsx still branches on USE_REAL_API here only.
+export const signInSocial = mockAuth.signInSocial;
+export const startSocialSignIn = realAuth.startSocialSignIn;
+export const exchangeSocialCode = realAuth.exchangeSocialCode;
+
+// Password recovery — §2.3.
+export const recoveryRequestOtp = USE_REAL_API ? realAuth.recoveryRequestOtp : mockAuth.recoveryRequestOtp;
+export const recoveryConfirmOtp = USE_REAL_API ? realAuth.recoveryConfirmOtp : mockAuth.recoveryConfirmOtp;
+export const recoveryComplete = USE_REAL_API ? realAuth.recoveryComplete : mockAuth.recoveryComplete;
+
+// Sign-out — §1.4. Mock just clears local state (no server call, no tokens
+// to revoke); real revokes then clears regardless of the call's outcome.
+export async function signOut(): Promise<void> {
+  if (USE_REAL_API) {
+    await realAuth.signOut();
+  }
+}
 
 export const getUser = USE_REAL_API ? realProfile.getUser : mockData.getUser;
 export const getAssets = USE_REAL_API ? realBalances.getAssets : mockData.getAssets;
@@ -58,18 +83,8 @@ export const requestNewRate = mockActions.requestNewRate;
 export const expireQuote = mockActions.expireQuote;
 export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 
-// Telegram-binding session flow (miniapp-auth-integration-spec.md §7) —
-// real-API-only, no mock counterpart. Called from index.tsx's bootstrap
-// (sessionStart, every launch) and SignIn's real-mode branch
-// (sessionLogin/sessionConfirm, only after a BINDING_REQUIRED start). The
-// mock path keeps using sendVerificationCode/verifyCode/completeSignIn
-// above for its own (unrelated, always-shown) login screen.
-export const sessionStart = realSession.start;
-export const sessionLogin = realSession.login;
-export const sessionConfirm = realSession.confirm;
-export const sessionLogout = realSession.logout;
-export { SessionError } from '@/api/real/session.ts';
-export type { SessionErrorCode, SessionResult, LoginResult, ConfirmParams } from '@/api/real/session.ts';
+export { ApiError } from '@/api/http.ts';
+export { mapApiError } from '@/api/real/errorMap.ts';
 
 export type { CryptoWithdrawalPayload, FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
 export type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';

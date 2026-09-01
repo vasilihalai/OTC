@@ -1,8 +1,14 @@
 export type ClientType = 'UL' | 'FL';
 
+/**
+ * UI-facing identity only — no credential lives here. In real mode the
+ * actual access/refresh tokens are owned exclusively by
+ * `api/real/http/tokenStore.ts` (api-integration.md §1.4); in mock mode
+ * nothing reads a token at all. Kept minimal on purpose so there is only
+ * ever one place a stale token could leak from.
+ */
 export interface Session {
   email: string;
-  token: string;
   clientType: ClientType;
 }
 

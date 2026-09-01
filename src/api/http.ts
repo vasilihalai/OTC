@@ -1,88 +1,81 @@
 import { useSessionStore } from '@/store/session.ts';
-import { start as sessionStart } from '@/api/real/session.ts';
+import { useToastStore } from '@/store/toast.ts';
+import { ensureFreshAccessToken, refreshTokens } from '@/api/real/http/tokenStore.ts';
+import { ApiError, toApiError } from '@/api/real/http/apiError.ts';
 import { getFreshInitData } from '@/telegram/initData.ts';
+
+export { ApiError };
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
-export class ApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly code: string,
-    message: string,
-  ) {
-    super(message);
-  }
+function requestId(): string {
+  return crypto.randomUUID();
 }
 
-// A stale/expired Mini App access token surfaces as a 401 from any real
-// endpoint. Since there's no refresh token (miniapp-auth-integration-spec.md
-// §5/§7 — the Session schema is explicit that only an access token is ever
-// issued), recovery is a silent sessionStart() replay, never a redirect
-// to /login — a binding already exists at this point, so it's expected to
-// succeed unnoticed. One in-flight retry is shared across concurrent 401s
-// (queued behind the same promise) instead of each firing its own.
-let reauth: Promise<void> | null = null;
-
-async function silentReauth(): Promise<void> {
-  reauth ??= (async () => {
-    const { session, setSession, clearSession } = useSessionStore.getState();
-    const initData = session && getFreshInitData();
-    if (!session || !initData) {
-      clearSession();
-      throw new ApiError(401, 'SESSION_EXPIRED', 'No session to silently refresh');
-    }
-    try {
-      const result = await sessionStart(session.clientType, initData);
-      setSession({ ...session, token: result.accessToken });
-    } catch (err) {
-      // Binding no longer exists (revoked, Mini App disabled, etc.) — fall
-      // back to clearing the session so the next protected screen's
-      // useRequireSession redirects to /login like any other logged-out
-      // state, rather than looping silently forever.
-      clearSession();
-      throw err;
-    }
-  })();
-  try {
-    await reauth;
-  } finally {
-    reauth = null;
-  }
+// api-integration.md §2.4 — initData is sent exactly once, on the first
+// authenticated request after a successful sign-in, so the backend can bind
+// telegram_id to the account for push. Never on every request. Call this
+// right after `setSession()`; the next `apiFetch` call picks it up and
+// clears the flag regardless of whether the header was actually attachable.
+let pendingInitDataBind = false;
+export function markInitDataBindPending(): void {
+  pendingInitDataBind = true;
 }
 
 /**
- * Thin fetch wrapper for the real exchange API: base URL, bearer auth from the
- * current session, and JSON in/out. Error bodies are assumed to look like
- * `{ code: string, message: string }` — reconcile against Swagger once available.
+ * Thin fetch wrapper for the real exchange API: base URL, bearer auth from
+ * `tokenStore`, `x-request-id` on every call (§1.2 — required on essentially
+ * every operation; the single most likely cause of a blanket 400 if
+ * forgotten), and JSON in/out. Error bodies are normalised into `ApiError`
+ * by `toApiError` — screens never see a raw fetch/Response.
  */
 export async function apiFetch<T>(path: string, init: RequestInit = {}, isRetry = false): Promise<T> {
-  const token = useSessionStore.getState().session?.token;
+  const token = await ensureFreshAccessToken();
+  const reqId = requestId();
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-request-id': reqId,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  if (import.meta.env.VITE_APP_VERSION) {
+    headers['x-client-version'] = import.meta.env.VITE_APP_VERSION;
+  }
+  if (pendingInitDataBind) {
+    pendingInitDataBind = false;
+    const initData = getFreshInitData();
+    if (initData) {
+      headers['x-telegram-init-data'] = initData;
+    }
+  }
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...init.headers,
-    },
+    headers: { ...headers, ...init.headers },
   });
 
+  // Logged alongside the response so a failed request can be traced by
+  // support from the request id shown in the generic error toast (§1.2/§1.5).
+  console.info(`[api] ${init.method ?? 'GET'} ${path} -> ${res.status} (${reqId})`);
+
   if (res.status === 401 && !isRetry) {
-    await silentReauth();
+    // A stale/expired access token — force a real refresh (not the
+    // expiry-aware `ensureFreshAccessToken`, which would just hand back the
+    // same token if our local clock still thinks it's valid) and retry once.
+    // §1.4: "reactively on the first 401 ... serialise refreshes" —
+    // `refreshTokens()` itself dedupes parallel callers onto one promise.
+    try {
+      await refreshTokens();
+    } catch {
+      useSessionStore.getState().clearSession();
+      useToastStore.getState().show('Сессия истекла, войдите снова');
+      throw new ApiError(401, 'SESSION_EXPIRED', 'Session expired', reqId);
+    }
     return apiFetch<T>(path, init, true);
   }
 
   if (!res.ok) {
-    let code = 'UNKNOWN';
-    let message = `Request failed with status ${res.status}`;
-    try {
-      const body = (await res.json()) as { code?: string; message?: string };
-      code = body.code ?? code;
-      message = body.message ?? message;
-    } catch {
-      // Non-JSON error body — fall back to the generic message above.
-    }
-    throw new ApiError(res.status, code, message);
+    throw await toApiError(res, reqId);
   }
 
   if (res.status === 204) {

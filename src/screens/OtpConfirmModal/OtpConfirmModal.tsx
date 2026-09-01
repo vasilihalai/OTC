@@ -4,14 +4,10 @@ import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Spinner } from '@/components/Spinner/Spinner.tsx';
-import { SessionError, sessionConfirm } from '@/api/index.ts';
-import type { ClientType, Session } from '@/api/types.ts';
-import { useSessionStore } from '@/store/session.ts';
-import { getFreshInitData } from '@/telegram/initData.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
-import './LoginConfirmModal.css';
+import './OtpConfirmModal.css';
 
 const RESEND_SECONDS = 59;
 
@@ -21,31 +17,38 @@ function formatCountdown(seconds: number): string {
   return `${m}:${s}`;
 }
 
-export interface LoginConfirmModalProps {
+export interface OtpConfirmSubmitParams {
+  transactionId: string;
+  otp: string;
+  twoFaCode?: string;
+}
+
+export interface OtpConfirmModalProps {
   open: boolean;
   email: string;
-  clientType: ClientType;
-  loginTransactionId: string;
-  /** From step 1's response — whether a second, authenticator code is also required. */
+  transactionId: string;
+  /** From the OTP-issue step's response — whether a second, authenticator code is also required. */
   twoFA: boolean;
   onClose: () => void;
-  onVerified: (session: Session) => void;
-  /** Re-runs step 1 to get a fresh loginTransactionId; returns its response. */
-  onResend: () => Promise<{ loginTransactionId: string; twoFA: boolean }>;
+  /** Verifies the code(s). Reject with an `Error` whose `message` is already display-ready (via `errorMap.ts`) to show inline; resolve on success. */
+  onSubmit: (params: OtpConfirmSubmitParams) => Promise<void>;
+  /** Re-issues the code; returns the (possibly new) transactionId/twoFA — api-integration.md §2.3 explicitly returns a fresh transactionId on confirm, and resend realistically hits the same rate limit as the initial request. */
+  onResend: () => Promise<{ transactionId: string; twoFA: boolean }>;
+  onVerified: () => void;
 }
 
 /**
- * Step 2 of first-time binding — miniapp-auth-integration-spec.md §7
- * `/login/confirm`. Distinct from the shared `VerificationModal`/
- * `AuthenticatorModal` (which pick ONE of email-code-or-authenticator):
- * this endpoint always takes the email/SMS `otp`, *plus* a `twoFaCode` when
- * step 1 returned `twoFA: true` — never either/or.
+ * Generic OTP-confirm step shared by sign-in (api-integration.md §2.1) and
+ * password recovery (§2.3) — both are "email/SMS code, plus an authenticator
+ * code when the account has one enabled," never either/or, which is why this
+ * is its own component rather than reusing the withdrawal-confirmation
+ * `TwoFactorGate`/`VerificationModal`/`AuthenticatorModal` trio (those pick
+ * ONE of the two, matching a different real contract — §5.3).
  */
-export function LoginConfirmModal({
-  open, email, clientType, loginTransactionId, twoFA, onClose, onVerified, onResend,
-}: LoginConfirmModalProps) {
-  const setAuthStatus = useSessionStore((s) => s.setAuthStatus);
-  const [txId, setTxId] = useState(loginTransactionId);
+export function OtpConfirmModal({
+  open, email, transactionId, twoFA, onClose, onSubmit, onResend, onVerified,
+}: OtpConfirmModalProps) {
+  const [txId, setTxId] = useState(transactionId);
   const [requiresTwoFa, setRequiresTwoFa] = useState(twoFA);
   const [otp, setOtp] = useState('');
   const [twoFaCode, setTwoFaCode] = useState('');
@@ -57,13 +60,13 @@ export function LoginConfirmModal({
     if (!open) {
       return;
     }
-    setTxId(loginTransactionId);
+    setTxId(transactionId);
     setRequiresTwoFa(twoFA);
     setOtp('');
     setTwoFaCode('');
     setError(undefined);
     setResendCountdown(RESEND_SECONDS);
-  }, [open, loginTransactionId, twoFA]);
+  }, [open, transactionId, twoFA]);
 
   useEffect(() => {
     if (!open || resendCountdown <= 0) {
@@ -77,32 +80,14 @@ export function LoginConfirmModal({
     setVerifying(true);
     setError(undefined);
     try {
-      const initData = getFreshInitData();
-      if (!initData) {
-        throw new SessionError('INVALID_INIT_DATA', 0);
-      }
-      const result = await sessionConfirm(clientType, {
-        loginTransactionId: txId,
-        otp: nextOtp,
-        twoFaCode: nextTwoFaCode || undefined,
-        initData,
-      });
+      await onSubmit({ transactionId: txId, otp: nextOtp, twoFaCode: nextTwoFaCode || undefined });
       notifySuccess();
-      onVerified({ email, clientType, token: result.accessToken });
+      onVerified();
     } catch (err) {
       notifyError();
-      if (err instanceof SessionError && err.code === 'INVALID_OTP') {
-        setError(ru.verification.errorCodeInvalid);
-        setOtp('');
-        setTwoFaCode('');
-      } else {
-        // INVALID_INIT_DATA / BINDING_CONFLICT / UNKNOWN are terminal here —
-        // not something retyping a code can fix. Hand off to the app-level
-        // AuthError screen instead of leaving this modal open on a dead end.
-        const code = err instanceof SessionError ? err.code : 'UNKNOWN';
-        onClose();
-        setAuthStatus('error', code);
-      }
+      setError(err instanceof Error ? err.message : ru.verification.errorCodeInvalid);
+      setOtp('');
+      setTwoFaCode('');
     } finally {
       setVerifying(false);
     }
@@ -127,21 +112,15 @@ export function LoginConfirmModal({
   async function handleResend() {
     setError(undefined);
     try {
-      // Re-runs step 1 (`/session/login`) — the same email/password submit
-      // as the initial attempt, so it can realistically hit the same
-      // TOO_MANY_ATTEMPTS rate limit a repeatedly-tapped resend button would
-      // trigger (miniapp-auth-integration-spec.md §7 `/session/login` 429).
       const next = await onResend();
-      setTxId(next.loginTransactionId);
+      setTxId(next.transactionId);
       setRequiresTwoFa(next.twoFA);
       setOtp('');
       setTwoFaCode('');
       setResendCountdown(RESEND_SECONDS);
     } catch (err) {
       notifyError();
-      setError(err instanceof SessionError && err.code === 'TOO_MANY_ATTEMPTS'
-        ? ru.signIn.errorTooManyAttempts
-        : ru.verification.errorCodeInvalid);
+      setError(err instanceof Error ? err.message : ru.verification.errorCodeInvalid);
     }
   }
 
@@ -164,14 +143,14 @@ export function LoginConfirmModal({
         </Button>
       )}
     >
-      <p className="login-confirm-modal__sent-to">{ru.verification.sentTo}</p>
-      <p className="login-confirm-modal__email">{email}</p>
+      <p className="otp-confirm-modal__sent-to">{ru.verification.sentTo}</p>
+      <p className="otp-confirm-modal__email">{email}</p>
 
       <CodeInput value={otp} onChange={setOtp} onComplete={handleOtpComplete} error={!!error} disabled={verifying}/>
 
       {requiresTwoFa && (
         <>
-          <p className="login-confirm-modal__two-fa-label">{ru.authenticator.title}</p>
+          <p className="otp-confirm-modal__two-fa-label">{ru.authenticator.title}</p>
           <CodeInput
             value={twoFaCode}
             onChange={setTwoFaCode}
@@ -183,9 +162,9 @@ export function LoginConfirmModal({
       )}
 
       {verifying && (
-        <p className="login-confirm-modal__status"><Spinner size={16}/>{ru.verification.verifyingLabel}</p>
+        <p className="otp-confirm-modal__status"><Spinner size={16}/>{ru.verification.verifyingLabel}</p>
       )}
-      {error && <p className="login-confirm-modal__error">{error}</p>}
+      {error && <p className="otp-confirm-modal__error">{error}</p>}
     </Modal>
   );
 }

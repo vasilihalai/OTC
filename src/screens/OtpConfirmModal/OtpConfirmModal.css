@@ -1,4 +1,4 @@
-.login-confirm-modal__sent-to {
+.otp-confirm-modal__sent-to {
   margin: 0;
   text-align: center;
   font-size: 16px;
@@ -6,7 +6,7 @@
   color: var(--text-muted);
 }
 
-.login-confirm-modal__email {
+.otp-confirm-modal__email {
   margin: -12px 0 4px;
   text-align: center;
   font-size: 16px;
@@ -15,7 +15,7 @@
   color: var(--text-muted);
 }
 
-.login-confirm-modal__two-fa-label {
+.otp-confirm-modal__two-fa-label {
   margin: 4px 0 0;
   text-align: center;
   font-size: 14px;
@@ -23,14 +23,14 @@
   color: var(--text-muted);
 }
 
-.login-confirm-modal__error {
+.otp-confirm-modal__error {
   margin: -8px 0 0;
   text-align: center;
   font-size: 14px;
   color: var(--accent);
 }
 
-.login-confirm-modal__status {
+.otp-confirm-modal__status {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,10 +38,10 @@
   margin: -8px 0 0;
   font-size: 14px;
   color: var(--text-muted);
-  animation: login-confirm-status-in 0.15s ease-out;
+  animation: otp-confirm-status-in 0.15s ease-out;
 }
 
-@keyframes login-confirm-status-in {
+@keyframes otp-confirm-status-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }

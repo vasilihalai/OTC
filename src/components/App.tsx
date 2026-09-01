@@ -7,7 +7,6 @@ import { Toast } from '@/components/Toast/Toast.tsx';
 import { AppHeader } from '@/components/AppHeader/AppHeader.tsx';
 import { TabBar } from '@/components/TabBar/TabBar.tsx';
 import { TransferModal } from '@/components/TransferModal/TransferModal.tsx';
-import { AuthError } from '@/screens/AuthError/AuthError.tsx';
 import { useSessionStore } from '@/store/session.ts';
 import { useAppBackButton, useGoBack } from '@/telegram/backButton.ts';
 
@@ -20,21 +19,10 @@ function Shell() {
   const location = useLocation();
   const goBack = useGoBack();
   useAppBackButton();
-  const authStatus = useSessionStore((s) => s.authStatus);
-  const authError = useSessionStore((s) => s.authError);
 
   const matched = routes.find((r) => matchPath(r.path, location.pathname));
   const headerVariant = matched?.headerVariant ?? 'none';
   const showTabBar = matched?.tabBar ?? false;
-
-  // Real-mode only (§6) — a terminal sessionStart failure (invalid initData,
-  // Mini App disabled, a Telegram identity already bound elsewhere) blocks
-  // the whole app rather than letting routing proceed into a screen with no
-  // usable session. BINDING_REQUIRED is not handled here: it's not an
-  // error, existing Entry/useRequireSession already routes to /login for it.
-  if (authStatus === 'error' && authError) {
-    return <AuthError code={authError}/>;
-  }
 
   return (
     <div className="app-shell">

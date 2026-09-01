@@ -55,6 +55,7 @@ export const ru = {
     errorMismatch: 'Пароли не совпадают',
     submitAction: 'Продолжить',
     successToast: 'Пароль обновлён',
+    errorGeneric: 'Не удалось обновить пароль. Попробуйте ещё раз',
   },
   authenticator: {
     title: 'Введите код из Google Authenticator',

@@ -52,15 +52,71 @@ export async function verifyCode(code: string): Promise<void> {
   failedAttempts = 0;
 }
 
-export function completeSignIn(email: string, clientType: ClientType): Session {
-  return { email, clientType, token: `mock-token-${Date.now()}` };
-}
-
 export async function signInSocial(_provider: SocialProvider, clientType: ClientType): Promise<Session> {
   await mockDelay();
-  return completeSignIn(MOCK_USERS[clientType].email, clientType);
+  return { email: MOCK_USERS[clientType].email, clientType };
 }
 
-export async function resetPassword(_email: string, _password: string): Promise<void> {
+// ---------------------------------------------------------------------------
+// Sign-in — api-integration.md §2.1 shape, mocked: OTP-issue returns
+// `twoFA` straight from the fixture (no separate `getUser` lookup needed,
+// matching what the real flow does now), confirm validates the code the
+// same way `verifyCode` above always has.
+// ---------------------------------------------------------------------------
+
+let signInFailedAttempts = 0;
+
+export async function signInRequestOtp(email: string, password: string, clientType: ClientType): Promise<{ transactionId: string; twoFA: boolean }> {
+  await mockDelay();
+  if (!isValidEmail(email) || !password.trim()) {
+    throw new MockSignInError('EMAIL_INVALID');
+  }
+  signInFailedAttempts = 0;
+  return { transactionId: `mock-tx-${Date.now()}`, twoFA: MOCK_USERS[clientType].authenticatorEnabled };
+}
+
+export interface SignInConfirmParams {
+  transactionId: string;
+  otp: string;
+  twoFaCode?: string;
+  email: string;
+  clientType: ClientType;
+}
+
+export async function signInConfirmOtp(params: SignInConfirmParams): Promise<Session> {
+  await mockDelay();
+  if (signInFailedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS) {
+    throw new MockVerifyCodeError('RATE_LIMIT');
+  }
+  const codeBad = params.otp === '000000' || (params.twoFaCode !== undefined && params.twoFaCode === '000000');
+  if (codeBad) {
+    signInFailedAttempts += 1;
+    throw new MockVerifyCodeError(signInFailedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS ? 'RATE_LIMIT' : 'CODE_INVALID');
+  }
+  signInFailedAttempts = 0;
+  return { email: params.email, clientType: params.clientType };
+}
+
+// ---------------------------------------------------------------------------
+// Password recovery — §2.3 shape, mocked.
+// ---------------------------------------------------------------------------
+
+export async function recoveryRequestOtp(email: string, clientType: ClientType): Promise<{ transactionId: string; twoFA: boolean }> {
+  await mockDelay();
+  if (!isValidEmail(email)) {
+    throw new MockSignInError('EMAIL_INVALID');
+  }
+  return { transactionId: `mock-recovery-${Date.now()}`, twoFA: MOCK_USERS[clientType].authenticatorEnabled };
+}
+
+export async function recoveryConfirmOtp(_transactionId: string, otp: string): Promise<{ transactionId: string; twoFA: boolean }> {
+  await mockDelay();
+  if (otp === '000000') {
+    throw new MockVerifyCodeError('CODE_INVALID');
+  }
+  return { transactionId: `mock-recovery-confirmed-${Date.now()}`, twoFA: false };
+}
+
+export async function recoveryComplete(_transactionId: string, _password: string): Promise<void> {
   await mockDelay();
 }
