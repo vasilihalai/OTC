@@ -1,4 +1,4 @@
-import type { Accounts, Asset, AssetGroup } from '@/api/types.ts';
+import type { Accounts, Asset, AssetGroup, TransferAccount } from '@/api/types.ts';
 import { apiFetch } from '@/api/http.ts';
 import { getCurrentUserId } from '@/api/real/profile.ts';
 
@@ -76,4 +76,17 @@ export async function getAccounts(): Promise<Accounts> {
     return Object.fromEntries(data.balances[key].list.map((item) => [item.coin, String(item.availableBalance)]));
   };
   return { deposit: toRecord(depositKey), trading: toRecord(tradingKey) };
+}
+
+/**
+ * §6: `accountFrom`/`accountTo` on the transfer call are the *real* backend
+ * account keys, not the app's own `deposit`/`trading` labels `getAccounts()`
+ * remaps them to for display — this resolves one back to the other, using
+ * the same positional first/second-key convention as everything else in
+ * this file (question B7).
+ */
+export async function resolveTransferAccounts(): Promise<Record<TransferAccount, string>> {
+  const data = await fetchBalancesData();
+  const [depositKey, tradingKey] = accountKeys(data);
+  return { deposit: depositKey ?? '', trading: tradingKey ?? '' };
 }

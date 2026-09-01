@@ -21,6 +21,7 @@ import * as realOtc from '@/api/real/otc.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
 import * as realTransfers from '@/api/real/transfers.ts';
+import * as realCertificate from '@/api/real/certificate.ts';
 
 export const USE_REAL_API = import.meta.env.VITE_USE_REAL_API === 'true';
 
@@ -102,6 +103,13 @@ export const getAccounts = USE_REAL_API ? realBalances.getAccounts : mockData.ge
 export const getRequisites = USE_REAL_API ? realWithdrawals.getRequisites : mockData.getRequisites;
 export const getSavedRequisites = USE_REAL_API ? realWithdrawals.getSavedRequisites : mockData.getSavedRequisites;
 export const transfer = USE_REAL_API ? realTransfers.transfer : mockActions.transfer;
+
+// §8. Mock mode just opens the bundled sample PDF directly (Profile.tsx,
+// no loading/error states to simulate for a static file) — genuinely
+// different flows, same precedent as Google/Apple sign-in above, so
+// Profile.tsx branches on USE_REAL_API itself rather than this being a
+// mock/real pair.
+export const getAccountCertificate = realCertificate.getAccountCertificate;
 
 // Read side — real as of this round (§7.3/§7.4), see the top-of-file note.
 export const getDeals = USE_REAL_API ? realOtc.getDeals : mockData.getDeals;

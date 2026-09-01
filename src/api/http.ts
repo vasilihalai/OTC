@@ -32,7 +32,7 @@ export function markInitDataBindPending(): void {
  * if forgotten), and JSON in/out. Error bodies are normalised into `ApiError`
  * by `toApiError` — screens never see a raw fetch/Response.
  */
-export async function apiFetch<T>(path: string, init: RequestInit = {}, isRetry = false, service: Service = 'financial'): Promise<T> {
+async function rawFetch(path: string, init: RequestInit, isRetry: boolean, service: Service): Promise<Response> {
   const token = await ensureFreshAccessToken();
   const reqId = requestId();
 
@@ -74,15 +74,26 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, isRetry 
       useToastStore.getState().show('Сессия истекла, войдите снова');
       throw new ApiError(401, 'SESSION_EXPIRED', 'Session expired', reqId);
     }
-    return apiFetch<T>(path, init, true, service);
+    return rawFetch(path, init, true, service);
   }
 
   if (!res.ok) {
     throw await toApiError(res, reqId);
   }
 
+  return res;
+}
+
+export async function apiFetch<T>(path: string, init: RequestInit = {}, isRetry = false, service: Service = 'financial'): Promise<T> {
+  const res = await rawFetch(path, init, isRetry, service);
   if (res.status === 204) {
     return undefined as T;
   }
   return res.json() as Promise<T>;
+}
+
+/** Same request plumbing as `apiFetch`, for endpoints that return a file body instead of JSON (§8's certificate download). */
+export async function apiFetchBlob(path: string, init: RequestInit = {}, service: Service = 'financial'): Promise<Blob> {
+  const res = await rawFetch(path, init, false, service);
+  return res.blob();
 }
