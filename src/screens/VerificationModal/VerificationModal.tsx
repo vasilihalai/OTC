@@ -4,8 +4,8 @@ import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Spinner } from '@/components/Spinner/Spinner.tsx';
-import { MockVerifyCodeError, sendVerificationCode, verifyCode } from '@/api/index.ts';
 import { maskEmail } from '@/lib/mask.ts';
+import { RateLimitedError } from '@/lib/rateLimitedError.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -24,10 +24,13 @@ export interface VerificationModalProps {
   open: boolean;
   email: string;
   onClose: () => void;
+  /** Verifies the code (and, for callers whose "verification" is really a submission, performs it atomically). Reject with an `Error` whose `message` is already display-ready to show inline. */
+  onSubmit: (code: string) => Promise<void>;
+  onResend: () => Promise<void>;
   onVerified: () => void;
 }
 
-export function VerificationModal({ open, email, onClose, onVerified }: VerificationModalProps) {
+export function VerificationModal({ open, email, onClose, onSubmit, onResend, onVerified }: VerificationModalProps) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [verifying, setVerifying] = useState(false);
@@ -64,18 +67,16 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
     setVerifying(true);
     setError(undefined);
     try {
-      await verifyCode(value);
+      await onSubmit(value);
       notifySuccess();
       onVerified();
     } catch (err) {
       notifyError();
-      if (err instanceof MockVerifyCodeError) {
-        if (err.code === 'RATE_LIMIT') {
-          setError(ru.verification.errorRateLimit);
-          setLockoutCountdown(LOCKOUT_SECONDS);
-        } else {
-          setError(ru.verification.errorCodeInvalid);
-        }
+      if (err instanceof RateLimitedError) {
+        setError(ru.verification.errorRateLimit);
+        setLockoutCountdown(LOCKOUT_SECONDS);
+      } else {
+        setError(err instanceof Error ? err.message : ru.verification.errorCodeInvalid);
       }
       setCode('');
     } finally {
@@ -84,7 +85,7 @@ export function VerificationModal({ open, email, onClose, onVerified }: Verifica
   }
 
   async function handleResend() {
-    await sendVerificationCode(email);
+    await onResend();
     setCode('');
     setError(undefined);
     setResendCountdown(RESEND_SECONDS);

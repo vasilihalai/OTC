@@ -3,8 +3,6 @@ import type {
   Asset,
   ClientType,
   CryptoRequisites,
-  CryptoWithdrawLimits,
-  CryptoNetwork,
   Deal,
   FiatRequisites,
   FiatWithdrawLimits,
@@ -12,6 +10,7 @@ import type {
   Stats,
   User,
   WithdrawMethod,
+  WithdrawNetworkOption,
 } from '@/api/types.ts';
 
 export const MOCK_USERS: Record<ClientType, User> = {
@@ -256,23 +255,33 @@ export const MOCK_WITHDRAW_FIAT: {
   },
 };
 
-export const MOCK_WITHDRAW_CRYPTO: {
-  assets: string[];
-  networks: Record<string, CryptoNetwork[]>;
-  limits: Record<string, CryptoWithdrawLimits>;
-} = {
-  assets: ['USDT', 'USDC', 'BTC'],
-  networks: {
-    USDT: ['TRON (TRC-20)', 'Ethereum (ERC-20)'],
-    USDC: ['Ethereum (ERC-20)'],
-    BTC: ['Bitcoin'],
+/**
+ * api-integration.md §5.1 — one entry per (currency, network) pair, each
+ * with its own limits/commission, matching the real directory's shape
+ * (`cryptoCurrencies`) instead of the old one-limits-object-per-asset mock.
+ */
+export const MOCK_WITHDRAW_CRYPTO_NETWORKS: (WithdrawNetworkOption & { currency: string })[] = [
+  {
+    currency: 'USDT', currencyNetworkId: 'usdt-trc20', networkCode: 'TRC20', networkLabel: 'TRON (TRC-20)',
+    contractAddress: 'TR7NHqjeKQxGTCi8q8ZY4frsku4u7', addressRegex: null,
+    minimalAmount: '7', maximumAmount: '30000', commissionPercent: '0', commissionFixed: '0.50',
   },
-  limits: {
-    USDT: { min: '7', available: '30000', fee: '0.50', contractTail: 'frsku4u7' },
-    USDC: { min: '7', available: '12500', fee: '0.50', contractTail: 'a1c9e2b4' },
-    BTC: { min: '0.0005', available: '0.42', fee: '0.0002', contractTail: null },
+  {
+    currency: 'USDT', currencyNetworkId: 'usdt-erc20', networkCode: 'ERC20', networkLabel: 'Ethereum (ERC-20)',
+    contractAddress: '0xdAC17F958D2ee523a2206206994597C13a1c9e2b4', addressRegex: null,
+    minimalAmount: '7', maximumAmount: '30000', commissionPercent: '0', commissionFixed: '0.50',
   },
-};
+  {
+    currency: 'USDC', currencyNetworkId: 'usdc-erc20', networkCode: 'ERC20', networkLabel: 'Ethereum (ERC-20)',
+    contractAddress: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606a1c9e2b4', addressRegex: null,
+    minimalAmount: '7', maximumAmount: '12500', commissionPercent: '0', commissionFixed: '0.50',
+  },
+  {
+    currency: 'BTC', currencyNetworkId: 'btc-bitcoin', networkCode: 'BITCOIN', networkLabel: 'Bitcoin',
+    contractAddress: null, addressRegex: null,
+    minimalAmount: '0.0005', maximumAmount: '0.42', commissionPercent: '0', commissionFixed: '0.0002',
+  },
+];
 
 export const MOCK_SAVED_REQUISITES: SavedRequisite[] = [
   { id: 'req-1', transferType: 'internal', label: 'Свой счёт xRuby · 1234…3456', account: '12345678901234563456' },

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
@@ -12,16 +12,27 @@ import { Button } from '@/components/Button/Button.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
 import { QrScannerModal } from '@/components/QrScannerModal/QrScannerModal.tsx';
-import { getAssets, getUser, getWithdrawCryptoOptions, submitCryptoWithdrawal } from '@/api/index.ts';
-import type { Asset, CryptoWithdrawOptions } from '@/api/index.ts';
+import {
+  ApiError,
+  confirmWithdrawOtp,
+  getAssets,
+  getWithdrawCryptoOptions,
+  getWithdrawCryptoQuote,
+  issueWithdrawOtp,
+  mapApiError,
+} from '@/api/index.ts';
+import type { Asset, CryptoWithdrawOptions, WithdrawOtpSource, WithdrawQuote } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { useTransferModalStore } from '@/store/transferModal.ts';
 import { formatAmount } from '@/lib/money.ts';
+import { RateLimitedError } from '@/lib/rateLimitedError.ts';
 import { notifyError } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
 import './WithdrawCrypto.css';
+
+const QUOTE_DEBOUNCE_MS = 500;
 
 function QrIcon() {
   return (
@@ -32,6 +43,27 @@ function QrIcon() {
       <path d="M12 12h2.5v2.5H12zM16 12h1.5v1.5M16 16h1.5v1.5M12 16h1.5v1.5" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
     </svg>
   );
+}
+
+/** §5.1: "addressRegex drives client-side address validation ... treat a malformed regex as 'no client validation' rather than crashing the screen." */
+function compileAddressRegex(pattern: string | null | undefined): RegExp | undefined {
+  if (!pattern) {
+    return undefined;
+  }
+  try {
+    return new RegExp(pattern);
+  } catch {
+    return undefined;
+  }
+}
+
+/** §5.2: "Show the smallest availableLimit across the returned periods ... render its currency." Not guaranteed which periods exist. */
+function smallestLimit(quote: WithdrawQuote | undefined): { availableLimit: string; currency: string } | undefined {
+  const entries = Object.values(quote?.limits ?? {});
+  if (entries.length === 0) {
+    return undefined;
+  }
+  return entries.reduce((min, entry) => (Number(entry.availableLimit) < Number(min.availableLimit) ? entry : min));
 }
 
 export function WithdrawCrypto() {
@@ -46,25 +78,21 @@ export function WithdrawCrypto() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [ticker, setTicker] = useState(preselected ?? '');
   const [options, setOptions] = useState<CryptoWithdrawOptions>();
+  const [networkId, setNetworkId] = useState('');
   const [manualAddress, setManualAddress] = useState('');
   const [addressError, setAddressError] = useState<string>();
   const [qrOpen, setQrOpen] = useState(false);
-  const [network, setNetwork] = useState('');
   const [amount, setAmount] = useState('');
   const [amountError, setAmountError] = useState<string>();
+  const [quote, setQuote] = useState<WithdrawQuote>();
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
-  const [authenticatorOpen, setAuthenticatorOpen] = useState(false);
-  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpSource, setOtpSource] = useState<WithdrawOtpSource>('email');
 
-  const idempotencyKey = useRef(crypto.randomUUID());
-
-  useEffect(() => {
-    if (session) {
-      void getUser(session.clientType).then((user) => setAuthenticatorEnabled(user.authenticatorEnabled));
-    }
-  }, [session]);
+  const address = manualAddress.trim();
 
   useEffect(() => {
     void getAssets('crypto').then((data) => {
@@ -80,28 +108,55 @@ export function WithdrawCrypto() {
     }
     void getWithdrawCryptoOptions(ticker).then((data) => {
       setOptions(data);
+      setNetworkId(data.networks[0]?.currencyNetworkId ?? '');
       setManualAddress('');
+      setAmount('');
+      setQuote(undefined);
     });
   }, [ticker]);
 
   const asset = assets.find((a) => a.ticker === ticker);
   const available = asset?.balance ?? '0';
-  const address = manualAddress.trim();
-  // Every network the asset supports is always selectable here — the network
-  // is independent of which saved address is picked (filtering it down to
-  // only the networks the selected address happens to support was hiding
-  // the choice entirely whenever that address only listed one, e.g. USDT
-  // defaulting to a saved ERC-20-only address hid TRC-20 completely).
-  const compatibleNetworks = options?.networks ?? [];
-  const isBtc = ticker === 'BTC';
+  const selectedNetwork = options?.networks.find((n) => n.currencyNetworkId === networkId);
+  const addressRegex = useMemo(() => compileAddressRegex(selectedNetwork?.addressRegex), [selectedNetwork?.addressRegex]);
 
-  // Keeps the network selection valid whenever the options change — a stale
-  // value would otherwise leave the Select unable to match any option.
+  // §5.2 — a fresh quote whenever what would change its numbers changes.
+  // Debounced so typing an amount doesn't fire a request per keystroke.
   useEffect(() => {
-    if (compatibleNetworks.length > 0 && !compatibleNetworks.includes(network)) {
-      setNetwork(compatibleNetworks[0]);
+    if (!ticker || !networkId || !address || !amount || Number(amount) <= 0) {
+      setQuote(undefined);
+      return;
     }
-  }, [options]);
+    setQuoteLoading(true);
+    const timer = setTimeout(() => {
+      void getWithdrawCryptoQuote({ currency: ticker, currencyNetworkId: networkId, amount, address })
+        .then(setQuote)
+        .catch((err) => {
+          setQuote(undefined);
+          setAmountError(err instanceof ApiError ? mapApiError(err) : ru.withdraw.errorGeneric);
+        })
+        .finally(() => setQuoteLoading(false));
+    }, QUOTE_DEBOUNCE_MS);
+    return () => {
+      clearTimeout(timer);
+      setQuoteLoading(false);
+    };
+  }, [ticker, networkId, address, amount]);
+
+  // §5.2: "expiredAt means the quote goes stale. Re-request withdraw/info if
+  // the user sits on the screen past it, and disable submit in the meantime."
+  useEffect(() => {
+    if (!quote?.expiredAt) {
+      return;
+    }
+    const msLeft = new Date(quote.expiredAt).getTime() - Date.now();
+    if (msLeft <= 0) {
+      setQuote(undefined);
+      return;
+    }
+    const timer = setTimeout(() => setQuote(undefined), msLeft);
+    return () => clearTimeout(timer);
+  }, [quote?.expiredAt]);
 
   function handleMax() {
     setAmount(available);
@@ -113,10 +168,21 @@ export function WithdrawCrypto() {
     setAmountError(value && Number(value) > Number(available) ? ru.withdraw.errorInsufficientFunds : undefined);
   }
 
+  function handleAddressChange(value: string) {
+    setManualAddress(value);
+    setAddressError(undefined);
+  }
+
+  function handleAddressBlur() {
+    if (address && addressRegex && !addressRegex.test(address)) {
+      setAddressError(ru.withdraw.errorAddressInvalid);
+    }
+  }
+
   function handleTickerChange(value: string) {
     setTicker(value);
     setManualAddress('');
-    setNetwork('');
+    setAmount('');
   }
 
   function handleQrScan(scanned: string) {
@@ -125,9 +191,9 @@ export function WithdrawCrypto() {
     setQrOpen(false);
   }
 
-  const canConfirm = !!options;
+  const canConfirm = !!quote && !quoteLoading;
 
-  function handleConfirm() {
+  async function handleConfirm() {
     setAddressError(undefined);
     setAmountError(undefined);
     if (!address) {
@@ -135,7 +201,16 @@ export function WithdrawCrypto() {
       notifyError();
       return;
     }
-    if (options && Number(amount) < Number(options.limits.min)) {
+    if (addressRegex && !addressRegex.test(address)) {
+      setAddressError(ru.withdraw.errorAddressInvalid);
+      notifyError();
+      return;
+    }
+    if (!quote) {
+      notifyError();
+      return;
+    }
+    if (Number(amount) < Number(quote.minimalAmount)) {
       setAmountError(ru.withdraw.errorBelowMin);
       notifyError();
       return;
@@ -146,25 +221,52 @@ export function WithdrawCrypto() {
       return;
     }
 
-    setAuthenticatorOpen(true);
-  }
-
-  async function handleAuthenticated() {
+    // §5.2: "options.confirmation2FA/confirmationEmail tell you which second
+    // factor this specific operation needs — prefer them over the account-
+    // level twoFA when present." The authoritative answer is issue-otp's own
+    // `source`, requested right before opening the modal.
     setSubmitting(true);
     try {
-      await submitCryptoWithdrawal({
-        ticker,
-        network,
-        address,
-        amount,
-        idempotencyKey: idempotencyKey.current,
-      });
-      bumpBalancesVersion();
-      setSuccess(true);
-      setAuthenticatorOpen(false);
+      const otp = await issueWithdrawOtp(quote.transactionId, session!.clientType);
+      setOtpSource(otp.source);
+      setOtpOpen(true);
+    } catch (err) {
+      notifyError();
+      setAmountError(err instanceof ApiError ? mapApiError(err) : ru.withdraw.errorGeneric);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleOtpSubmit(code: string) {
+    if (!quote) {
+      throw new Error(ru.withdraw.errorGeneric);
+    }
+    try {
+      await confirmWithdrawOtp(quote.transactionId, code, address);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.httpStatus === 429) {
+          throw new RateLimitedError();
+        }
+        throw new Error(mapApiError(err));
+      }
+      throw err;
+    }
+  }
+
+  async function handleOtpResend() {
+    if (!quote) {
+      return;
+    }
+    const otp = await issueWithdrawOtp(quote.transactionId, session!.clientType);
+    setOtpSource(otp.source);
+  }
+
+  function handleOtpVerified() {
+    setOtpOpen(false);
+    bumpBalancesVersion();
+    setSuccess(true);
   }
 
   if (success) {
@@ -190,6 +292,8 @@ export function WithdrawCrypto() {
       </div>
     );
   }
+
+  const limit = smallestLimit(quote);
 
   return (
     <div className="withdraw-crypto">
@@ -220,7 +324,8 @@ export function WithdrawCrypto() {
             placeholder={ru.withdraw.addressPlaceholder}
             value={manualAddress}
             error={addressError}
-            onChange={(ev) => { setManualAddress(ev.target.value); setAddressError(undefined); }}
+            onChange={(ev) => handleAddressChange(ev.target.value)}
+            onBlur={handleAddressBlur}
             suffix={(
               <button
                 type="button"
@@ -233,13 +338,14 @@ export function WithdrawCrypto() {
             )}
           />
         </div>
-        {!isBtc && compatibleNetworks.length > 0 && (
+        {/* §5.1: hide the selector when there's exactly one network — this now falls out naturally from the real network list length, not a hardcoded BTC check. */}
+        {options && options.networks.length > 1 && (
           <Select
             label={ru.withdraw.networkLabel}
             layout="plain"
-            options={compatibleNetworks.map((n) => ({ value: n, label: n }))}
-            value={network}
-            onChange={setNetwork}
+            options={options.networks.map((n) => ({ value: n.currencyNetworkId, label: n.networkLabel }))}
+            value={networkId}
+            onChange={setNetworkId}
           />
         )}
 
@@ -256,23 +362,25 @@ export function WithdrawCrypto() {
           onTransfer={openTransferModal}
         />
 
-        {options && (
+        {quote && (
           <SummaryCard
             rows={[
-              { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(options.limits.min, ticker)} ${ticker}` },
-              { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(options.limits.available, ticker)} ${ticker}` },
-              ...(options.limits.contractTail
+              { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(quote.minimalAmount, ticker)} ${ticker}` },
+              ...(limit
+                ? [{ key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(limit.availableLimit, limit.currency)} ${limit.currency}` }]
+                : []),
+              ...(quote.contractAddress
                 ? [{
                   key: 'contract',
                   label: ru.withdraw.contractAddressLabel,
                   value: ru.withdraw.contractTailPrefixText,
-                  tail: options.limits.contractTail,
+                  tail: quote.contractAddress.slice(-8),
                 }]
                 : []),
-              { key: 'fee', label: ru.withdraw.feeLabel, value: `${formatAmount(options.limits.fee, ticker)} ${ticker}` },
+              { key: 'fee', label: ru.withdraw.feeLabel, value: `${formatAmount(quote.commission, ticker)} ${ticker}` },
             ]}
             totalLabel={ru.withdraw.payoutLabel}
-            totalValue={`${formatAmount(amount || '0', ticker)} ${ticker}`}
+            totalValue={`${formatAmount(quote.finalAmount, ticker)} ${ticker}`}
             caption={ru.withdraw.payoutCaption}
           />
         )}
@@ -281,17 +389,19 @@ export function WithdrawCrypto() {
       </div>
 
       <div className="withdraw-crypto__submit">
-        <Button variant="accent" loading={submitting} disabled={!canConfirm} onClick={handleConfirm}>
+        <Button variant="accent" loading={submitting || quoteLoading} disabled={!canConfirm} onClick={() => void handleConfirm()}>
           {ru.withdraw.confirmAction}
         </Button>
       </div>
 
       <TwoFactorGate
-        open={authenticatorOpen}
-        authenticatorEnabled={authenticatorEnabled}
+        open={otpOpen}
+        authenticatorEnabled={otpSource === 'authenticator'}
         email={session?.email ?? ''}
-        onClose={() => setAuthenticatorOpen(false)}
-        onVerified={handleAuthenticated}
+        onClose={() => setOtpOpen(false)}
+        onSubmit={handleOtpSubmit}
+        onResend={handleOtpResend}
+        onVerified={handleOtpVerified}
       />
       <QrScannerModal open={qrOpen} onClose={() => setQrOpen(false)} onScan={handleQrScan}/>
     </div>

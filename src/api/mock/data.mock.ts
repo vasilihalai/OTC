@@ -18,7 +18,7 @@ import {
   MOCK_SAVED_REQUISITES,
   MOCK_STATS,
   MOCK_USERS,
-  MOCK_WITHDRAW_CRYPTO,
+  MOCK_WITHDRAW_CRYPTO_NETWORKS,
   MOCK_WITHDRAW_FIAT,
   mockDelay,
 } from '@/api/mock/fixtures.ts';
@@ -86,7 +86,8 @@ export async function getSavedRequisites(): Promise<SavedRequisite[]> {
 export async function getWithdrawCryptoOptions(asset: string): Promise<CryptoWithdrawOptions> {
   await mockDelay();
   return {
-    networks: MOCK_WITHDRAW_CRYPTO.networks[asset] ?? [],
-    limits: MOCK_WITHDRAW_CRYPTO.limits[asset] ?? { min: '0', available: '0', fee: '0', contractTail: null },
+    networks: MOCK_WITHDRAW_CRYPTO_NETWORKS
+      .filter((n) => n.currency === asset)
+      .map(({ currency: _currency, ...network }) => network),
   };
 }

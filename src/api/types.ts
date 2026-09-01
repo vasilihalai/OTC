@@ -151,16 +151,63 @@ export interface RequisitesPayload {
   saveForLater: boolean;
 }
 
-export interface CryptoWithdrawLimits {
-  min: string;
-  available: string;
-  fee: string;
-  contractTail: string | null;
+/**
+ * api-integration.md §5.1 — one entry per network a crypto asset supports,
+ * each carrying its own limits/commission (replaces the old one-flat-
+ * limits-object-per-asset shape entirely; the real directory has no such
+ * per-asset object, only per-network).
+ */
+export interface WithdrawNetworkOption {
+  currencyNetworkId: string;
+  networkCode: string;
+  networkLabel: string;
+  contractAddress: string | null;
+  addressRegex: string | null;
+  minimalAmount: string;
+  maximumAmount: string;
+  commissionPercent: string;
+  commissionFixed: string;
 }
 
 export interface CryptoWithdrawOptions {
-  networks: CryptoNetwork[];
-  limits: CryptoWithdrawLimits;
+  networks: WithdrawNetworkOption[];
+}
+
+/** §5.2 — `GET /operations/withdraw/info`'s `limits` map, keyed by period (`DAILY`/`WEEKLY`/…, not all guaranteed present). */
+export interface WithdrawLimitEntry {
+  availableLimit: string;
+  currency: string;
+}
+
+/**
+ * §5.2's live quote — replaces the old "fetch static limits once" model.
+ * Requested fresh whenever the amount/network/method changes; `transactionId`
+ * carries through OTP issue + confirm (§5.3), `expiredAt` means re-request
+ * if the user sits on the screen past it.
+ */
+export interface WithdrawQuote {
+  transactionId: string;
+  minimalAmount: string;
+  commission: string;
+  commissionPercent: string;
+  finalAmount: string;
+  amountToWithdraw: string;
+  limits: Record<string, WithdrawLimitEntry>;
+  expiredAt: string;
+  contractAddress: string | null;
+  addressRegex: string | null;
+  /** Which second factor *this operation* needs — preferred over the account-level `authenticatorEnabled` when present (§5.2). */
+  confirmation2FA: boolean;
+  confirmationEmail: boolean;
+  scannerLink: string | null;
+}
+
+export type WithdrawOtpSource = 'email' | 'authenticator' | 'phone';
+
+/** `POST /operations/issue-otp/{transactionId}` — §5.3. `source` picks the modal; more precise than the account-level flag. */
+export interface WithdrawOtpIssueResult {
+  twoFA: boolean;
+  source: WithdrawOtpSource;
 }
 
 export interface WithdrawMethod {

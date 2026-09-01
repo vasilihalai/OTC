@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Spinner } from '@/components/Spinner/Spinner.tsx';
-import { MockVerifyCodeError, verifyCode } from '@/api/index.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -12,11 +11,12 @@ import './AuthenticatorModal.css';
 export interface AuthenticatorModalProps {
   open: boolean;
   onClose: () => void;
-  /** Called after a valid code — should perform the actual submission. */
-  onVerified: () => Promise<void> | void;
+  /** Verifies the code (and, for callers whose "verification" is really a submission, performs it atomically). Reject with an `Error` whose `message` is already display-ready to show inline. */
+  onSubmit: (code: string) => Promise<void>;
+  onVerified: () => void;
 }
 
-export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorModalProps) {
+export function AuthenticatorModal({ open, onClose, onSubmit, onVerified }: AuthenticatorModalProps) {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [verifying, setVerifying] = useState(false);
@@ -33,14 +33,12 @@ export function AuthenticatorModal({ open, onClose, onVerified }: AuthenticatorM
     setVerifying(true);
     setError(undefined);
     try {
-      await verifyCode(value);
+      await onSubmit(value);
       notifySuccess();
-      await onVerified();
+      onVerified();
     } catch (err) {
       notifyError();
-      if (err instanceof MockVerifyCodeError) {
-        setError(err.code === 'RATE_LIMIT' ? ru.verification.errorRateLimit : ru.verification.errorCodeInvalid);
-      }
+      setError(err instanceof Error ? err.message : ru.verification.errorCodeInvalid);
       setCode('');
     } finally {
       setVerifying(false);

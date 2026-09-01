@@ -8,11 +8,20 @@ import { Checkbox } from '@/components/Checkbox/Checkbox.tsx';
 import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
-import { getSavedRequisites, getUser, getWithdrawFiatOptions, submitFiatWithdrawal } from '@/api/index.ts';
+import {
+  MockVerifyCodeError,
+  getSavedRequisites,
+  getUser,
+  getWithdrawFiatOptions,
+  sendVerificationCode,
+  submitFiatWithdrawal,
+  verifyCode,
+} from '@/api/index.ts';
 import type { FiatWithdrawOptions, SavedRequisite } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { formatAmount } from '@/lib/money.ts';
+import { RateLimitedError } from '@/lib/rateLimitedError.ts';
 import { notifyError } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -126,7 +135,20 @@ export function WithdrawRequisites() {
     setAuthenticatorOpen(true);
   }
 
-  async function handleAuthenticated() {
+  // TODO(withdrawals-fiat-round): still the old generic verifyCode/
+  // sendVerificationCode pair wrapped in TwoFactorGate's new onSubmit/
+  // onResend shape — not api-integration.md §5.3's real issue-otp/confirm
+  // contract yet. That's the fiat half of the Withdrawals step, not done
+  // this round (only crypto was — see WithdrawCrypto.tsx).
+  async function handleOtpSubmit(code: string) {
+    try {
+      await verifyCode(code);
+    } catch (err) {
+      if (err instanceof MockVerifyCodeError && err.code === 'RATE_LIMIT') {
+        throw new RateLimitedError();
+      }
+      throw new Error(ru.verification.errorCodeInvalid);
+    }
     setSubmitting(true);
     try {
       await submitFiatWithdrawal({
@@ -145,11 +167,18 @@ export function WithdrawRequisites() {
         idempotencyKey: idempotencyKey.current,
       });
       bumpBalancesVersion();
-      setSuccess(true);
-      setAuthenticatorOpen(false);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function handleOtpResend() {
+    await sendVerificationCode(session?.email ?? '');
+  }
+
+  function handleOtpVerified() {
+    setAuthenticatorOpen(false);
+    setSuccess(true);
   }
 
   if (success) {
@@ -237,7 +266,9 @@ export function WithdrawRequisites() {
         authenticatorEnabled={authenticatorEnabled}
         email={session?.email ?? ''}
         onClose={() => setAuthenticatorOpen(false)}
-        onVerified={handleAuthenticated}
+        onSubmit={handleOtpSubmit}
+        onResend={handleOtpResend}
+        onVerified={handleOtpVerified}
       />
     </div>
   );
