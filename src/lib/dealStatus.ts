@@ -67,3 +67,8 @@ export function isHoldConfirmationStatus(status: DealStatus): boolean {
 export function showsFullDetailsRows(_status: DealStatus): boolean {
   return true;
 }
+
+/** §7.7 — `EXECUTED`/`CANCELED`/`ERROR` (→ `DONE`/`DECLINED`) stop polling entirely; nothing about them changes server-side again. */
+export function isTerminalDealStatus(status: DealStatus): boolean {
+  return status === 'DONE' || status === 'DECLINED';
+}

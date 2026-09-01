@@ -29,10 +29,11 @@ import type { Deal, Requisites } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { useTransferModalStore } from '@/store/transferModal.ts';
-import { DEAL_STATUS_META, getDocumentAvailability, isHoldConfirmationStatus, showsFullDetailsRows } from '@/lib/dealStatus.ts';
+import { DEAL_STATUS_META, getDocumentAvailability, isHoldConfirmationStatus, isTerminalDealStatus, showsFullDetailsRows } from '@/lib/dealStatus.ts';
 import { computeScenarioBalance, getMinDealAmount, isBalanceScenario, parseAmountValue } from '@/lib/balanceScenario.ts';
 import { formatAmount, parseAmountWithTicker } from '@/lib/money.ts';
 import { formatCountdown, msUntil } from '@/lib/countdown.ts';
+import { usePolling } from '@/lib/usePolling.ts';
 import { renderTemplate } from '@/lib/template.tsx';
 import { SAMPLE_DOCUMENT_URL } from '@/lib/sampleDocument.ts';
 import { openExternalLink } from '@/telegram/adapter.ts';
@@ -83,6 +84,14 @@ export function DealDetail() {
       setLoading(false);
     });
   }, [id]);
+
+  // §7.7 — real mode only, and only while the deal is still in a
+  // non-terminal status; nothing about a DONE/DECLINED deal changes again.
+  usePolling(() => {
+    if (id) {
+      void getDealById(id).then((data) => data && setDeal(data));
+    }
+  }, 10_000, USE_REAL_API && !!deal && !isTerminalDealStatus(deal.status));
 
   if (notFound) {
     return (
@@ -207,8 +216,8 @@ function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => v
     if (USE_REAL_API) {
       // No command exists for "the countdown ran out" (§7.6's nine don't
       // include one — the server just eventually reflects EXPIRED on its
-      // own) and there's no polling yet (§7.7) — a one-off refetch here is
-      // the closest approximation until that lands.
+      // own) — an immediate one-off refetch here is snappier than waiting
+      // out the rest of the 10s poll interval below for the same update.
       void getDealById(deal.id).then((updated) => updated && onUpdate(updated));
     } else {
       const updated = expireQuote(deal.id);
