@@ -5,11 +5,9 @@ import type {
   CryptoRequisites,
   Deal,
   FiatRequisites,
-  FiatWithdrawLimits,
   SavedRequisite,
   Stats,
   User,
-  WithdrawMethod,
   WithdrawNetworkOption,
 } from '@/api/types.ts';
 
@@ -234,26 +232,20 @@ export const MOCK_ACCOUNTS: Accounts = {
   trading: { KGS: '1000000', RUB: '0', USD: '0', USDT: '50000.00', USDC: '0', BTC: '0' },
 };
 
-export const MOCK_WITHDRAW_FIAT: {
-  currencies: string[];
-  methods: Record<string, WithdrawMethod[]>;
-  limits: Record<string, FiatWithdrawLimits>;
-} = {
-  currencies: ['KGS', 'RUB', 'USD'],
-  methods: {
-    KGS: [
-      { id: 'bakai', name: 'Бакай Банк', feePct: '1.0', transferType: 'internal' },
-      { id: 'other_kg', name: 'Другой Банк Кыргызстана', feePct: '1.5', transferType: 'kg' },
-    ],
-    RUB: [{ id: 'other_ru', name: 'Межбанковский перевод RU', feePct: '1.5', transferType: 'ru' }],
-    USD: [{ id: 'swift', name: 'SWIFT-перевод', feePct: '2.0', transferType: 'ru' }],
-  },
-  limits: {
-    KGS: { min: '100000', available: '15000000' },
-    RUB: { min: '100000', available: '10000000' },
-    USD: { min: '1000', available: '200000' },
-  },
-};
+/**
+ * api-integration.md §5.1 — one entry per (currency, paymentType) pair,
+ * each with its own limits/commission, mirroring
+ * `MOCK_WITHDRAW_CRYPTO_NETWORKS`'s restructuring for the fiat side.
+ * `operationOption` is a single fixed value per payment type here since
+ * nothing in the doc describes multiple options per type or how a UI would
+ * expose picking between them.
+ */
+export const MOCK_WITHDRAW_FIAT_METHODS: { currency: string; paymentType: string; operationOption: string; minimalAmount: string; maximumAmount: string; commissionPercent: string; commissionFixed: string }[] = [
+  { currency: 'KGS', paymentType: 'BAKAI_BUSINESS', operationOption: 'DEFAULT', minimalAmount: '100000', maximumAmount: '15000000', commissionPercent: '1.0', commissionFixed: '0' },
+  { currency: 'KGS', paymentType: 'INTER_BANK_KG_BUSINESS', operationOption: 'DEFAULT', minimalAmount: '100000', maximumAmount: '15000000', commissionPercent: '1.5', commissionFixed: '0' },
+  { currency: 'RUB', paymentType: 'INTER_BANK_RU_BUSINESS', operationOption: 'DEFAULT', minimalAmount: '100000', maximumAmount: '10000000', commissionPercent: '1.5', commissionFixed: '0' },
+  { currency: 'USD', paymentType: 'SWIFT', operationOption: 'DEFAULT', minimalAmount: '1000', maximumAmount: '200000', commissionPercent: '2.0', commissionFixed: '0' },
+];
 
 /**
  * api-integration.md §5.1 — one entry per (currency, network) pair, each

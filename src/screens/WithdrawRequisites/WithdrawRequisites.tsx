@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Panel } from '@/components/Panel/Panel.tsx';
@@ -9,15 +9,15 @@ import { SummaryCard } from '@/components/SummaryCard/SummaryCard.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { TwoFactorGate } from '@/components/TwoFactorGate/TwoFactorGate.tsx';
 import {
-  MockVerifyCodeError,
+  ApiError,
+  confirmWithdrawOtp,
   getSavedRequisites,
-  getUser,
   getWithdrawFiatOptions,
-  sendVerificationCode,
-  submitFiatWithdrawal,
-  verifyCode,
+  getWithdrawFiatQuote,
+  issueWithdrawOtp,
+  mapApiError,
 } from '@/api/index.ts';
-import type { FiatWithdrawOptions, SavedRequisite } from '@/api/index.ts';
+import type { FiatWithdrawOptions, RequisitesPayload, SavedRequisite, WithdrawOtpSource, WithdrawQuote } from '@/api/index.ts';
 import { useRequireSession } from '@/store/session.ts';
 import { useUiStore } from '@/store/ui.ts';
 import { formatAmount } from '@/lib/money.ts';
@@ -29,7 +29,8 @@ import './WithdrawRequisites.css';
 
 export interface WithdrawFiatRouteState {
   ticker: string;
-  methodId: string;
+  paymentType: string;
+  operationOption: string;
   amount: string;
 }
 
@@ -55,22 +56,16 @@ export function WithdrawRequisites() {
   const [accountError, setAccountError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [authenticatorOpen, setAuthenticatorOpen] = useState(false);
-  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(false);
-
-  const idempotencyKey = useRef(crypto.randomUUID());
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [otpSource, setOtpSource] = useState<WithdrawOtpSource>('email');
+  const [quote, setQuote] = useState<WithdrawQuote>();
+  const [requisitesPayload, setRequisitesPayload] = useState<RequisitesPayload>();
 
   useEffect(() => {
     if (!routeState) {
       navigate('/withdraw/fiat', { replace: true });
     }
   }, [routeState, navigate]);
-
-  useEffect(() => {
-    if (session) {
-      void getUser(session.clientType).then((user) => setAuthenticatorEnabled(user.authenticatorEnabled));
-    }
-  }, [session]);
 
   useEffect(() => {
     void getSavedRequisites().then(setSaved);
@@ -84,7 +79,8 @@ export function WithdrawRequisites() {
 
   // The requisites field set is decided by the withdrawal method chosen on
   // the previous screen — it's not a separate choice made here.
-  const transferType = options?.methods.find((m) => m.id === routeState?.methodId)?.transferType ?? 'internal';
+  const method = options?.methods.find((m) => m.paymentType === routeState?.paymentType);
+  const transferType = method?.transferType ?? 'internal';
   // Only requisites saved for this same field set make sense to offer —
   // picking one that doesn't match would populate fields the current
   // method doesn't even show.
@@ -119,12 +115,30 @@ export function WithdrawRequisites() {
     return null;
   }
 
-  const { ticker, amount, methodId } = routeState;
-  const feePercent = options?.methods.find((m) => m.id === methodId)?.feePct;
-  const fee = feePercent ? (Number(amount) * Number(feePercent)) / 100 : 0;
-  const totalDebit = Number(amount) + fee;
+  const { ticker, amount, paymentType, operationOption } = routeState;
+  const feePercent = method ? Number(method.commissionPercent) : 0;
+  const feeFixed = method ? Number(method.commissionFixed) : 0;
+  const fee = quote ? Number(quote.commission) : feeFixed + (Number(amount) * feePercent) / 100;
+  const totalDebit = quote ? Number(quote.amountToWithdraw) : Number(amount) + fee;
 
-  function handleConfirm() {
+  function buildRequisites(): RequisitesPayload {
+    return {
+      transferType,
+      account,
+      bankName: transferType !== 'internal' ? bankName : undefined,
+      bic: transferType === 'ru' ? recipientBic : (transferType === 'kg' ? bic : undefined),
+      inn: transferType !== 'internal' ? inn : undefined,
+      correspondentAccount: transferType === 'ru' ? corrAccount : undefined,
+      saveForLater: isNew && saveForLater,
+    };
+  }
+
+  // §5.2/§5.4: the quote is fetched here, at confirm time, not per-keystroke
+  // — a bank-requisites form has too many fields for a debounced live quote
+  // to make sense the way the crypto address field does. `isRequisiteSave`
+  // rides along on the same call (§5.4), so a new "sohranit'" requisite is
+  // created inline with the withdrawal rather than a separate round trip.
+  async function handleConfirm() {
     setAccountError(undefined);
     if (!account.trim()) {
       setAccountError(ru.withdraw.errorAccountRequired);
@@ -132,52 +146,51 @@ export function WithdrawRequisites() {
       return;
     }
 
-    setAuthenticatorOpen(true);
-  }
-
-  // TODO(withdrawals-fiat-round): still the old generic verifyCode/
-  // sendVerificationCode pair wrapped in TwoFactorGate's new onSubmit/
-  // onResend shape — not api-integration.md §5.3's real issue-otp/confirm
-  // contract yet. That's the fiat half of the Withdrawals step, not done
-  // this round (only crypto was — see WithdrawCrypto.tsx).
-  async function handleOtpSubmit(code: string) {
-    try {
-      await verifyCode(code);
-    } catch (err) {
-      if (err instanceof MockVerifyCodeError && err.code === 'RATE_LIMIT') {
-        throw new RateLimitedError();
-      }
-      throw new Error(ru.verification.errorCodeInvalid);
-    }
+    const requisites = buildRequisites();
     setSubmitting(true);
     try {
-      await submitFiatWithdrawal({
-        ticker,
-        methodId,
-        amount,
-        requisites: {
-          transferType,
-          account,
-          bankName: transferType !== 'internal' ? bankName : undefined,
-          bic: transferType === 'ru' ? recipientBic : (transferType === 'kg' ? bic : undefined),
-          inn: transferType !== 'internal' ? inn : undefined,
-          correspondentAccount: transferType === 'ru' ? corrAccount : undefined,
-          saveForLater: isNew && saveForLater,
-        },
-        idempotencyKey: idempotencyKey.current,
-      });
-      bumpBalancesVersion();
+      const nextQuote = await getWithdrawFiatQuote({ currency: ticker, paymentType, operationOption, amount, requisites });
+      setQuote(nextQuote);
+      setRequisitesPayload(requisites);
+      const otp = await issueWithdrawOtp(nextQuote.transactionId, session!.clientType);
+      setOtpSource(otp.source);
+      setOtpOpen(true);
+    } catch (err) {
+      notifyError();
+      setAccountError(err instanceof ApiError ? mapApiError(err) : ru.withdraw.errorGeneric);
     } finally {
       setSubmitting(false);
     }
   }
 
+  async function handleOtpSubmit(code: string) {
+    if (!quote) {
+      throw new Error(ru.withdraw.errorGeneric);
+    }
+    try {
+      await confirmWithdrawOtp(quote.transactionId, code, requisitesPayload);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.httpStatus === 429) {
+          throw new RateLimitedError();
+        }
+        throw new Error(mapApiError(err));
+      }
+      throw err;
+    }
+  }
+
   async function handleOtpResend() {
-    await sendVerificationCode(session?.email ?? '');
+    if (!quote) {
+      return;
+    }
+    const otp = await issueWithdrawOtp(quote.transactionId, session!.clientType);
+    setOtpSource(otp.source);
   }
 
   function handleOtpVerified() {
-    setAuthenticatorOpen(false);
+    setOtpOpen(false);
+    bumpBalancesVersion();
     setSuccess(true);
   }
 
@@ -242,11 +255,11 @@ export function WithdrawRequisites() {
         <Checkbox checked={saveForLater} onChange={setSaveForLater} label={ru.withdraw.saveRequisiteLabel}/>
       )}
 
-      {options && (
+      {method && (
         <SummaryCard
           rows={[
-            { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(options.limits.min, ticker)} ${ticker}` },
-            { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(options.limits.available, ticker)} ${ticker}` },
+            { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(method.minimalAmount, ticker)} ${ticker}` },
+            { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(method.maximumAmount, ticker)} ${ticker}` },
             { key: 'amount', label: ru.withdraw.enteredAmountLabel, value: `${formatAmount(amount, ticker)} ${ticker}` },
             { key: 'fee', label: ru.withdraw.feeLabel, value: `${formatAmount(String(fee), ticker)} ${ticker}` },
           ]}
@@ -258,14 +271,14 @@ export function WithdrawRequisites() {
 
       <div className="withdraw-requisites__submit button-row">
         <Button type="button" variant="secondary" onClick={() => navigate(-1)}>{ru.withdraw.cancelAction}</Button>
-        <Button loading={submitting} disabled={!account.trim()} onClick={handleConfirm}>{ru.withdraw.confirmAction}</Button>
+        <Button loading={submitting} disabled={!account.trim()} onClick={() => void handleConfirm()}>{ru.withdraw.confirmAction}</Button>
       </div>
 
       <TwoFactorGate
-        open={authenticatorOpen}
-        authenticatorEnabled={authenticatorEnabled}
+        open={otpOpen}
+        authenticatorEnabled={otpSource === 'authenticator'}
         email={session?.email ?? ''}
-        onClose={() => setAuthenticatorOpen(false)}
+        onClose={() => setOtpOpen(false)}
         onSubmit={handleOtpSubmit}
         onResend={handleOtpResend}
         onVerified={handleOtpVerified}

@@ -19,13 +19,14 @@ import {
   MOCK_STATS,
   MOCK_USERS,
   MOCK_WITHDRAW_CRYPTO_NETWORKS,
-  MOCK_WITHDRAW_FIAT,
+  MOCK_WITHDRAW_FIAT_METHODS,
   mockDelay,
 } from '@/api/mock/fixtures.ts';
 import { findDeal, listDeals } from '@/api/mock/store.ts';
 import { getAccountBalance, getAccountsSnapshot } from '@/api/mock/accountsStore.ts';
 import { isFiatTicker } from '@/lib/money.ts';
 import { otcAccessOverride } from '@/lib/devSwitches.ts';
+import { paymentTypeMeta } from '@/lib/paymentType.ts';
 
 export async function getUser(clientType: ClientType): Promise<User> {
   await mockDelay();
@@ -73,8 +74,21 @@ export async function getAccounts(): Promise<Accounts> {
 export async function getWithdrawFiatOptions(currency: string): Promise<FiatWithdrawOptions> {
   await mockDelay();
   return {
-    methods: MOCK_WITHDRAW_FIAT.methods[currency] ?? [],
-    limits: MOCK_WITHDRAW_FIAT.limits[currency] ?? { min: '0', available: '0' },
+    methods: MOCK_WITHDRAW_FIAT_METHODS
+      .filter((m) => m.currency === currency)
+      .map((m) => {
+        const meta = paymentTypeMeta(m.paymentType);
+        return {
+          paymentType: m.paymentType,
+          operationOption: m.operationOption,
+          name: meta.name,
+          transferType: meta.transferType,
+          minimalAmount: m.minimalAmount,
+          maximumAmount: m.maximumAmount,
+          commissionPercent: m.commissionPercent,
+          commissionFixed: m.commissionFixed,
+        };
+      }),
   };
 }
 

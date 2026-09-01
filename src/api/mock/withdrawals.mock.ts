@@ -1,23 +1,20 @@
 import type {
-  ClientType,
-  RequisitesPayload,
   WithdrawOtpIssueResult,
   WithdrawQuote,
   WithdrawalResult,
 } from '@/api/types.ts';
-import { MOCK_USERS, MOCK_WITHDRAW_CRYPTO_NETWORKS, mockDelay } from '@/api/mock/fixtures.ts';
+import type { ClientType } from '@/api/types.ts';
+import { MOCK_USERS, MOCK_WITHDRAW_CRYPTO_NETWORKS, MOCK_WITHDRAW_FIAT_METHODS, mockDelay } from '@/api/mock/fixtures.ts';
 import { getAccountBalance, setAccountBalance } from '@/api/mock/accountsStore.ts';
 import { RateLimitedError } from '@/lib/rateLimitedError.ts';
 import { ru } from '@/i18n/ru.ts';
 
-// Guards against a double-tap resubmitting the same withdrawal request.
-const seenIdempotencyKeys = new Set<string>();
-
 // ---------------------------------------------------------------------------
-// Crypto — api-integration.md §5.2/§5.3's quote → issue-otp → confirm shape.
-// Replaces the old single submitCryptoWithdrawal(payload) call entirely; the
-// "submission" now happens at confirm time, keyed by the quote's own
-// transactionId (mirroring the real flow, not just matching its final effect).
+// api-integration.md §5.2/§5.3's quote → issue-otp → confirm shape, shared
+// by crypto and fiat alike (they only differ in what goes into the quote
+// request). Replaces the old separate submitCryptoWithdrawal/
+// submitFiatWithdrawal(payload) calls entirely — the "submission" now
+// happens at confirm time, keyed by the quote's own transactionId.
 // ---------------------------------------------------------------------------
 
 interface PendingWithdrawal {
@@ -80,26 +77,37 @@ export async function confirmWithdrawOtp(transactionId: string, otp: string): Pr
   return { id: `WD-${Date.now().toString(36).toUpperCase()}`, status: 'PENDING' };
 }
 
-// ---------------------------------------------------------------------------
-// Fiat — unchanged this round (§5's directory/quote/OTP shape for fiat is
-// the Withdrawals step's next half, not done yet; WithdrawRequisites.tsx
-// still calls this one directly).
-// ---------------------------------------------------------------------------
-
-export interface FiatWithdrawalPayload {
-  ticker: string;
-  methodId: string;
+export async function getWithdrawFiatQuote(params: {
+  currency: string;
+  paymentType: string;
+  operationOption: string;
   amount: string;
-  requisites: RequisitesPayload;
-  idempotencyKey: string;
-}
-
-export async function submitFiatWithdrawal(payload: FiatWithdrawalPayload): Promise<WithdrawalResult> {
+}): Promise<WithdrawQuote> {
   await mockDelay();
-  if (seenIdempotencyKeys.has(payload.idempotencyKey)) {
-    return { id: payload.idempotencyKey, status: 'PENDING' };
-  }
-  seenIdempotencyKeys.add(payload.idempotencyKey);
-  setAccountBalance('deposit', payload.ticker, getAccountBalance('deposit', payload.ticker) - Number(payload.amount));
-  return { id: `WD-${Date.now().toString(36).toUpperCase()}`, status: 'PENDING' };
+  const method = MOCK_WITHDRAW_FIAT_METHODS.find(
+    (m) => m.currency === params.currency && m.paymentType === params.paymentType,
+  );
+  const amount = Number(params.amount) || 0;
+  const commission = method ? Number(method.commissionFixed) + (amount * Number(method.commissionPercent)) / 100 : 0;
+  const transactionId = `mock-wd-${Date.now()}`;
+  pendingWithdrawals.set(transactionId, { ticker: params.currency, amount });
+  return {
+    transactionId,
+    minimalAmount: method?.minimalAmount ?? '0',
+    commission: String(commission),
+    commissionPercent: method?.commissionPercent ?? '0',
+    // §5.2: "amountToWithdraw is what leaves the account; finalAmount is
+    // what arrives" — for fiat the amount entered debits the account and
+    // the fee comes out of it, so amountToWithdraw is amount+commission,
+    // finalAmount (what the recipient sees) is the entered amount itself.
+    finalAmount: String(amount),
+    amountToWithdraw: String(amount + commission),
+    limits: { DAILY: { availableLimit: method?.maximumAmount ?? '0', currency: params.currency } },
+    expiredAt: new Date(Date.now() + 5 * 60_000).toISOString(),
+    contractAddress: null,
+    addressRegex: null,
+    confirmation2FA: false,
+    confirmationEmail: true,
+    scannerLink: null,
+  };
 }

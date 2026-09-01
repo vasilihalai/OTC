@@ -210,22 +210,27 @@ export interface WithdrawOtpIssueResult {
   source: WithdrawOtpSource;
 }
 
+/**
+ * api-integration.md §5.1 — one entry per (currency, paymentType,
+ * operationOption) triple, each with its own limits/commission (replaces
+ * the old one-flat-limits-object-per-currency shape, same restructuring as
+ * `WithdrawNetworkOption` did for crypto). `transferType`/`name` are derived
+ * from `paymentType` via `lib/paymentType.ts`, not sent by the backend.
+ */
 export interface WithdrawMethod {
-  id: string;
+  paymentType: string;
+  operationOption: string;
   name: string;
-  feePct: string;
   /** Which requisites field set the method needs — set once here, not re-picked on the requisites screen. */
   transferType: FiatTransferType;
-}
-
-export interface FiatWithdrawLimits {
-  min: string;
-  available: string;
+  minimalAmount: string;
+  maximumAmount: string;
+  commissionPercent: string;
+  commissionFixed: string;
 }
 
 export interface FiatWithdrawOptions {
   methods: WithdrawMethod[];
-  limits: FiatWithdrawLimits;
 }
 
 export interface WithdrawalResult {

@@ -243,7 +243,7 @@ export function WithdrawCrypto() {
       throw new Error(ru.withdraw.errorGeneric);
     }
     try {
-      await confirmWithdrawOtp(quote.transactionId, code, address);
+      await confirmWithdrawOtp(quote.transactionId, code, { address });
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.httpStatus === 429) {

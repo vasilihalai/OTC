@@ -14,7 +14,7 @@ import * as realAuth from '@/api/real/auth.ts';
 import * as mockData from '@/api/mock/data.mock.ts';
 import * as mockActions from '@/api/mock/actions.mock.ts';
 import type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';
-import type { ClientType, Deal } from '@/api/types.ts';
+import type { ClientType, Deal, RequisitesPayload } from '@/api/types.ts';
 import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
 import * as realOtc from '@/api/real/otc.ts';
@@ -67,14 +67,11 @@ export const getWithdrawFiatOptions = USE_REAL_API
 export const getWithdrawCryptoOptions = USE_REAL_API
   ? realWithdrawals.getWithdrawCryptoOptions
   : mockData.getWithdrawCryptoOptions;
-export const submitFiatWithdrawal = USE_REAL_API
-  ? realWithdrawals.submitFiatWithdrawal
-  : mockWithdrawals.submitFiatWithdrawal;
 
-// Crypto withdrawal confirm — api-integration.md §5.2/§5.3. Quote → issue-otp
-// → confirm, replacing the old single submitCryptoWithdrawal(payload) call;
-// the "submission" now happens at confirm, keyed by the quote's own
-// transactionId, in both modes (mock mirrors this shape, not just its effect).
+// Withdrawal confirm — api-integration.md §5.2/§5.3. Quote → issue-otp →
+// confirm, shared shape for crypto and fiat alike; the "submission" happens
+// at confirm, keyed by the quote's own transactionId, in both modes (mock
+// mirrors this shape, not just its effect).
 export async function getWithdrawCryptoQuote(params: {
   currency: string; currencyNetworkId: string; amount: string; address: string;
 }) {
@@ -82,14 +79,21 @@ export async function getWithdrawCryptoQuote(params: {
     ? realWithdrawals.getWithdrawCryptoQuote(params)
     : mockWithdrawals.getWithdrawCryptoQuote(params);
 }
+export async function getWithdrawFiatQuote(params: {
+  currency: string; paymentType: string; operationOption: string; amount: string; requisites: RequisitesPayload;
+}) {
+  return USE_REAL_API
+    ? realWithdrawals.getWithdrawFiatQuote(params)
+    : mockWithdrawals.getWithdrawFiatQuote(params);
+}
 export async function issueWithdrawOtp(transactionId: string, clientType: ClientType) {
   return USE_REAL_API
     ? realWithdrawals.issueWithdrawOtp(transactionId)
     : mockWithdrawals.issueWithdrawOtp(transactionId, clientType);
 }
-export async function confirmWithdrawOtp(transactionId: string, otp: string, address?: string) {
+export async function confirmWithdrawOtp(transactionId: string, otp: string, requisites?: object) {
   return USE_REAL_API
-    ? realWithdrawals.confirmWithdrawOtp(transactionId, otp, address)
+    ? realWithdrawals.confirmWithdrawOtp(transactionId, otp, requisites)
     : mockWithdrawals.confirmWithdrawOtp(transactionId, otp);
 }
 
@@ -151,7 +155,6 @@ export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesti
 export { ApiError } from '@/api/http.ts';
 export { mapApiError } from '@/api/real/errorMap.ts';
 
-export type { FiatWithdrawalPayload } from '@/api/mock/withdrawals.mock.ts';
 export type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';
 export type {
   Session,
@@ -177,7 +180,6 @@ export type {
   WithdrawNetworkOption,
   CryptoWithdrawOptions,
   WithdrawMethod,
-  FiatWithdrawLimits,
   FiatWithdrawOptions,
   WithdrawLimitEntry,
   WithdrawQuote,

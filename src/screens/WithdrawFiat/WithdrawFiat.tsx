@@ -45,7 +45,7 @@ export function WithdrawFiat() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [currency, setCurrency] = useState(preselected ?? '');
   const [options, setOptions] = useState<FiatWithdrawOptions>();
-  const [methodId, setMethodId] = useState('');
+  const [paymentType, setPaymentType] = useState('');
   const [amount, setAmount] = useState('');
   const [amountError, setAmountError] = useState<string>();
   const [initialLoading, setInitialLoading] = useState(true);
@@ -64,24 +64,25 @@ export function WithdrawFiat() {
     }
     void getWithdrawFiatOptions(currency).then((data) => {
       setOptions(data);
-      setMethodId((current) => (data.methods.some((m) => m.id === current) ? current : (data.methods[0]?.id ?? '')));
+      setPaymentType((current) => (data.methods.some((m) => m.paymentType === current) ? current : (data.methods[0]?.paymentType ?? '')));
     });
   }, [currency]);
 
   const asset = assets.find((a) => a.ticker === currency);
   const available = asset?.balance ?? '0';
-  const method = options?.methods.find((m) => m.id === methodId);
-  const feePercent = method ? Number(method.feePct) : 0;
+  const method = options?.methods.find((m) => m.paymentType === paymentType);
+  const feePercent = method ? Number(method.commissionPercent) : 0;
+  const feeFixed = method ? Number(method.commissionFixed) : 0;
 
   const maxAmount = useMemo(() => {
     if (!available) {
       return '0';
     }
-    const max = Number(available) / (1 + feePercent / 100);
+    const max = (Number(available) - feeFixed) / (1 + feePercent / 100);
     return max > 0 ? max.toFixed(2) : '0';
-  }, [available, feePercent]);
+  }, [available, feePercent, feeFixed]);
 
-  const fee = amount ? (Number(amount) * feePercent) / 100 : 0;
+  const fee = amount ? feeFixed + (Number(amount) * feePercent) / 100 : 0;
   const totalDebit = amount ? Number(amount) + fee : 0;
 
   function handleMax() {
@@ -95,13 +96,13 @@ export function WithdrawFiat() {
       setAmountError(undefined);
       return;
     }
-    const enteredTotal = Number(value) + (Number(value) * feePercent) / 100;
+    const enteredTotal = Number(value) + feeFixed + (Number(value) * feePercent) / 100;
     setAmountError(enteredTotal > Number(available) ? ru.withdraw.errorInsufficientFunds : undefined);
   }
 
   function handleContinue() {
     setAmountError(undefined);
-    if (options && Number(amount) < Number(options.limits.min)) {
+    if (method && Number(amount) < Number(method.minimalAmount)) {
       setAmountError(ru.withdraw.errorBelowMin);
       notifyError();
       return;
@@ -112,7 +113,7 @@ export function WithdrawFiat() {
       return;
     }
 
-    const state: WithdrawFiatRouteState = { ticker: currency, methodId, amount };
+    const state: WithdrawFiatRouteState = { ticker: currency, paymentType, operationOption: method?.operationOption ?? '', amount };
     navigate('/withdraw/fiat/requisites', { state });
   }
 
@@ -148,9 +149,9 @@ export function WithdrawFiat() {
           <Select
             label={ru.withdraw.methodLabel}
             layout="method"
-            options={options.methods.map((m) => ({ value: m.id, label: m.name, secondary: `${m.feePct}%`, icon: <MethodIcon/> }))}
-            value={methodId}
-            onChange={setMethodId}
+            options={options.methods.map((m) => ({ value: m.paymentType, label: m.name, secondary: `${m.commissionPercent}%`, icon: <MethodIcon/> }))}
+            value={paymentType}
+            onChange={setPaymentType}
           />
         )}
 
@@ -167,11 +168,11 @@ export function WithdrawFiat() {
           onTransfer={openTransferModal}
         />
 
-        {options && (
+        {method && (
           <SummaryCard
             rows={[
-              { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(options.limits.min, currency)} ${currency}` },
-              { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(options.limits.available, currency)} ${currency}` },
+              { key: 'min', label: ru.withdraw.minAmountLabel, value: `${formatAmount(method.minimalAmount, currency)} ${currency}` },
+              { key: 'limit', label: ru.withdraw.limitLabel, value: `${formatAmount(method.maximumAmount, currency)} ${currency}` },
               { key: 'amount', label: ru.withdraw.enteredAmountLabel, value: `${formatAmount(amount || '0', currency)} ${currency}` },
               { key: 'fee', label: ru.withdraw.feeLabel, value: `${formatAmount(String(fee), currency)} ${currency}` },
             ]}
