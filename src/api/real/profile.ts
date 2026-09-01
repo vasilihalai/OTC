@@ -1,4 +1,4 @@
-import type { ClientType, SecurityLevel, Stats, User } from '@/api/types.ts';
+import type { ClientType, SecurityLevel, User } from '@/api/types.ts';
 import { apiFetch } from '@/api/http.ts';
 import { getOtcAccess } from '@/api/real/otc.ts';
 import { toOtcAccessReason } from '@/lib/otcAccess.ts';
@@ -53,15 +53,6 @@ export async function getUser(_clientType: ClientType): Promise<User> {
     // Real 2FA-gating for withdrawals isn't wired yet (see real/auth.ts).
     authenticatorEnabled: false,
   };
-}
-
-// §7.2 — feeds Home's two stat cards from OTC dashboard counters, not a
-// `/profile/stats` endpoint (that was an assumed placeholder from an earlier
-// round, confirmed wrong by this doc). Deferred to the OTC step along with
-// the rest of §7 — dashboard has no home here yet, so this still points at
-// the old placeholder.
-export async function getStats(): Promise<Stats> {
-  return apiFetch<Stats>('/profile/stats');
 }
 
 /** `userPublicId` — §4: "profile first, balances second — sequence them, do not fire in parallel," reused by `real/balances.ts` for both `getAssets` and `getAccounts` so neither has to re-derive it differently. */

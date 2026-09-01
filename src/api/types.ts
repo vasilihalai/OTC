@@ -59,12 +59,31 @@ export type DealStatus =
   | 'AWAITING_FUNDS'
   | 'RUNNING'
   | 'DONE'
-  | 'DECLINED';
+  | 'DECLINED'
+  /**
+   * api-integration.md §7.6 — the backend's `REQUOTE` status, which the
+   * design never accounted for: "the operator renegotiates terms," with no
+   * accept/reject screen built yet (question B11's own honest MVP call:
+   * read-only `StatusHero` + Cancel, nothing more, until the two missing
+   * screens — accept/reject amount, accept/reject reprice — get designed).
+   */
+  | 'RATE_RENEGOTIATING';
 
 export type DealDirection = 'BUY' | 'SELL' | 'EXCHANGE';
 
+/** `GET /otc/deals/{id}/documents` (§7.5), or embedded in `OtcOperationDetails` — preferred when present, to save a round trip. */
+export interface DealDocument {
+  nameKey: string;
+  href: string;
+  available: boolean;
+  availabilityHint?: string;
+}
+
 export interface Deal {
+  /** Display id in mock mode; in real mode this is `operationId` — the uuid every subsequent call needs. See `requestNumber` for what the row/header actually show. */
   id: string;
+  /** Real mode only — "OTC-1047" etc. Falls back to `id` when absent (mock: the two were never distinct). */
+  requestNumber?: string;
   status: DealStatus;
   date: string;
   direction: DealDirection;
@@ -78,6 +97,17 @@ export interface Deal {
   rateUnitLabel?: string;
   /** ISO timestamp — the quote card counts down to this and flips to RATE_STALE at zero. */
   quoteExpiresAt?: string;
+  /**
+   * Real mode only, AWAITING_FUNDS — §7.4: "the client no longer computes
+   * the shortfall," these arrive pre-computed. `undefined` in mock mode,
+   * which still computes them client-side from `getAccounts()` (unchanged).
+   */
+  balance?: string;
+  missingAmount?: string;
+  /** Real mode only — from the detail response, preferred over a separate documents call (§7.5). `undefined` in mock mode, which still uses the static per-status table in `lib/dealStatus.ts`. */
+  documents?: DealDocument[];
+  /** Real mode only — free-form Camunda status string (§7.4), logged/kept on the model but not switched on in the UI yet (question B10). */
+  detailsStatus?: string;
 }
 
 export type AssetGroup = 'crypto' | 'fiat';

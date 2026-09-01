@@ -16,9 +16,10 @@ export const DEAL_STATUS_META: Record<DealStatus, StatusMeta> = {
   RUNNING: { listLabel: ru.deals.statusRunning, detailLabel: ru.deals.statusRunning },
   DONE: { listLabel: ru.deals.statusDone, detailLabel: ru.deals.statusDone },
   DECLINED: { listLabel: ru.deals.statusDeclined, detailLabel: ru.deals.statusDeclined },
+  RATE_RENEGOTIATING: { listLabel: ru.deals.statusRenegotiating, detailLabel: ru.deals.statusRenegotiating },
 };
 
-const ACTIVE_STATUSES: DealStatus[] = ['RATE_PENDING', 'RATE_ACTIVE', 'RATE_STALE', 'AWAITING_FUNDS', 'RUNNING'];
+const ACTIVE_STATUSES: DealStatus[] = ['RATE_PENDING', 'RATE_ACTIVE', 'RATE_STALE', 'AWAITING_FUNDS', 'RUNNING', 'RATE_RENEGOTIATING'];
 
 export type DealFilter = 'ALL' | 'ACTIVE' | 'DONE' | 'DECLINED';
 
@@ -50,7 +51,7 @@ export function getDocumentAvailability(status: DealStatus): DocumentAvailabilit
   if (status === 'DECLINED') {
     return { accept: false, payment: false, certificate: false, showCaption: true };
   }
-  if (status === 'RATE_PENDING' || status === 'RATE_ACTIVE' || status === 'RATE_STALE') {
+  if (status === 'RATE_PENDING' || status === 'RATE_ACTIVE' || status === 'RATE_STALE' || status === 'RATE_RENEGOTIATING') {
     return { accept: false, payment: false, certificate: false, showCaption: true };
   }
   // AWAITING_FUNDS, RUNNING

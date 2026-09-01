@@ -26,7 +26,7 @@ export function DealRow({ deal, onClick }: DealRowProps) {
     <div className={b()} onClick={onClick} role="button" tabIndex={0}>
       <div className={e('top')}>
         <span className={e('id')}>
-          {deal.id}
+          {deal.requestNumber ?? deal.id}
           {' '}
           <StatusChip tone={deal.status} size="sm">{meta.listLabel}</StatusChip>
         </span>

@@ -2,14 +2,19 @@
 // never from `api/mock/*` or `api/real/*` directly, so flipping
 // VITE_USE_REAL_API does not touch a single screen file.
 //
-// Deals and the home "widgets" (stats) stay mocked regardless of the flag —
-// they always resolve to `api/mock/data.mock.ts`.
+// Deals' *read* side (list/detail) is real-API-ready as of this round
+// (api-integration.md §7.3/§7.4); the *write* side (confirm/decline/
+// request-new-rate/expire-quote) stays mock-only regardless of the flag —
+// §7.6's nine-command state machine isn't wired yet, so DealDetail.tsx runs
+// real deals in a read-only mode rather than let those buttons silently
+// no-op against the mock store's unrelated deal ids.
 import * as mockAuth from '@/api/mock/auth.mock.ts';
 import * as realAuth from '@/api/real/auth.ts';
 import * as mockData from '@/api/mock/data.mock.ts';
 import * as mockActions from '@/api/mock/actions.mock.ts';
 import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
+import * as realOtc from '@/api/real/otc.ts';
 import * as mockWithdrawals from '@/api/mock/withdrawals.mock.ts';
 import * as realWithdrawals from '@/api/real/withdrawals.ts';
 import * as realTransfers from '@/api/real/transfers.ts';
@@ -66,17 +71,19 @@ export const submitFiatWithdrawal = USE_REAL_API
   ? realWithdrawals.submitFiatWithdrawal
   : mockWithdrawals.submitFiatWithdrawal;
 
-export const getStats = USE_REAL_API ? realProfile.getStats : mockData.getStats;
+export const getStats = USE_REAL_API ? realOtc.getStats : mockData.getStats;
 export const getAccounts = USE_REAL_API ? realBalances.getAccounts : mockData.getAccounts;
 export const getRequisites = USE_REAL_API ? realWithdrawals.getRequisites : mockData.getRequisites;
 export const getSavedRequisites = USE_REAL_API ? realWithdrawals.getSavedRequisites : mockData.getSavedRequisites;
 export const transfer = USE_REAL_API ? realTransfers.transfer : mockActions.transfer;
 
-// Always mocked — deals (list, detail, and every status-changing action on
-// them) are one cohesive unit built entirely on the in-memory deal store;
-// swapping only some of these would leave the rest reading stale mock data.
-export const getDeals = mockData.getDeals;
-export const getDealById = mockData.getDealById;
+// Read side — real as of this round (§7.3/§7.4), see the top-of-file note.
+export const getDeals = USE_REAL_API ? realOtc.getDeals : mockData.getDeals;
+export const getDealById = USE_REAL_API ? realOtc.getDealById : mockData.getDealById;
+
+// Write side — still mock-only. §7.6's real commands aren't wired yet;
+// DealDetail.tsx gates these off entirely in real mode instead of calling
+// them against a real deal id they don't know how to handle.
 export const confirmDeal = mockActions.confirmDeal;
 export const declineDeal = mockActions.declineDeal;
 export const requestNewRate = mockActions.requestNewRate;
@@ -95,6 +102,8 @@ export type {
   Deal,
   DealStatus,
   DealDirection,
+  DealDocument,
+  OtcAccessResult,
   Asset,
   AssetGroup,
   ClientType,

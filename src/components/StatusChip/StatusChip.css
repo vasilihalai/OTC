@@ -51,6 +51,12 @@
   color: var(--status-awaiting-funds-text);
 }
 
+/* Same tone as RATE_PENDING — both read as "the operator is working on it," no dedicated color exists for this real-only status. */
+.status-chip--RATE_RENEGOTIATING {
+  background: var(--status-rate-pending-fill);
+  color: var(--status-rate-pending-text);
+}
+
 .status-chip--DECLINED {
   background: var(--status-declined-fill);
   color: var(--status-declined-text);

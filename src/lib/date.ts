@@ -1,3 +1,10 @@
+/** Formats an ISO timestamp (real API's `createdAt`) into the same "DD.MM.YYYY HH:mm" shape the mock fixtures use. */
+export function formatDealDate(iso: string): string {
+  const date = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 /** Parses the mocked "DD.MM.YYYY HH:mm" deal date format. */
 export function parseDealDate(value: string): Date {
   const [datePart, timePart] = value.split(' ');

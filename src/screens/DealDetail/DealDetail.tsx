@@ -13,6 +13,7 @@ import { Button } from '@/components/Button/Button.tsx';
 import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import {
+  USE_REAL_API,
   confirmDeal,
   declineDeal,
   expireQuote,
@@ -43,9 +44,20 @@ const DIRECTION_LABEL: Record<Deal['direction'], string> = {
   EXCHANGE: ru.deals.directionExchange,
 };
 
-function openDocument() {
-  openExternalLink(SAMPLE_DOCUMENT_URL);
+function openDocument(href?: string) {
+  openExternalLink(href ?? SAMPLE_DOCUMENT_URL);
 }
+
+// §7.5: "nameKey maps to a display name through i18n/ru.ts — do not render
+// the raw key." No vocabulary is documented anywhere in the eight Swagger
+// files, so this covers the three names the mock's own fixed table already
+// used (the most likely real ones) and falls back to the raw key itself —
+// visibly wrong is better than silently missing a document row.
+const DOCUMENT_NAME_KEYS: Record<string, string> = {
+  ACCEPT: ru.dealDetail.documentAccept,
+  PAYMENT: ru.dealDetail.documentPayment,
+  CERTIFICATE: ru.dealDetail.documentCertificate,
+};
 
 export function DealDetail() {
   useRequireSession();
@@ -79,13 +91,15 @@ export function DealDetail() {
   }
 
   const meta = deal && DEAL_STATUS_META[deal.status];
-  const docs = deal && getDocumentAvailability(deal.status);
+  // Real mode: documents come from the deal itself (§7.5, preferred over a
+  // separate call). Mock mode: the static per-status table, unchanged.
+  const mockDocs = deal && !USE_REAL_API ? getDocumentAvailability(deal.status) : undefined;
   const showDetails = deal && showsFullDetailsRows(deal.status);
 
   return (
     <div className="deal-detail">
       <div className="deal-detail__header">
-        {loading ? <Skeleton width={120} height={26}/> : <h1 className="deal-detail__id">{deal?.id}</h1>}
+        {loading ? <Skeleton width={120} height={26}/> : <h1 className="deal-detail__id">{deal?.requestNumber ?? deal?.id}</h1>}
         {deal && meta && <StatusChip tone={deal.status} size="lg">{meta.detailLabel}</StatusChip>}
       </div>
       {deal && <p className="deal-detail__direction">{DIRECTION_LABEL[deal.direction]}</p>}
@@ -97,9 +111,9 @@ export function DealDetail() {
       )}
 
       {deal && (
-        deal.status === 'RATE_ACTIVE' ? <QuoteCard deal={deal} onUpdate={setDeal}/>
-          : isHoldConfirmationStatus(deal.status) ? <ConfirmationBody deal={deal} onUpdate={setDeal}/>
-            : <StatusHeroBody deal={deal} onUpdate={setDeal}/>
+        deal.status === 'RATE_ACTIVE' ? <QuoteCard deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
+          : isHoldConfirmationStatus(deal.status) ? <ConfirmationBody deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
+            : <StatusHeroBody deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
       )}
 
       {deal && (
@@ -107,7 +121,8 @@ export function DealDetail() {
           <h2 className="deal-detail__section-title">{ru.dealDetail.detailsTitle}</h2>
           {showDetails && (
             <>
-              <KeyValueRow label={ru.dealDetail.createdDateLabel} value={deal.date}/>
+              {/* Real mode's detail response carries no createdAt (§7.4) — only the list does, and this screen can be deep-linked without ever having fetched that. Row just doesn't show rather than displaying blank. */}
+              {deal.date && <KeyValueRow label={ru.dealDetail.createdDateLabel} value={deal.date}/>}
               <KeyValueRow label={ru.dealDetail.directionLabel} value={DIRECTION_LABEL[deal.direction]}/>
               <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
               <KeyValueRow label={ru.dealDetail.receiveLabel} value={deal.to ?? ru.common.tbd}/>
@@ -120,34 +135,49 @@ export function DealDetail() {
         </div>
       )}
 
-      {docs && (
+      {mockDocs && (
         <div className="deal-detail__section">
           <h2 className="deal-detail__section-title">{ru.dealDetail.documentsTitle}</h2>
           <DocumentRow
             name={ru.dealDetail.documentAccept}
-            enabled={docs.accept}
-            caption={docs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
-            onOpen={openDocument}
+            enabled={mockDocs.accept}
+            caption={mockDocs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
+            onOpen={() => openDocument()}
           />
           <DocumentRow
             name={ru.dealDetail.documentPayment}
-            enabled={docs.payment}
-            caption={docs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
-            onOpen={openDocument}
+            enabled={mockDocs.payment}
+            caption={mockDocs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
+            onOpen={() => openDocument()}
           />
           <DocumentRow
             name={ru.dealDetail.documentCertificate}
-            enabled={docs.certificate}
-            caption={docs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
-            onOpen={openDocument}
+            enabled={mockDocs.certificate}
+            caption={mockDocs.showCaption ? ru.dealDetail.documentUnavailableCaption : undefined}
+            onOpen={() => openDocument()}
           />
+        </div>
+      )}
+
+      {deal?.documents && deal.documents.length > 0 && (
+        <div className="deal-detail__section">
+          <h2 className="deal-detail__section-title">{ru.dealDetail.documentsTitle}</h2>
+          {deal.documents.map((document) => (
+            <DocumentRow
+              key={document.nameKey}
+              name={DOCUMENT_NAME_KEYS[document.nameKey] ?? document.nameKey}
+              enabled={document.available}
+              caption={document.availabilityHint}
+              onOpen={() => openDocument(document.href)}
+            />
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
+function QuoteCard({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
   const [remainingMs, setRemainingMs] = useState(() => msUntil(deal.quoteExpiresAt));
   const [confirming, setConfirming] = useState(false);
   const [declining, setDeclining] = useState(false);
@@ -169,13 +199,16 @@ function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => v
   }, [deal.quoteExpiresAt]);
 
   useEffect(() => {
-    if (remainingMs <= 0) {
+    // Real mode: no local write to fall back to, and no polling yet either
+    // (§7.7, step 5) — the countdown just sits at 0 until the next real
+    // fetch shows whatever the backend actually did.
+    if (remainingMs <= 0 && !readOnly) {
       const updated = expireQuote(deal.id);
       if (updated) {
         onUpdate(updated);
       }
     }
-  }, [remainingMs, deal.id, onUpdate]);
+  }, [remainingMs, deal.id, onUpdate, readOnly]);
 
   async function handleConfirm() {
     setConfirming(true);
@@ -217,25 +250,29 @@ function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => v
         <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
         <KeyValueRow label={ru.dealDetail.receiveLabel} value={<span className="quote-card__positive">{deal.to ?? ru.common.tbd}</span>}/>
       </div>
-      <Button variant="accent" loading={confirming} onClick={() => void handleConfirm()}>
-        {ru.dealDetail.confirmDealAction}
-      </Button>
-      <Button type="button" variant="link" danger loading={declining} onClick={() => setDeclineDialogOpen(true)}>
-        {ru.dealDetail.declineAction}
-      </Button>
-      <ConfirmDialog
-        open={declineDialogOpen}
-        title={ru.dealDetail.declineConfirmTitle}
-        onConfirm={() => void handleDecline()}
-        onCancel={() => setDeclineDialogOpen(false)}
-      />
+      {!readOnly && (
+        <>
+          <Button variant="accent" loading={confirming} onClick={() => void handleConfirm()}>
+            {ru.dealDetail.confirmDealAction}
+          </Button>
+          <Button type="button" variant="link" danger loading={declining} onClick={() => setDeclineDialogOpen(true)}>
+            {ru.dealDetail.declineAction}
+          </Button>
+          <ConfirmDialog
+            open={declineDialogOpen}
+            title={ru.dealDetail.declineConfirmTitle}
+            onConfirm={() => void handleDecline()}
+            onCancel={() => setDeclineDialogOpen(false)}
+          />
+        </>
+      )}
     </div>
   );
 }
 
 type Branch = 'sufficient' | 'short1' | 'short' | 'belowmin';
 
-function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
+function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
   const [searchParams] = useSearchParams();
   const urlScenario = searchParams.get('scenario');
   const storeScenario = useUiStore((s) => s.balanceScenario);
@@ -258,14 +295,16 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
 
   // Explicit dev override only — forces the deposit balance to whatever
   // produces the requested case for this deal, then it's read back below
-  // like any other real balance.
+  // like any other real balance. Meaningless in real mode (the mock
+  // accounts store it writes to has no bearing on a real getAccounts()
+  // result), so skipped there rather than left as harmless dead code.
   useEffect(() => {
-    if (!scenario) {
+    if (!scenario || readOnly) {
       return;
     }
     const target = computeScenarioBalance(dealAmount, deal.ticker, scenario);
     setDepositBalanceForTesting(deal.ticker, target);
-  }, [scenario, deal.ticker, dealAmount]);
+  }, [scenario, deal.ticker, dealAmount, readOnly]);
 
   useEffect(() => {
     void getAccounts().then((accounts) => setBalance(Number(accounts.deposit[deal.ticker] ?? '0')));
@@ -356,32 +395,38 @@ function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Dea
         </Callout>
       )}
 
-      <Button variant="accent" loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
-        {ru.dealDetail.confirmDealAction}
-      </Button>
-      <Button
-        type="button"
-        variant="link"
-        danger
-        loading={declining}
-        onClick={() => setDeclineDialogOpen(true)}
-      >
-        {ru.dealDetail.declineAction}
-      </Button>
+      {!readOnly && (
+        <>
+          <Button variant="accent" loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
+            {ru.dealDetail.confirmDealAction}
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            danger
+            loading={declining}
+            onClick={() => setDeclineDialogOpen(true)}
+          >
+            {ru.dealDetail.declineAction}
+          </Button>
+        </>
+      )}
 
       {(branch === 'short' || branch === 'belowmin') && requisites && <RequisitesPanel requisites={requisites}/>}
 
-      <ConfirmDialog
-        open={declineDialogOpen}
-        title={ru.dealDetail.declineConfirmTitle}
-        onConfirm={() => void handleDecline()}
-        onCancel={() => setDeclineDialogOpen(false)}
-      />
+      {!readOnly && (
+        <ConfirmDialog
+          open={declineDialogOpen}
+          title={ru.dealDetail.declineConfirmTitle}
+          onConfirm={() => void handleDecline()}
+          onCancel={() => setDeclineDialogOpen(false)}
+        />
+      )}
     </>
   );
 }
 
-function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
+function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
   const [busy, setBusy] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -419,7 +464,7 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
             tone="pending"
             title={ru.dealDetail.heroRatePendingTitle}
             subtitle={ru.dealDetail.heroRatePendingSubtitle}
-            action={(
+            action={!readOnly && (
               <Button
                 type="button"
                 variant="link"
@@ -431,12 +476,14 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
               </Button>
             )}
           />
-          <ConfirmDialog
-            open={cancelDialogOpen}
-            title={ru.dealDetail.cancelRequestConfirmTitle}
-            onConfirm={() => void handleCancel()}
-            onCancel={() => setCancelDialogOpen(false)}
-          />
+          {!readOnly && (
+            <ConfirmDialog
+              open={cancelDialogOpen}
+              title={ru.dealDetail.cancelRequestConfirmTitle}
+              onConfirm={() => void handleCancel()}
+              onCancel={() => setCancelDialogOpen(false)}
+            />
+          )}
         </>
       );
     case 'RATE_STALE':
@@ -445,7 +492,7 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
           icon="hourglass"
           tone="stale"
           title={ru.dealDetail.heroRateStaleTitle}
-          action={<Button variant="accent" loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
+          action={!readOnly && <Button variant="accent" loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
         />
       );
     case 'RUNNING':
@@ -474,6 +521,43 @@ function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal)
           title={ru.dealDetail.heroDeclinedTitle}
           subtitle={ru.dealDetail.heroDeclinedSubtitle}
         />
+      );
+    case 'RATE_RENEGOTIATING':
+      // api-integration.md §7.6 — the backend's REQUOTE status has two real
+      // client-facing steps (accept/reject an adjusted amount, accept/reject
+      // a new rate) that have no screen yet: "designing the two missing
+      // screens is a separate task — flag it to the analyst, do not
+      // improvise them." Read-only for MVP, per the doc's own explicit call
+      // ("honest and shippable") — only Cancel is offered, same as
+      // RATE_PENDING, until those screens exist.
+      return (
+        <>
+          <StatusHero
+            icon="spinner"
+            tone="pending"
+            title={ru.dealDetail.heroRenegotiatingTitle}
+            subtitle={ru.dealDetail.heroRenegotiatingSubtitle}
+            action={!readOnly && (
+              <Button
+                type="button"
+                variant="link"
+                danger
+                loading={busy}
+                onClick={() => setCancelDialogOpen(true)}
+              >
+                {ru.dealDetail.cancelRequestAction}
+              </Button>
+            )}
+          />
+          {!readOnly && (
+            <ConfirmDialog
+              open={cancelDialogOpen}
+              title={ru.dealDetail.cancelRequestConfirmTitle}
+              onConfirm={() => void handleCancel()}
+              onCancel={() => setCancelDialogOpen(false)}
+            />
+          )}
+        </>
       );
     default:
       return null;
