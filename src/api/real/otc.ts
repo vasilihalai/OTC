@@ -1,9 +1,11 @@
 import type { Deal, DealDirection, OtcAccessResult, Stats } from '@/api/types.ts';
 import { apiFetch } from '@/api/http.ts';
 import { ApiError } from '@/api/real/http/apiError.ts';
+import { useToastStore } from '@/store/toast.ts';
 import { formatDealDate } from '@/lib/date.ts';
 import { formatAmount } from '@/lib/money.ts';
 import { type OtcRealStatus, mapOtcStatus } from '@/lib/otcStatus.ts';
+import { ru } from '@/i18n/ru.ts';
 
 /**
  * api-integration.md §7.1. Called on app boot (after profile) and again on
@@ -143,4 +145,46 @@ export async function getDealById(operationId: string): Promise<Deal | undefined
     }
     throw err;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Commands — §7.6. Only the five with a real, built screen today: ACCEPT_QUOTE/
+// REJECT_QUOTE (RATE_ACTIVE), REQUEST_NEW_RATE (RATE_STALE), CONFIRM_HOLD
+// (AWAITING_FUNDS), CANCEL (RATE_PENDING and RATE_RENEGOTIATING). The other
+// four — ACCEPT_AMOUNT/REJECT_AMOUNT, ACCEPT_REPRICE/REJECT_REPRICE — have no
+// caller anywhere in the app: they're REQUOTE's accept/reject step, and
+// REQUOTE has no screen to trigger them from yet (see lib/otcStatus.ts).
+// ---------------------------------------------------------------------------
+
+export type OtcCommand =
+  | 'ACCEPT_QUOTE' | 'REJECT_QUOTE' | 'REQUEST_NEW_RATE' | 'CONFIRM_HOLD' | 'CANCEL';
+
+/**
+ * §7.6: "After any command: refetch the deal, do not optimistically set the
+ * status from the response" — the command response is just `{operationId,
+ * status}`, but `detailsStatus`/amounts may also have moved, so this always
+ * re-fetches the full detail rather than trusting that shape.
+ *
+ * `409 Conflict` ("the command is no longer valid for the current state —
+ * someone or something moved the deal underneath the user") is handled
+ * specifically per the doc's own instruction: swallow it, toast, and still
+ * refetch + re-render with whatever the deal's real current state turns out
+ * to be, instead of surfacing a generic error.
+ */
+export async function sendOtcCommand(operationId: string, command: OtcCommand): Promise<Deal | undefined> {
+  try {
+    await apiFetch<{ operationId: string; status: OtcRealStatus }>(
+      `/v2/operations/otc/${operationId}/commands/${command}`,
+      { method: 'POST' },
+      false,
+      'financial',
+    );
+  } catch (err) {
+    if (err instanceof ApiError && err.httpStatus === 409) {
+      useToastStore.getState().show(ru.dealDetail.statusChangedToast);
+    } else {
+      throw err;
+    }
+  }
+  return getDealById(operationId);
 }

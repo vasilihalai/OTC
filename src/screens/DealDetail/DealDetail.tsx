@@ -14,12 +14,14 @@ import { ConfirmDialog } from '@/components/ConfirmDialog/ConfirmDialog.tsx';
 import { Skeleton } from '@/components/Skeleton/Skeleton.tsx';
 import {
   USE_REAL_API,
-  confirmDeal,
-  declineDeal,
+  acceptQuote,
+  cancelDeal,
+  confirmHold,
   expireQuote,
   getAccounts,
   getDealById,
   getRequisites,
+  rejectQuote,
   requestNewRate,
   setDepositBalanceForTesting,
 } from '@/api/index.ts';
@@ -111,9 +113,9 @@ export function DealDetail() {
       )}
 
       {deal && (
-        deal.status === 'RATE_ACTIVE' ? <QuoteCard deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
-          : isHoldConfirmationStatus(deal.status) ? <ConfirmationBody deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
-            : <StatusHeroBody deal={deal} onUpdate={setDeal} readOnly={USE_REAL_API}/>
+        deal.status === 'RATE_ACTIVE' ? <QuoteCard deal={deal} onUpdate={setDeal}/>
+          : isHoldConfirmationStatus(deal.status) ? <ConfirmationBody deal={deal} onUpdate={setDeal}/>
+            : <StatusHeroBody deal={deal} onUpdate={setDeal}/>
       )}
 
       {deal && (
@@ -177,7 +179,7 @@ export function DealDetail() {
   );
 }
 
-function QuoteCard({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
+function QuoteCard({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
   const [remainingMs, setRemainingMs] = useState(() => msUntil(deal.quoteExpiresAt));
   const [confirming, setConfirming] = useState(false);
   const [declining, setDeclining] = useState(false);
@@ -199,21 +201,27 @@ function QuoteCard({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: 
   }, [deal.quoteExpiresAt]);
 
   useEffect(() => {
-    // Real mode: no local write to fall back to, and no polling yet either
-    // (§7.7, step 5) — the countdown just sits at 0 until the next real
-    // fetch shows whatever the backend actually did.
-    if (remainingMs <= 0 && !readOnly) {
+    if (remainingMs > 0) {
+      return;
+    }
+    if (USE_REAL_API) {
+      // No command exists for "the countdown ran out" (§7.6's nine don't
+      // include one — the server just eventually reflects EXPIRED on its
+      // own) and there's no polling yet (§7.7) — a one-off refetch here is
+      // the closest approximation until that lands.
+      void getDealById(deal.id).then((updated) => updated && onUpdate(updated));
+    } else {
       const updated = expireQuote(deal.id);
       if (updated) {
         onUpdate(updated);
       }
     }
-  }, [remainingMs, deal.id, onUpdate, readOnly]);
+  }, [remainingMs, deal.id, onUpdate]);
 
   async function handleConfirm() {
     setConfirming(true);
     try {
-      const updated = await confirmDeal(deal.id, { status: 'RUNNING' });
+      const updated = await acceptQuote(deal.id);
       if (updated) {
         onUpdate(updated);
       }
@@ -226,7 +234,7 @@ function QuoteCard({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: 
     setDeclineDialogOpen(false);
     setDeclining(true);
     try {
-      const updated = await declineDeal(deal.id);
+      const updated = await rejectQuote(deal.id);
       if (updated) {
         onUpdate(updated);
       }
@@ -250,29 +258,25 @@ function QuoteCard({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: 
         <KeyValueRow label={ru.dealDetail.giveLabel} value={deal.from}/>
         <KeyValueRow label={ru.dealDetail.receiveLabel} value={<span className="quote-card__positive">{deal.to ?? ru.common.tbd}</span>}/>
       </div>
-      {!readOnly && (
-        <>
-          <Button variant="accent" loading={confirming} onClick={() => void handleConfirm()}>
-            {ru.dealDetail.confirmDealAction}
-          </Button>
-          <Button type="button" variant="link" danger loading={declining} onClick={() => setDeclineDialogOpen(true)}>
-            {ru.dealDetail.declineAction}
-          </Button>
-          <ConfirmDialog
-            open={declineDialogOpen}
-            title={ru.dealDetail.declineConfirmTitle}
-            onConfirm={() => void handleDecline()}
-            onCancel={() => setDeclineDialogOpen(false)}
-          />
-        </>
-      )}
+      <Button variant="accent" loading={confirming} onClick={() => void handleConfirm()}>
+        {ru.dealDetail.confirmDealAction}
+      </Button>
+      <Button type="button" variant="link" danger loading={declining} onClick={() => setDeclineDialogOpen(true)}>
+        {ru.dealDetail.declineAction}
+      </Button>
+      <ConfirmDialog
+        open={declineDialogOpen}
+        title={ru.dealDetail.declineConfirmTitle}
+        onConfirm={() => void handleDecline()}
+        onCancel={() => setDeclineDialogOpen(false)}
+      />
     </div>
   );
 }
 
 type Branch = 'sufficient' | 'short1' | 'short' | 'belowmin';
 
-function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
+function ConfirmationBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
   const [searchParams] = useSearchParams();
   const urlScenario = searchParams.get('scenario');
   const storeScenario = useUiStore((s) => s.balanceScenario);
@@ -299,12 +303,12 @@ function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: 
   // accounts store it writes to has no bearing on a real getAccounts()
   // result), so skipped there rather than left as harmless dead code.
   useEffect(() => {
-    if (!scenario || readOnly) {
+    if (!scenario || USE_REAL_API) {
       return;
     }
     const target = computeScenarioBalance(dealAmount, deal.ticker, scenario);
     setDepositBalanceForTesting(deal.ticker, target);
-  }, [scenario, deal.ticker, dealAmount, readOnly]);
+  }, [scenario, deal.ticker, dealAmount]);
 
   useEffect(() => {
     void getAccounts().then((accounts) => setBalance(Number(accounts.deposit[deal.ticker] ?? '0')));
@@ -340,12 +344,19 @@ function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: 
   async function handleConfirm() {
     setConfirming(true);
     try {
+      // Freezing an amount well short of the deal (the "short" branch,
+      // beyond short1's ≤1% auto-recalculation) isn't a plain hold — it's
+      // literally a request for new terms against the smaller frozen
+      // amount, i.e. the deal moves into renegotiation, not straight to
+      // RUNNING. Confirmed by the user directly — this is one of
+      // RATE_RENEGOTIATING's two real triggers (the other is
+      // `requestNewRate`, see actions.mock.ts).
       const patch = branch === 'short1'
         ? { status: 'RUNNING' as const, from: balanceLabel, to: recalculated }
         : branch === 'short'
-          ? { status: 'RATE_PENDING' as const }
+          ? { status: 'RATE_RENEGOTIATING' as const }
           : { status: 'RUNNING' as const };
-      const updated = await confirmDeal(deal.id, patch);
+      const updated = await confirmHold(deal.id, patch);
       if (updated) {
         onUpdate(updated);
       }
@@ -358,7 +369,7 @@ function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: 
     setDeclineDialogOpen(false);
     setDeclining(true);
     try {
-      const updated = await declineDeal(deal.id);
+      const updated = await rejectQuote(deal.id);
       if (updated) {
         onUpdate(updated);
       }
@@ -395,38 +406,32 @@ function ConfirmationBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: 
         </Callout>
       )}
 
-      {!readOnly && (
-        <>
-          <Button variant="accent" loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
-            {ru.dealDetail.confirmDealAction}
-          </Button>
-          <Button
-            type="button"
-            variant="link"
-            danger
-            loading={declining}
-            onClick={() => setDeclineDialogOpen(true)}
-          >
-            {ru.dealDetail.declineAction}
-          </Button>
-        </>
-      )}
+      <Button variant="accent" loading={confirming} disabled={branch === 'belowmin'} onClick={() => void handleConfirm()}>
+        {ru.dealDetail.confirmDealAction}
+      </Button>
+      <Button
+        type="button"
+        variant="link"
+        danger
+        loading={declining}
+        onClick={() => setDeclineDialogOpen(true)}
+      >
+        {ru.dealDetail.declineAction}
+      </Button>
 
       {(branch === 'short' || branch === 'belowmin') && requisites && <RequisitesPanel requisites={requisites}/>}
 
-      {!readOnly && (
-        <ConfirmDialog
-          open={declineDialogOpen}
-          title={ru.dealDetail.declineConfirmTitle}
-          onConfirm={() => void handleDecline()}
-          onCancel={() => setDeclineDialogOpen(false)}
-        />
-      )}
+      <ConfirmDialog
+        open={declineDialogOpen}
+        title={ru.dealDetail.declineConfirmTitle}
+        onConfirm={() => void handleDecline()}
+        onCancel={() => setDeclineDialogOpen(false)}
+      />
     </>
   );
 }
 
-function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (deal: Deal) => void; readOnly: boolean }) {
+function StatusHeroBody({ deal, onUpdate }: { deal: Deal; onUpdate: (deal: Deal) => void }) {
   const [busy, setBusy] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
@@ -446,7 +451,7 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
     setCancelDialogOpen(false);
     setBusy(true);
     try {
-      const updated = await declineDeal(deal.id);
+      const updated = await cancelDeal(deal.id);
       if (updated) {
         onUpdate(updated);
       }
@@ -464,7 +469,7 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
             tone="pending"
             title={ru.dealDetail.heroRatePendingTitle}
             subtitle={ru.dealDetail.heroRatePendingSubtitle}
-            action={!readOnly && (
+            action={(
               <Button
                 type="button"
                 variant="link"
@@ -476,14 +481,12 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
               </Button>
             )}
           />
-          {!readOnly && (
-            <ConfirmDialog
-              open={cancelDialogOpen}
-              title={ru.dealDetail.cancelRequestConfirmTitle}
-              onConfirm={() => void handleCancel()}
-              onCancel={() => setCancelDialogOpen(false)}
-            />
-          )}
+          <ConfirmDialog
+            open={cancelDialogOpen}
+            title={ru.dealDetail.cancelRequestConfirmTitle}
+            onConfirm={() => void handleCancel()}
+            onCancel={() => setCancelDialogOpen(false)}
+          />
         </>
       );
     case 'RATE_STALE':
@@ -492,7 +495,7 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
           icon="hourglass"
           tone="stale"
           title={ru.dealDetail.heroRateStaleTitle}
-          action={!readOnly && <Button variant="accent" loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
+          action={<Button variant="accent" loading={busy} onClick={() => void handleRequestNewRate()}>{ru.dealDetail.requestNewRateAction}</Button>}
         />
       );
     case 'RUNNING':
@@ -527,9 +530,9 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
       // client-facing steps (accept/reject an adjusted amount, accept/reject
       // a new rate) that have no screen yet: "designing the two missing
       // screens is a separate task — flag it to the analyst, do not
-      // improvise them." Read-only for MVP, per the doc's own explicit call
-      // ("honest and shippable") — only Cancel is offered, same as
-      // RATE_PENDING, until those screens exist.
+      // improvise them." `CANCEL` *is* wired for real (`cancelDeal`, same
+      // command RATE_PENDING uses) — the doc's own explicit MVP call was to
+      // offer only that, "honest and shippable," until those two screens exist.
       return (
         <>
           <StatusHero
@@ -537,7 +540,7 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
             tone="pending"
             title={ru.dealDetail.heroRenegotiatingTitle}
             subtitle={ru.dealDetail.heroRenegotiatingSubtitle}
-            action={!readOnly && (
+            action={(
               <Button
                 type="button"
                 variant="link"
@@ -549,14 +552,12 @@ function StatusHeroBody({ deal, onUpdate, readOnly }: { deal: Deal; onUpdate: (d
               </Button>
             )}
           />
-          {!readOnly && (
-            <ConfirmDialog
-              open={cancelDialogOpen}
-              title={ru.dealDetail.cancelRequestConfirmTitle}
-              onConfirm={() => void handleCancel()}
-              onCancel={() => setCancelDialogOpen(false)}
-            />
-          )}
+          <ConfirmDialog
+            open={cancelDialogOpen}
+            title={ru.dealDetail.cancelRequestConfirmTitle}
+            onConfirm={() => void handleCancel()}
+            onCancel={() => setCancelDialogOpen(false)}
+          />
         </>
       );
     default:

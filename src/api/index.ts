@@ -2,16 +2,19 @@
 // never from `api/mock/*` or `api/real/*` directly, so flipping
 // VITE_USE_REAL_API does not touch a single screen file.
 //
-// Deals' *read* side (list/detail) is real-API-ready as of this round
-// (api-integration.md §7.3/§7.4); the *write* side (confirm/decline/
-// request-new-rate/expire-quote) stays mock-only regardless of the flag —
-// §7.6's nine-command state machine isn't wired yet, so DealDetail.tsx runs
-// real deals in a read-only mode rather than let those buttons silently
-// no-op against the mock store's unrelated deal ids.
+// Deals are real-API-ready for the five commands that have a built screen
+// (api-integration.md §7.3/§7.4/§7.6) — acceptQuote/rejectQuote/confirmHold/
+// requestNewRate/cancelDeal, below. The other four commands (ACCEPT_AMOUNT/
+// REJECT_AMOUNT/ACCEPT_REPRICE/REJECT_REPRICE) have no screen to call them
+// from — REQUOTE/RATE_RENEGOTIATING is read-only except Cancel, per an
+// explicit "flag it to the analyst, do not improvise them" instruction —
+// see lib/otcStatus.ts.
 import * as mockAuth from '@/api/mock/auth.mock.ts';
 import * as realAuth from '@/api/real/auth.ts';
 import * as mockData from '@/api/mock/data.mock.ts';
 import * as mockActions from '@/api/mock/actions.mock.ts';
+import type { ConfirmDealPatch } from '@/api/mock/actions.mock.ts';
+import type { Deal } from '@/api/types.ts';
 import * as realProfile from '@/api/real/profile.ts';
 import * as realBalances from '@/api/real/balances.ts';
 import * as realOtc from '@/api/real/otc.ts';
@@ -81,12 +84,48 @@ export const transfer = USE_REAL_API ? realTransfers.transfer : mockActions.tran
 export const getDeals = USE_REAL_API ? realOtc.getDeals : mockData.getDeals;
 export const getDealById = USE_REAL_API ? realOtc.getDealById : mockData.getDealById;
 
-// Write side — still mock-only. §7.6's real commands aren't wired yet;
-// DealDetail.tsx gates these off entirely in real mode instead of calling
-// them against a real deal id they don't know how to handle.
-export const confirmDeal = mockActions.confirmDeal;
-export const declineDeal = mockActions.declineDeal;
-export const requestNewRate = mockActions.requestNewRate;
+// Write side — §7.6. Named for the UI action, not the raw command, since
+// one button can imply different commands depending which screen it's on
+// (both RATE_ACTIVE's and AWAITING_FUNDS's "Отклонить" are REJECT_QUOTE;
+// RATE_PENDING's and RATE_RENEGOTIATING's "Отменить заявку" are CANCEL —
+// two visually-identical buttons, two different real commands).
+
+/** RATE_ACTIVE's "Подтвердить сделку". */
+export async function acceptQuote(dealId: string): Promise<Deal | undefined> {
+  return USE_REAL_API ? realOtc.sendOtcCommand(dealId, 'ACCEPT_QUOTE') : mockActions.confirmDeal(dealId, { status: 'RUNNING' });
+}
+
+/** RATE_ACTIVE's and AWAITING_FUNDS's "Отклонить" — both map to REJECT_QUOTE (§7.6's table). */
+export async function rejectQuote(dealId: string): Promise<Deal | undefined> {
+  return USE_REAL_API ? realOtc.sendOtcCommand(dealId, 'REJECT_QUOTE') : mockActions.declineDeal(dealId);
+}
+
+/**
+ * AWAITING_FUNDS's "Подтвердить сделку" (all three non-belowmin branches).
+ * Real: a single `CONFIRM_HOLD` — the server decides whether the result is
+ * `RUNNING` or a `REQUOTE` renegotiation based on what was actually frozen,
+ * so there's nothing to compute client-side; the refetch after the command
+ * picks up whichever it was. Mock: no server logic to simulate that
+ * decision, so it still needs the branch-computed patch passed in.
+ */
+export async function confirmHold(dealId: string, mockPatch: ConfirmDealPatch): Promise<Deal | undefined> {
+  return USE_REAL_API ? realOtc.sendOtcCommand(dealId, 'CONFIRM_HOLD') : mockActions.confirmDeal(dealId, mockPatch);
+}
+
+/** RATE_STALE's "Запросить новый курс" — always lands in `RATE_RENEGOTIATING`, confirmed directly: this is one of its two real triggers (the other is `confirmHold`'s "short" branch). */
+export async function requestNewRate(dealId: string): Promise<Deal | undefined> {
+  return USE_REAL_API ? realOtc.sendOtcCommand(dealId, 'REQUEST_NEW_RATE') : mockActions.requestNewRate(dealId);
+}
+
+/** RATE_PENDING's and RATE_RENEGOTIATING's "Отменить заявку" — CANCEL. */
+export async function cancelDeal(dealId: string): Promise<Deal | undefined> {
+  return USE_REAL_API ? realOtc.sendOtcCommand(dealId, 'CANCEL') : mockActions.declineDeal(dealId);
+}
+
+// Client-driven only (the quote card's own countdown hitting zero) — real
+// mode has no command for this at all, the server just eventually reflects
+// EXPIRED on its own; see DealDetail.tsx's QuoteCard for how each mode
+// handles the countdown reaching zero differently.
 export const expireQuote = mockActions.expireQuote;
 export const setDepositBalanceForTesting = mockActions.setDepositBalanceForTesting;
 

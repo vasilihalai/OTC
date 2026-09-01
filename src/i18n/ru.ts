@@ -133,6 +133,7 @@ export const ru = {
     cancelRequestAction: 'Отменить заявку',
     cancelRequestConfirmTitle: 'Отменить заявку?',
     requestNewRateAction: 'Запросить новый курс',
+    statusChangedToast: 'Статус сделки изменился',
     historyAction: 'История операций',
     heroRatePendingTitle: 'Оператор готовит курс',
     heroRatePendingSubtitle: 'В рабочее время\n(пн–пт 10:00–18:00 мск)',
