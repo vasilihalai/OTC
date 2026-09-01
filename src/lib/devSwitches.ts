@@ -10,7 +10,7 @@ export function readHashParam(name: string): string | null {
   return new URLSearchParams(hash.slice(queryIndex + 1)).get(name);
 }
 
-/** Dev-only override so both OTC-unavailable reasons are reachable without editing fixtures. */
+/** Dev-only override so every OTC-unavailable reason is reachable without editing fixtures. */
 export function otcAccessOverride(): OtcAccessReason | undefined {
   const value = readHashParam('otc');
   if (value === 'verification') {
@@ -18,6 +18,9 @@ export function otcAccessOverride(): OtcAccessReason | undefined {
   }
   if (value === 'not_eligible') {
     return 'NOT_ELIGIBLE';
+  }
+  if (value === 'desk_closed') {
+    return 'DESK_CLOSED';
   }
   if (value === 'granted') {
     return 'GRANTED';

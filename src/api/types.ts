@@ -12,7 +12,19 @@ export interface Session {
   clientType: ClientType;
 }
 
-export type OtcAccessReason = 'GRANTED' | 'VERIFICATION_REQUIRED' | 'NOT_ELIGIBLE';
+/**
+ * `DESK_CLOSED` is new — api-integration.md §7.1: `available === false` with
+ * `enabled === true` "most likely means OTC is on for you but the desk is
+ * closed," a state the old 3-way model had no room for (question B9).
+ */
+export type OtcAccessReason = 'GRANTED' | 'VERIFICATION_REQUIRED' | 'DESK_CLOSED' | 'NOT_ELIGIBLE';
+
+/** `GET /v1/otc/access` — api-integration.md §7.1. */
+export interface OtcAccessResult {
+  enabled: boolean;
+  available: boolean;
+  reasons: string[];
+}
 
 /** How the account is protected — not its verification status. */
 export type SecurityLevel = 'LOW' | 'MEDIUM' | 'HIGH';

@@ -258,6 +258,9 @@ export const ru = {
     notEligibleTitle: 'ОТС недоступен для вашего аккаунта',
     notEligibleBody: 'Свяжитесь с менеджером, чтобы подключить ОТС-сделки.',
     notEligibleAction: 'Написать в поддержку',
+    deskClosedTitle: 'Стол ОТС сейчас закрыт',
+    deskClosedBody: 'Пн–Пт 10:00–18:00 по UTC+3. Вне часов заявка обрабатывается в рабочее время.',
+    deskClosedAction: 'На главный экран',
   },
   authError: {
     invalidInitDataTitle: 'Не удалось подтвердить сессию',

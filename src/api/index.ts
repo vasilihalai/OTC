@@ -67,7 +67,7 @@ export const submitFiatWithdrawal = USE_REAL_API
   : mockWithdrawals.submitFiatWithdrawal;
 
 export const getStats = USE_REAL_API ? realProfile.getStats : mockData.getStats;
-export const getAccounts = USE_REAL_API ? realProfile.getAccounts : mockData.getAccounts;
+export const getAccounts = USE_REAL_API ? realBalances.getAccounts : mockData.getAccounts;
 export const getRequisites = USE_REAL_API ? realWithdrawals.getRequisites : mockData.getRequisites;
 export const getSavedRequisites = USE_REAL_API ? realWithdrawals.getSavedRequisites : mockData.getSavedRequisites;
 export const transfer = USE_REAL_API ? realTransfers.transfer : mockActions.transfer;

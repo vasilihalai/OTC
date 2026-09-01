@@ -1,20 +1,71 @@
-import type { Accounts, ClientType, Stats, User } from '@/api/types.ts';
+import type { ClientType, SecurityLevel, Stats, User } from '@/api/types.ts';
 import { apiFetch } from '@/api/http.ts';
+import { getOtcAccess } from '@/api/real/otc.ts';
+import { toOtcAccessReason } from '@/lib/otcAccess.ts';
 
 /**
- * Assumed endpoints — reconcile against Swagger once available. `getUser`
- * takes `clientType` only to mirror the mock's signature exactly (a real
- * `/profile/me` call is session-derived and ignores it).
+ * api-integration.md §3 — `GET /secured/user/profile` (`userAccount`
+ * service). `clientType` is kept only to mirror the mock's signature; the
+ * real call is session-derived and ignores it (per §3's own note).
  */
-
-export async function getUser(_clientType: ClientType): Promise<User> {
-  return apiFetch<User>('/profile/me');
+interface RawProfile {
+  name: string;
+  email: string;
+  userPublicId: string;
+  securityLevel: SecurityLevel;
+  phoneCode?: string;
+  phoneNumber?: string;
 }
 
+// §3: "There is no `verified: boolean` in the contract" — derived from
+// `/v1/otc/access`'s `enabled` flag instead, per the doc's own instruction
+// (question B6, pending a `states` key the backend hasn't confirmed yet).
+// This couples an extra request to every profile fetch — acceptable for now,
+// worth caching/short-circuiting once this is a measured problem rather than
+// a guessed one.
+export async function getUser(_clientType: ClientType): Promise<User> {
+  const [profile, access] = await Promise.all([
+    apiFetch<{ result: RawProfile }>('/secured/user/profile', {}, false, 'userAccount').then((r) => r.result),
+    getOtcAccess(),
+  ]);
+
+  return {
+    clientName: profile.name,
+    clientType: _clientType,
+    verified: access.enabled,
+    securityLevel: profile.securityLevel,
+    otcAccess: toOtcAccessReason(access),
+    email: profile.email,
+    phone: [profile.phoneCode, profile.phoneNumber].filter(Boolean).join(' '),
+    userId: profile.userPublicId,
+    // Not present anywhere in api-integration.md's field mapping (§3) — the
+    // profile endpoint doesn't carry them, and nothing in the doc says where
+    // else they'd come from. Left empty rather than guessed; Profile's
+    // certificate/support/FAQ/about links and OtcUnavailable's actions will
+    // silently no-op until these have real values. Flag with the backend.
+    webCabinetUrl: '',
+    supportUrl: '',
+    faqUrl: '',
+    aboutUrl: '',
+    // §5.2's `options.confirmation2FA`/`confirmationEmail` (per-operation)
+    // take priority over this account-level flag when present — this is
+    // still the fallback for sign-in and any operation that doesn't specify.
+    // Real 2FA-gating for withdrawals isn't wired yet (see real/auth.ts).
+    authenticatorEnabled: false,
+  };
+}
+
+// §7.2 — feeds Home's two stat cards from OTC dashboard counters, not a
+// `/profile/stats` endpoint (that was an assumed placeholder from an earlier
+// round, confirmed wrong by this doc). Deferred to the OTC step along with
+// the rest of §7 — dashboard has no home here yet, so this still points at
+// the old placeholder.
 export async function getStats(): Promise<Stats> {
   return apiFetch<Stats>('/profile/stats');
 }
 
-export async function getAccounts(): Promise<Accounts> {
-  return apiFetch<Accounts>('/profile/accounts');
+/** `userPublicId` — §4: "profile first, balances second — sequence them, do not fire in parallel," reused by `real/balances.ts` for both `getAssets` and `getAccounts` so neither has to re-derive it differently. */
+export async function getCurrentUserId(): Promise<string> {
+  const res = await apiFetch<{ result: RawProfile }>('/secured/user/profile', {}, false, 'userAccount');
+  return res.result.userPublicId;
 }
