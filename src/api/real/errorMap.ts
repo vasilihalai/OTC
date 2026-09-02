@@ -18,10 +18,11 @@ const KNOWN: Record<string, string> = {
   TOO_MANY_ATTEMPTS: 'Слишком много попыток, подождите немного',
 };
 
+// Test plan §1/§9.8: "показывать на экране ошибки короткий код запроса ...
+// без него баг 'не сработало' невозможно найти в логах" — every message
+// this returns carries it, not just the unmapped fallback, so a tester (or
+// support) can always read it straight off the screen.
 export function mapApiError(err: ApiError): string {
-  const known = KNOWN[err.code];
-  if (known) {
-    return known;
-  }
-  return `Что-то пошло не так. Попробуйте позже (${err.requestId.slice(0, 8)})`;
+  const message = KNOWN[err.code] ?? 'Что-то пошло не так. Попробуйте позже';
+  return `${message} (${err.requestId.slice(0, 8)})`;
 }

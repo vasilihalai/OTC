@@ -22,8 +22,6 @@ export const ru = {
     businessAccountLink: 'Войти в бизнес-аккаунт',
     personalAccountLink: 'Войти в личный аккаунт',
     errorEmailInvalid: 'Введите корректный email',
-    errorCredentialsInvalid: 'Неверный email или пароль',
-    errorTooManyAttempts: 'Слишком много попыток входа, подождите немного',
   },
   verification: {
     title: 'Введите код из письма',

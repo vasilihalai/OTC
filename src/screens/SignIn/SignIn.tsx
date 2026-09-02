@@ -79,9 +79,7 @@ export function SignIn({ variant }: SignInProps) {
       if (err instanceof MockSignInError) {
         setEmailError(ru.signIn.errorEmailInvalid);
       } else if (err instanceof ApiError) {
-        setEmailError(err.httpStatus === 401 ? ru.signIn.errorCredentialsInvalid
-          : err.httpStatus === 429 ? ru.signIn.errorTooManyAttempts
-          : mapApiError(err));
+        setEmailError(mapApiError(err));
       }
       notifyError();
     } finally {
@@ -111,7 +109,7 @@ export function SignIn({ variant }: SignInProps) {
       return await signInRequestOtp(email, password, clientType);
     } catch (err) {
       if (err instanceof ApiError) {
-        throw new Error(err.httpStatus === 429 ? ru.signIn.errorTooManyAttempts : mapApiError(err));
+        throw new Error(mapApiError(err));
       }
       throw err;
     }
