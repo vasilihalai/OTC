@@ -32,6 +32,11 @@ export interface SignInProps {
   variant: 'personal' | 'business';
 }
 
+// Temporarily disabled — no real API contract for Google/Apple sign-in yet
+// (question B3: "стенд вход через соцсети для миниаппки лучше отключить").
+// Flip back to true once that's implemented; nothing else needs to change.
+const SOCIAL_AUTH_ENABLED = false;
+
 const CLIENT_TYPE: Record<SignInProps['variant'], ClientType> = {
   personal: 'FL',
   business: 'UL',
@@ -171,28 +176,30 @@ export function SignIn({ variant }: SignInProps) {
           {ru.signIn.submitAction}
         </Button>
 
-        <div className="sign-in__social">
-          <Button
-            type="button"
-            variant="secondary"
-            icon={<GoogleIcon/>}
-            loading={socialLoading === 'google'}
-            disabled={!!socialLoading}
-            onClick={() => void handleSocial('google')}
-          >
-            {ru.signIn.googleAction}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            icon={<AppleIcon/>}
-            loading={socialLoading === 'apple'}
-            disabled={!!socialLoading}
-            onClick={() => void handleSocial('apple')}
-          >
-            {ru.signIn.appleAction}
-          </Button>
-        </div>
+        {SOCIAL_AUTH_ENABLED && (
+          <div className="sign-in__social">
+            <Button
+              type="button"
+              variant="secondary"
+              icon={<GoogleIcon/>}
+              loading={socialLoading === 'google'}
+              disabled={!!socialLoading}
+              onClick={() => void handleSocial('google')}
+            >
+              {ru.signIn.googleAction}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              icon={<AppleIcon/>}
+              loading={socialLoading === 'apple'}
+              disabled={!!socialLoading}
+              onClick={() => void handleSocial('apple')}
+            >
+              {ru.signIn.appleAction}
+            </Button>
+          </div>
+        )}
 
         {variant === 'business' ? (
           <Button
