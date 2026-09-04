@@ -1,4 +1,4 @@
-import type { ClientType, Session, SignInError, SocialProvider, VerifyCodeError } from '@/api/types.ts';
+import type { AuthOtpSource, ClientType, Session, SignInError, SocialProvider, VerifyCodeError } from '@/api/types.ts';
 import { isValidEmail } from '@/lib/validate.ts';
 import { MOCK_USERS, mockDelay } from '@/api/mock/fixtures.ts';
 
@@ -58,27 +58,32 @@ export async function signInSocial(_provider: SocialProvider, clientType: Client
 }
 
 // ---------------------------------------------------------------------------
-// Sign-in — api-integration.md §2.1 shape, mocked: OTP-issue returns
-// `twoFA` straight from the fixture (no separate `getUser` lookup needed,
-// matching what the real flow does now), confirm validates the code the
-// same way `verifyCode` above always has.
+// Sign-in — api-integration.md §2.1 shape, mocked. An account has exactly
+// one second factor, never both: OTP-issue returns which single one
+// (`source`, straight from the fixture's `authenticatorEnabled`) rather
+// than a `twoFA` boolean the modal used to read as "email always, plus an
+// authenticator code on top" — product decision, not a spec reading.
+// Confirm validates the single code the same way `verifyCode` above always has.
 // ---------------------------------------------------------------------------
 
 let signInFailedAttempts = 0;
 
-export async function signInRequestOtp(email: string, password: string, clientType: ClientType): Promise<{ transactionId: string; twoFA: boolean }> {
+function otpSourceFor(clientType: ClientType): AuthOtpSource {
+  return MOCK_USERS[clientType].authenticatorEnabled ? 'authenticator' : 'email';
+}
+
+export async function signInRequestOtp(email: string, password: string, clientType: ClientType): Promise<{ transactionId: string; source: AuthOtpSource }> {
   await mockDelay();
   if (!isValidEmail(email) || !password.trim()) {
     throw new MockSignInError('EMAIL_INVALID');
   }
   signInFailedAttempts = 0;
-  return { transactionId: `mock-tx-${Date.now()}`, twoFA: MOCK_USERS[clientType].authenticatorEnabled };
+  return { transactionId: `mock-tx-${Date.now()}`, source: otpSourceFor(clientType) };
 }
 
 export interface SignInConfirmParams {
   transactionId: string;
   otp: string;
-  twoFaCode?: string;
   email: string;
   clientType: ClientType;
 }
@@ -88,8 +93,7 @@ export async function signInConfirmOtp(params: SignInConfirmParams): Promise<Ses
   if (signInFailedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS) {
     throw new MockVerifyCodeError('RATE_LIMIT');
   }
-  const codeBad = params.otp === '000000' || (params.twoFaCode !== undefined && params.twoFaCode === '000000');
-  if (codeBad) {
+  if (params.otp === '000000') {
     signInFailedAttempts += 1;
     throw new MockVerifyCodeError(signInFailedAttempts >= MAX_CONSECUTIVE_CODE_ATTEMPTS ? 'RATE_LIMIT' : 'CODE_INVALID');
   }
@@ -101,20 +105,20 @@ export async function signInConfirmOtp(params: SignInConfirmParams): Promise<Ses
 // Password recovery — §2.3 shape, mocked.
 // ---------------------------------------------------------------------------
 
-export async function recoveryRequestOtp(email: string, clientType: ClientType): Promise<{ transactionId: string; twoFA: boolean }> {
+export async function recoveryRequestOtp(email: string, clientType: ClientType): Promise<{ transactionId: string; source: AuthOtpSource }> {
   await mockDelay();
   if (!isValidEmail(email)) {
     throw new MockSignInError('EMAIL_INVALID');
   }
-  return { transactionId: `mock-recovery-${Date.now()}`, twoFA: MOCK_USERS[clientType].authenticatorEnabled };
+  return { transactionId: `mock-recovery-${Date.now()}`, source: otpSourceFor(clientType) };
 }
 
-export async function recoveryConfirmOtp(_transactionId: string, otp: string): Promise<{ transactionId: string; twoFA: boolean }> {
+export async function recoveryConfirmOtp(_transactionId: string, otp: string): Promise<{ transactionId: string }> {
   await mockDelay();
   if (otp === '000000') {
     throw new MockVerifyCodeError('CODE_INVALID');
   }
-  return { transactionId: `mock-recovery-confirmed-${Date.now()}`, twoFA: false };
+  return { transactionId: `mock-recovery-confirmed-${Date.now()}` };
 }
 
 export async function recoveryComplete(_transactionId: string, _password: string): Promise<void> {

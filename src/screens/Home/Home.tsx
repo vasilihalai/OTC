@@ -61,7 +61,7 @@ export function Home() {
 
   return (
     <div className="home">
-      <Panel radius="0 0 24px 24px" padding="8px 16px 20px">
+      <Panel radius="0 0 16px 16px" padding="8px 16px 20px">
         <div className="home__hero">
           <div className="home__hero-text">
             <h1 className="home__hero-title">{ru.home.heroTitle}</h1>
@@ -99,7 +99,7 @@ export function Home() {
         ))}
       </Panel>
 
-      <Panel radius="24px 24px 0 0" padding="20px 0">
+      <Panel radius="16px 16px 0 0" padding="20px 0">
         <h2 className="home__panel-heading">{ru.home.depositAccountTitle}</h2>
         <div className="home__segment">
           <SegmentedControl

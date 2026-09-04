@@ -17,7 +17,7 @@ import {
   signInSocial,
   startSocialSignIn,
 } from '@/api/index.ts';
-import type { ClientType } from '@/api/index.ts';
+import type { AuthOtpSource, ClientType } from '@/api/index.ts';
 import { useSessionStore } from '@/store/session.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { markInitDataBindPending } from '@/api/http.ts';
@@ -56,14 +56,15 @@ export function SignIn({ variant }: SignInProps) {
   const [emailError, setEmailError] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'apple'>();
-  const [otpState, setOtpState] = useState<{ transactionId: string; twoFA: boolean }>();
+  const [otpState, setOtpState] = useState<{ transactionId: string; source: AuthOtpSource }>();
 
   const clientType = CLIENT_TYPE[variant];
   const canSubmit = email.trim().length > 0 && password.trim().length > 0;
 
   // api-integration.md §2.1 — one shape for both modes now: issue OTP,
-  // `twoFA` in that response picks whether OtpConfirmModal also asks for an
-  // authenticator code, confirm exchanges the code(s) for a session.
+  // `source` in that response picks which single code field OtpConfirmModal
+  // shows (an account has exactly one second factor, never both), confirm
+  // exchanges that code for a session.
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!canSubmit || loading) {
@@ -87,7 +88,7 @@ export function SignIn({ variant }: SignInProps) {
     }
   }
 
-  async function handleOtpSubmit(params: { transactionId: string; otp: string; twoFaCode?: string }) {
+  async function handleOtpSubmit(params: { transactionId: string; otp: string }) {
     try {
       const session = await signInConfirmOtp({ ...params, email, clientType });
       setSession(session);
@@ -227,7 +228,7 @@ export function SignIn({ variant }: SignInProps) {
           open={modalOpen}
           email={email}
           transactionId={otpState.transactionId}
-          twoFA={otpState.twoFA}
+          source={otpState.source}
           onClose={closeModal}
           onSubmit={handleOtpSubmit}
           onResend={handleOtpResend}

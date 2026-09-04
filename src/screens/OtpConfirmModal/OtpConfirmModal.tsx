@@ -4,6 +4,7 @@ import { Modal } from '@/components/Modal/Modal.tsx';
 import { CodeInput } from '@/components/CodeInput/CodeInput.tsx';
 import { Button } from '@/components/Button/Button.tsx';
 import { Spinner } from '@/components/Spinner/Spinner.tsx';
+import type { AuthOtpSource } from '@/api/index.ts';
 import { notifyError, notifySuccess } from '@/telegram/adapter.ts';
 import { ru } from '@/i18n/ru.ts';
 
@@ -20,38 +21,36 @@ function formatCountdown(seconds: number): string {
 export interface OtpConfirmSubmitParams {
   transactionId: string;
   otp: string;
-  twoFaCode?: string;
 }
 
 export interface OtpConfirmModalProps {
   open: boolean;
   email: string;
   transactionId: string;
-  /** From the OTP-issue step's response — whether a second, authenticator code is also required. */
-  twoFA: boolean;
+  /** From the OTP-issue step's response — which single second factor this account has, never both at once. */
+  source: AuthOtpSource;
   onClose: () => void;
-  /** Verifies the code(s). Reject with an `Error` whose `message` is already display-ready (via `errorMap.ts`) to show inline; resolve on success. */
+  /** Verifies the code. Reject with an `Error` whose `message` is already display-ready (via `errorMap.ts`) to show inline; resolve on success. */
   onSubmit: (params: OtpConfirmSubmitParams) => Promise<void>;
-  /** Re-issues the code; returns the (possibly new) transactionId/twoFA — api-integration.md §2.3 explicitly returns a fresh transactionId on confirm, and resend realistically hits the same rate limit as the initial request. */
-  onResend: () => Promise<{ transactionId: string; twoFA: boolean }>;
+  /** Re-issues the code; only called for `source: 'email'` — an authenticator code isn't "sent" anywhere to resend. Returns the (possibly new) transactionId/source — api-integration.md §2.3 explicitly returns a fresh transactionId on confirm. */
+  onResend: () => Promise<{ transactionId: string; source: AuthOtpSource }>;
   onVerified: () => void;
 }
 
 /**
  * Generic OTP-confirm step shared by sign-in (api-integration.md §2.1) and
- * password recovery (§2.3) — both are "email/SMS code, plus an authenticator
- * code when the account has one enabled," never either/or, which is why this
- * is its own component rather than reusing the withdrawal-confirmation
- * `TwoFactorGate`/`VerificationModal`/`AuthenticatorModal` trio (those pick
- * ONE of the two, matching a different real contract — §5.3).
+ * password recovery (§2.3). An account has exactly one second factor
+ * configured — this shows a single code field, picked by `source`, the same
+ * way the withdrawal-confirmation `TwoFactorGate` trio picks one of
+ * `VerificationModal`/`AuthenticatorModal` — rather than always asking for
+ * an email code plus an authenticator code on top.
  */
 export function OtpConfirmModal({
-  open, email, transactionId, twoFA, onClose, onSubmit, onResend, onVerified,
+  open, email, transactionId, source, onClose, onSubmit, onResend, onVerified,
 }: OtpConfirmModalProps) {
   const [txId, setTxId] = useState(transactionId);
-  const [requiresTwoFa, setRequiresTwoFa] = useState(twoFA);
-  const [otp, setOtp] = useState('');
-  const [twoFaCode, setTwoFaCode] = useState('');
+  const [currentSource, setCurrentSource] = useState(source);
+  const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [verifying, setVerifying] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(RESEND_SECONDS);
@@ -61,51 +60,33 @@ export function OtpConfirmModal({
       return;
     }
     setTxId(transactionId);
-    setRequiresTwoFa(twoFA);
-    setOtp('');
-    setTwoFaCode('');
+    setCurrentSource(source);
+    setCode('');
     setError(undefined);
     setResendCountdown(RESEND_SECONDS);
-  }, [open, transactionId, twoFA]);
+  }, [open, transactionId, source]);
 
   useEffect(() => {
-    if (!open || resendCountdown <= 0) {
+    if (!open || currentSource !== 'email' || resendCountdown <= 0) {
       return;
     }
     const timer = setInterval(() => setResendCountdown((s) => s - 1), 1000);
     return () => clearInterval(timer);
-  }, [open, resendCountdown > 0]);
+  }, [open, currentSource, resendCountdown > 0]);
 
-  async function attemptConfirm(nextOtp: string, nextTwoFaCode: string) {
+  async function attemptConfirm(value: string) {
     setVerifying(true);
     setError(undefined);
     try {
-      await onSubmit({ transactionId: txId, otp: nextOtp, twoFaCode: nextTwoFaCode || undefined });
+      await onSubmit({ transactionId: txId, otp: value });
       notifySuccess();
       onVerified();
     } catch (err) {
       notifyError();
       setError(err instanceof Error ? err.message : ru.verification.errorCodeInvalid);
-      setOtp('');
-      setTwoFaCode('');
+      setCode('');
     } finally {
       setVerifying(false);
-    }
-  }
-
-  function handleOtpComplete(value: string) {
-    setOtp(value);
-    if (!requiresTwoFa) {
-      void attemptConfirm(value, '');
-    } else if (twoFaCode.length === 6) {
-      void attemptConfirm(value, twoFaCode);
-    }
-  }
-
-  function handleTwoFaComplete(value: string) {
-    setTwoFaCode(value);
-    if (otp.length === 6) {
-      void attemptConfirm(otp, value);
     }
   }
 
@@ -114,9 +95,8 @@ export function OtpConfirmModal({
     try {
       const next = await onResend();
       setTxId(next.transactionId);
-      setRequiresTwoFa(next.twoFA);
-      setOtp('');
-      setTwoFaCode('');
+      setCurrentSource(next.source);
+      setCode('');
       setResendCountdown(RESEND_SECONDS);
     } catch (err) {
       notifyError();
@@ -124,13 +104,15 @@ export function OtpConfirmModal({
     }
   }
 
+  const isEmail = currentSource === 'email';
+
   return (
     <Modal
       open={open}
-      title={ru.verification.title}
+      title={isEmail ? ru.verification.title : ru.authenticator.title}
       onClose={onClose}
       compactClose
-      footer={(
+      footer={isEmail ? (
         <Button
           type="button"
           variant="secondary"
@@ -141,25 +123,18 @@ export function OtpConfirmModal({
             ? `${ru.verification.resendAction} ${formatCountdown(resendCountdown)}`
             : ru.verification.resendAction}
         </Button>
-      )}
+      ) : undefined}
     >
-      <p className="otp-confirm-modal__sent-to">{ru.verification.sentTo}</p>
-      <p className="otp-confirm-modal__email">{email}</p>
-
-      <CodeInput value={otp} onChange={setOtp} onComplete={handleOtpComplete} error={!!error} disabled={verifying}/>
-
-      {requiresTwoFa && (
+      {isEmail ? (
         <>
-          <p className="otp-confirm-modal__two-fa-label">{ru.authenticator.title}</p>
-          <CodeInput
-            value={twoFaCode}
-            onChange={setTwoFaCode}
-            onComplete={handleTwoFaComplete}
-            error={!!error}
-            disabled={verifying}
-          />
+          <p className="otp-confirm-modal__sent-to">{ru.verification.sentTo}</p>
+          <p className="otp-confirm-modal__email">{email}</p>
         </>
+      ) : (
+        <p className="otp-confirm-modal__sent-to">{ru.authenticator.body}</p>
       )}
+
+      <CodeInput value={code} onChange={setCode} onComplete={(value) => void attemptConfirm(value)} error={!!error} disabled={verifying}/>
 
       {verifying && (
         <p className="otp-confirm-modal__status"><Spinner size={16}/>{ru.verification.verifyingLabel}</p>

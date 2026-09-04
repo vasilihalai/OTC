@@ -6,7 +6,7 @@ import { Button } from '@/components/Button/Button.tsx';
 import { Logo } from '@/components/Logo/Logo.tsx';
 import { OtpConfirmModal } from '@/screens/OtpConfirmModal/OtpConfirmModal.tsx';
 import { ApiError, MockSignInError, MockVerifyCodeError, mapApiError, recoveryConfirmOtp, recoveryRequestOtp } from '@/api/index.ts';
-import type { ClientType } from '@/api/index.ts';
+import type { AuthOtpSource, ClientType } from '@/api/index.ts';
 import { isValidEmail } from '@/lib/validate.ts';
 import { useModalStore } from '@/store/modal.ts';
 import { notifyError } from '@/telegram/adapter.ts';
@@ -28,7 +28,7 @@ export function PasswordRecovery() {
   const clientType: ClientType = routeState?.clientType ?? 'UL';
   const [emailError, setEmailError] = useState<string>();
   const [loading, setLoading] = useState(false);
-  const [otpState, setOtpState] = useState<{ transactionId: string; twoFA: boolean }>();
+  const [otpState, setOtpState] = useState<{ transactionId: string; source: AuthOtpSource }>();
 
   const canSubmit = isValidEmail(email);
 
@@ -117,7 +117,7 @@ export function PasswordRecovery() {
           open={modalOpen}
           email={email}
           transactionId={otpState.transactionId}
-          twoFA={otpState.twoFA}
+          source={otpState.source}
           onClose={closeModal}
           onSubmit={handleOtpSubmit}
           onResend={handleOtpResend}

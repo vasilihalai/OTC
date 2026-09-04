@@ -15,14 +15,6 @@
   color: var(--text-muted);
 }
 
-.otp-confirm-modal__two-fa-label {
-  margin: 4px 0 0;
-  text-align: center;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--text-muted);
-}
-
 .otp-confirm-modal__error {
   margin: -8px 0 0;
   text-align: center;

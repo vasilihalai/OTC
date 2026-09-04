@@ -204,6 +204,14 @@ export interface WithdrawQuote {
 
 export type WithdrawOtpSource = 'email' | 'authenticator' | 'phone';
 
+/**
+ * Sign-in/recovery OTP — an account has exactly one second factor
+ * configured, never both at once, so the issue-otp step tells the client
+ * which single method to ask for (mirrors `WithdrawOtpSource`'s role, just
+ * without a documented `phone` case here).
+ */
+export type AuthOtpSource = 'email' | 'authenticator';
+
 /** `POST /operations/issue-otp/{transactionId}` — §5.3. `source` picks the modal; more precise than the account-level flag. */
 export interface WithdrawOtpIssueResult {
   twoFA: boolean;

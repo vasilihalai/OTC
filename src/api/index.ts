@@ -192,6 +192,7 @@ export type {
   WithdrawLimitEntry,
   WithdrawQuote,
   WithdrawOtpSource,
+  AuthOtpSource,
   WithdrawOtpIssueResult,
   WithdrawalResult,
   TransferAccount,
