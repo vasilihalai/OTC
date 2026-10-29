@@ -1,0 +1,1 @@
+import{V as o,W as n,X as s,c as t}from"./index-BLlRRZQS.js";function a(){const a=o(o=>o.show);return o=>{n(o).then(()=>{s(),a(t.common.copiedToast)})}}const i=new URL("/OTC/documents/sample.pdf",window.location.origin).toString();export{i as S,a as u};
