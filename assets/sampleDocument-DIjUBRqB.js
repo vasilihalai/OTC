@@ -1,0 +1,1 @@
+import{X as o,_ as n,$ as s,c as t}from"./index-DpSQuwnC.js";function a(){const a=o(o=>o.show);return o=>{n(o).then(()=>{s(),a(t.common.copiedToast)})}}const i=new URL("/OTC/documents/sample.pdf",window.location.origin).toString();export{i as S,a as u};
